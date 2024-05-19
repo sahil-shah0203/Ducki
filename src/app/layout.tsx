@@ -1,3 +1,4 @@
+
 import '../styles/globals.css';
 import { GeistSans } from "geist/font/sans";
 import { TRPCReactProvider } from "~/trpc/react";
@@ -20,9 +21,8 @@ export default function RootLayout({
       <html lang="en" className={`${GeistSans.variable}`}>
         <body>
           <TRPCReactProvider>
-            <AuthWrapper>
-              {children}
-            </AuthWrapper>
+            <AuthWrapper>{children}</AuthWrapper>
+
           </TRPCReactProvider>
         </body>
       </html>
