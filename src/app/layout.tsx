@@ -1,8 +1,9 @@
-import "../styles/globals.css";
+
+import '../styles/globals.css';
 import { GeistSans } from "geist/font/sans";
 import { TRPCReactProvider } from "~/trpc/react";
-import { ClerkProvider } from "@clerk/nextjs";
-import AuthWrapper from "./_components/AuthWrapper";
+import { ClerkProvider } from '@clerk/nextjs';
+import AuthWrapper from './_components/AuthWrapper';
 
 export const metadata = {
   title: "Create T3 App",
@@ -21,6 +22,7 @@ export default function RootLayout({
         <body>
           <TRPCReactProvider>
             <AuthWrapper>{children}</AuthWrapper>
+
           </TRPCReactProvider>
         </body>
       </html>
