@@ -2,7 +2,7 @@
 
 import { useUser } from '@clerk/nextjs';
 import Landing from './landing';
-import Home from './home'; // Assume the main content component is named Home
+import Home from './home'; 
 
 export default function MainPage() {
   const { isSignedIn } = useUser();
