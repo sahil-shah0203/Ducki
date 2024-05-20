@@ -3,16 +3,41 @@ generator client {
 }
 
 datasource db {
-  provider     = "mysql"
-  url          = env("DATABASE_URL")
-  relationMode = "prisma"
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
-model Post {
-  id        Int      @id @default(autoincrement())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime
+model User {
+  user_id    Int     @id @default(autoincrement())
+  first_name String?
+  last_name  String?
+  email      String  @unique
+}
 
-  @@index([name])
+model Note {
+  note_id  Int    @id @default(autoincrement())
+  content  String
+  user_id  Int
+  class_id Int
+}
+
+model Document {
+  document_id Int    @id @default(autoincrement())
+  user_id     Int
+  class_id    Int
+  file_path   String
+}
+
+model ChatHistory {
+  chat_id   Int      @id @default(autoincrement())
+  message   String
+  timestamp DateTime @default(now())
+  user_id   Int
+  class_id  Int
+}
+
+model Class {
+  class_id   Int    @id @default(autoincrement())
+  class_name String
+  user_id    Int
 }

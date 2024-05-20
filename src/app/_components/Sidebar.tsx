@@ -1,36 +1,38 @@
+'use client';
+
 import Link from 'next/link';
+import { useState } from 'react';
+import AddClassDialog from './AddClassDialog';
 
 export default function Sidebar() {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [classes, setClasses] = useState<string[]>([]);
+
+  const handleAddClass = (className: string) => {
+    setClasses([...classes, className]);
+    // Add logic to persist the class in the database if needed
+  };
+
   return (
-    <aside className="w-64 bg-gray-800 text-white p-4">
+    <aside className="w-64 bg-gray-800 text-white p-4 h-full">
       <div className="flex flex-col space-y-4">
-        <h1 className="text-2xl font-bold">Ducki</h1>
+        <h1 className="text-2xl font-bold">Classes</h1>
         <nav>
           <ul>
+            {classes.map((className, index) => (
+              <li key={index} className="py-2 pl-4">
+                <Link href="#" className="hover:underline">
+                  {className}
+                </Link>
+              </li>
+            ))}
             <li className="py-2">
-              <Link href="#" className="hover:underline">
-                Spring 2024
-              </Link>
-            </li>
-            <li className="py-2 pl-4">
-              <Link href="#" className="hover:underline">
-                Neuroscience
-              </Link>
-            </li>
-            <li className="py-2 pl-4 text-purple-400">
-              <Link href="#" className="hover:underline">
-                Biology
-              </Link>
-            </li>
-            <li className="py-2 pl-4">
-              <Link href="#" className="hover:underline">
-                Physics
-              </Link>
-            </li>
-            <li className="py-2">
-              <Link href="#" className="hover:underline">
+              <button
+                onClick={() => setIsDialogOpen(true)}
+                className="hover:underline"
+              >
                 New Class
-              </Link>
+              </button>
             </li>
           </ul>
         </nav>
@@ -47,6 +49,11 @@ export default function Sidebar() {
           </div>
         </footer>
       </div>
+      <AddClassDialog
+        isOpen={isDialogOpen}
+        onRequestClose={() => setIsDialogOpen(false)}
+        onAddClass={handleAddClass}
+      />
     </aside>
   );
 }

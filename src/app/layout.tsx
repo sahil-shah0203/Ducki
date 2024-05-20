@@ -1,8 +1,8 @@
-import '../styles/globals.css';
-import { GeistSans } from "geist/font/sans";
-import { TRPCReactProvider } from "~/trpc/react";
+import '~/styles/globals.css';
+import { GeistSans } from 'geist/font/sans';
+import { TRPCReactProvider } from '~/trpc/react';
 import { ClerkProvider } from '@clerk/nextjs';
-import AuthWrapper from './_components/AuthWrapper';
+import Header from './_components/Header';
 
 export const metadata = {
   title: "Create T3 App",
@@ -18,11 +18,12 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" className={`${GeistSans.variable}`}>
-        <body>
+        <body className="min-h-screen w-full flex flex-col">
           <TRPCReactProvider>
-            <AuthWrapper>
+            <div id="__next" className="flex flex-1 flex-col w-full">
+              <Header /> {/* Use the Header component */}
               {children}
-            </AuthWrapper>
+            </div>
           </TRPCReactProvider>
         </body>
       </html>

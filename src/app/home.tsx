@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState } from 'react';
 import Calendar from './_components/Calendar';
@@ -8,7 +8,7 @@ export default function Home() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   return (
-    <div>
+    <div className="flex flex-1 flex-col h-full">
       <div className="bg-white p-4 rounded shadow mb-8">
         <div className="flex justify-between items-center">
           <div className="text-xl font-bold">Upload to Brainwave</div>
@@ -21,7 +21,7 @@ export default function Home() {
           </div>
         </div>
       </div>
-      <div className="flex">
+      <div className="flex flex-1">
         <div className="flex-1 bg-white p-4 rounded shadow">
           <div className="flex justify-between items-center">
             <span>Calendar?</span>

@@ -1,19 +1,8 @@
-"use client";
+'use client';
 
-import { SignInButton, SignUpButton, useUser } from '@clerk/nextjs';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { SignInButton, SignUpButton } from '@clerk/nextjs';
 
 export default function Landing() {
-  const { isSignedIn } = useUser();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (isSignedIn) {
-      router.push("/main");
-    }
-  }, [isSignedIn, router]);
-
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <h1 className="text-black font-bold mb-4">Hello, User!</h1>

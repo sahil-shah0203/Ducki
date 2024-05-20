@@ -27,7 +27,13 @@
     "baseUrl": ".",
     "paths": {
       "~/*": ["./src/*"]
-    }
+    },
+
+    /* Include Prisma Client Types */
+    "typeRoots": [
+      "./node_modules/@types",
+      "./node_modules/.prisma/client"
+    ]
   },
   "include": [
     ".eslintrc.cjs",
@@ -36,7 +42,8 @@
     "**/*.tsx",
     "**/*.cjs",
     "**/*.js",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "prisma/**/*.ts"  // Ensure to include the Prisma schema files
   ],
   "exclude": ["node_modules"]
 }
