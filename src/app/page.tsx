@@ -3,6 +3,7 @@ import { useUser } from '@clerk/nextjs';
 import Landing from './landing';
 import Home from './home'; 
 import { useEffect } from 'react';
+import { JsonArray } from '@prisma/client/runtime/react-native.js';
 
 
 export default function MainPage() {
@@ -27,7 +28,11 @@ interface Post {
 }
 
 interface GetAllResponse {
-  data: Post[];
+  result: {
+    data: {
+      json: Post[];
+    };
+  };
 }
 
 async function bruh() {
@@ -45,7 +50,7 @@ async function bruh() {
     }
 
     const data: GetAllResponse = await response.json() as GetAllResponse;
-    console.log(data.result.data.json[0]);
+    console.log(data.result.data.json[0]?.id);
   } catch (error) {
     console.error('Error fetching data:', error);
   }
