@@ -1,47 +1,69 @@
 "use client";
 
 import { useState } from 'react';
-import Calendar from './_components/Calendar';
-import ToDoList from './_components/ToDoList';
 
 export default function Home() {
+  const [inputText, setInputText] = useState<string>("");
+  const [choices, setChoices] = useState<any[]>([]);  // Explicitly type the choices array
+  const [error, setError] = useState<string | null>(null); // State for error handling
 
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputText(e.target.value);
+  };
+
+  const handleSubmit = async () => {
+    setError(null); // Clear any previous errors
+    try {
+      const response = await fetch("/api/LLM", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          prompt: inputText,
+        }),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const result = await response.json();
+      setChoices(result.choices);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+      setError("Failed to fetch response from the server.");
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSubmit();
+    }
+  };
 
   return (
-    <div>
-      <div className="bg-white p-4 rounded shadow mb-8">
-        <div className="flex justify-between items-center">
-          <div className="text-xl font-bold">Upload to Brainwave</div>
-          <button className="bg-blue-500 text-white py-2 px-4 rounded">Ignore for now but can be feature</button>
-        </div>
-        <div className="mt-8">
-          <h2 className="font-bold">Manual</h2>
-          <div className="border mt-2 p-4">
-            <button className="bg-green-500 text-white py-2 px-4 rounded">Add Concept</button>
-          </div>
-        </div>
+    <div className="flex flex-col h-screen justify-end">
+      <div className="p-4 flex flex-col w-full">
+        {error && <p className="text-red-500">{error}</p>}
+        {choices.map((choice, index) => (
+          <p key={index} className="text-black">{choice.message.content}</p>
+        ))}
       </div>
-      <div className="flex">
-        <div className="flex-1 bg-white p-4 rounded shadow">
-          <div className="flex justify-between items-center">
-            <span>Calendar?</span>
-            <input
-              type="date"
-              className="border rounded py-1 px-2"
-              onChange={(e) => setSelectedDate(e.target.value)}
-            />
-          </div>
-          <div className="mt-4">
-            {selectedDate ? `Selected Date: ${selectedDate}` : "No date selected"}
-          </div>
-        </div>
-        <aside className="w-64 bg-white p-4 border-l">
-          <Calendar selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
-          <ToDoList />
-        </aside>
+      <div className="p-4 flex items-center w-full">
+        <input
+          type="text"
+          className="border rounded py-1 px-2 flex-grow text-black"
+          value={inputText}
+          onChange={handleInputChange}
+          onKeyPress={handleKeyPress}
+          placeholder="Enter text for LLM"
+        />
+        <button
+          className="bg-blue-500 text-white py-2 px-4 rounded ml-2"
+          onClick={handleSubmit}
+        >
+          Submit
+        </button>
       </div>
     </div>
   );
 }
-
