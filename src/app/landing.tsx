@@ -26,6 +26,7 @@ const AsteroidComponent: React.FC<AsteroidComponentProps> = ({ key, style }) => 
 };
 
 export default function Landing() {
+
   const { isSignedIn } = useUser();
   const router = useRouter();
   const [asteroids, setAsteroids] = useState<Asteroid[]>([]);
