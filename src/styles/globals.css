@@ -2,6 +2,76 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 body {
-    @apply bg-black text-white;
-  }
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
+#root, #__next {
+  height: 100%;
+  width: 100%;
+}
+
+.modal {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 500px;
+  margin: auto;
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.overlay {
+  background: rgba(0, 0, 0, 0.75);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 10;
+}
+
+.main-content {
+  margin-top: 64px; /* Adjust based on header height */
+}
+
+.sidebar {
+  position: fixed;
+  top: 64px; /* Adjust based on header height */
+  left: 0;
+  height: calc(100% - 64px); /* Adjust based on header height */
+  width: 64px;
+  background: linear-gradient(to bottom, #A084CA, #7E57C2); /* Lavender ombre */
+}
+
+.content {
+  margin-left: 64px; /* Adjust based on sidebar width */
+  padding: 16px;
+  overflow-y: auto;
+  height: calc(100% - 64px); /* Adjust based on header height */
+}
+
+.sticky-bottom {
+  position: -webkit-sticky;
+  position: sticky;
+  bottom: 0;
+  background-color: white;
+  padding: 1rem;
+}

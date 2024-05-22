@@ -3,28 +3,34 @@ import { useUser } from '@clerk/nextjs';
 import Landing from './landing';
 import Home from './home'; 
 import { useEffect } from 'react';
-import { JsonArray } from '@prisma/client/runtime/react-native.js';
-
+import Sidebar from './_components/Sidebar';
 
 export default function MainPage() {
   const { isSignedIn } = useUser();
 
   useEffect(() => {
-    void bruh();
+    fetchPosts();
   }, []);
 
   if (!isSignedIn) {
     return <Landing />;
   }
 
-  return <Home />;
+  return (
+    <div className="flex h-full min-h-screen">
+      <Sidebar /> 
+      <div className="flex-1 ml-64 p-4"> {/* Adjusted margin to accommodate sidebar */}
+        <Home />
+      </div>
+    </div>
+  );
 }
 
 interface Post {
   id: number;
   name: string;
-  createdAt: string; // ISO string representation of DateTime
-  updatedAt: string; // ISO string representation of DateTime
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface GetAllResponse {
@@ -35,7 +41,7 @@ interface GetAllResponse {
   };
 }
 
-async function bruh() {
+async function fetchPosts() {
   try {
     const response = await fetch('/api/trpc/post.getAll', {
       method: 'GET',
@@ -49,7 +55,7 @@ async function bruh() {
       return;
     }
 
-    const data: GetAllResponse = await response.json() as GetAllResponse;
+    const data: GetAllResponse = await response.json();
     console.log(data.result.data.json[0]?.id);
   } catch (error) {
     console.error('Error fetching data:', error);
