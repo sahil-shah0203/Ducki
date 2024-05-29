@@ -19,7 +19,7 @@ export default function MainPage() {
   return (
     <div className="flex h-full min-h-screen">
       <Sidebar /> 
-      <div className="flex-1 ml-64 p-4"> {/* Adjusted margin to accommodate sidebar */}
+      <div className="flex-1 ml-64 p-4 flex flex-col h-full justify-end">
         <Home />
       </div>
     </div>

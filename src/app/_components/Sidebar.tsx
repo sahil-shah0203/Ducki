@@ -14,7 +14,7 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="fixed top-16 left-0 h-full w-64 bg-gray-800 text-white p-4">
+    <aside className="fixed top-16 left-0 h-[calc(100vh-4rem)] w-64 bg-gray-800 text-white p-4 overflow-y-auto">
       <div className="flex flex-col space-y-4">
         <h1 className="text-2xl font-bold">Classes</h1>
         <nav>

@@ -11,7 +11,9 @@ interface ChatMessage {
 }
 
 interface Choice {
-  text: string;
+  message: {
+    content: string;
+  };
 }
 
 export default function LLMInput({ onFetchResults, onError }: LLMInputProps) {
@@ -41,9 +43,9 @@ export default function LLMInput({ onFetchResults, onError }: LLMInputProps) {
       const result = await response.json();
       console.log(result); // Log the response to the console
       onFetchResults(result.choices);
-      result.choices.forEach((choice: Choice) => {
-        setChatMessages(prevMessages => [...prevMessages, { type: 'llm', text: choice.text }]);
-      });
+      // Extract the message content from the response
+      const llmMessage = result.choices[0].message.content;
+      setChatMessages(prevMessages => [...prevMessages, { type: 'llm', text: llmMessage }]);
       setInputText('');
     } catch (err) {
       console.error("Error fetching data:", err);
@@ -58,10 +60,10 @@ export default function LLMInput({ onFetchResults, onError }: LLMInputProps) {
   };
 
   return (
-    <div className="p-4 flex flex-col items-center w-full">
-      <div className="w-full mb-4 overflow-auto h-64 rounded p-4 flex flex-col space-y-2">
+    <div className="flex flex-col w-full">
+      <div className="flex-grow mb-4 overflow-auto rounded p-4 flex flex-col space-y-2">
         {chatMessages.map((message, index) => (
-          <div key={index} className={`p-2 rounded-lg my-2 ${message.type === 'user' ? 'bg-blue-500 text-white ml-auto' : 'bg-green-500 text-white mr-auto'}`}>
+          <div key={index} className={`p-2 rounded-lg my-2 max-w-xs ${message.type === 'user' ? 'bg-blue-500 text-white self-end' : 'bg-green-500 text-white self-start'}`}>
             {message.text}
           </div>
         ))}

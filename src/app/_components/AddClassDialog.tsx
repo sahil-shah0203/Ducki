@@ -18,7 +18,12 @@ export default function AddClassDialog({
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      Modal.setAppElement('#__next');
+      const nextElement = document.getElementById('__next');
+      if (nextElement) {
+        Modal.setAppElement(nextElement);
+      } else {
+        console.error('Element with id "__next" not found');
+      }
     }
   }, []);
 
