@@ -13,13 +13,13 @@ interface Asteroid {
 }
 
 interface AsteroidComponentProps {
-  key: number;
+  id: number;
   style: React.CSSProperties;
 }
 
-const AsteroidComponent: React.FC<AsteroidComponentProps> = ({ key, style }) => {
+const AsteroidComponent: React.FC<AsteroidComponentProps> = ({ id, style }) => {
   return (
-    <div key={key} style={style} className="asteroid">
+    <div style={style} className="asteroid">
       <Image src={logo} alt="Duck Logo" width={50} height={50} />
     </div>
   );
@@ -80,6 +80,7 @@ export default function Landing() {
     return asteroids.map((asteroid, index) => (
       <AsteroidComponent
         key={index}
+        id={index}
         style={{
           position: "absolute",
           left: asteroid.x,
