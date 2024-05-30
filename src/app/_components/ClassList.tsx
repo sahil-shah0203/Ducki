@@ -1,15 +1,20 @@
-'use client';
-
 import { useEffect, useState } from 'react';
 
+// Define an interface to describe the shape of a class object
+interface Class {
+  class_id: number;
+  class_name: string;
+}
+
 export default function ClassList() {
-  const [classes, setClasses] = useState([]);
+  // Use the interface to type your state
+  const [classes, setClasses] = useState<Class[]>([]);
 
   useEffect(() => {
     async function fetchClasses() {
       const response = await fetch('/api/classes');
       const data = await response.json();
-      setClasses(data);
+      setClasses(data);  // Assuming 'data' is an array of 'Class' objects
     }
 
     fetchClasses();

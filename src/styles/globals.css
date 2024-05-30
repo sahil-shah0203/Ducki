@@ -75,3 +75,9 @@ body {
   background-color: white;
   padding: 1rem;
 }
+
+#chat-container {
+  display: flex;
+  flex-direction: column-reverse;
+  overflow-y: auto;
+}

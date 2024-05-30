@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface LLMInputProps {
   onFetchResults: (choices: Choice[]) => void;
@@ -20,32 +20,35 @@ export default function LLMInput({ onFetchResults, onError }: LLMInputProps) {
   const [inputText, setInputText] = useState<string>("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 
+  useEffect(() => {
+    // This will be triggered after every render, which includes after chatMessages updates.
+    const chatContainer = document.getElementById('chat-container');
+    if (chatContainer) {
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+  }, [chatMessages]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputText(e.target.value);
   };
 
   const handleSubmit = async () => {
     onError(null);
-    setChatMessages(prevMessages => [...prevMessages, { type: 'user', text: inputText }]);
+    setChatMessages(prevMessages => [{ type: 'user', text: inputText }, ...prevMessages]);
     try {
       const response = await fetch("/api/LLM", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          prompt: inputText,
-        }),
+        body: JSON.stringify({ prompt: inputText }),
       });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const result = await response.json();
-      console.log(result); // Log the response to the console
-      onFetchResults(result.choices);
-      // Extract the message content from the response
       const llmMessage = result.choices[0].message.content;
-      setChatMessages(prevMessages => [...prevMessages, { type: 'llm', text: llmMessage }]);
+      setChatMessages(prevMessages => [{ type: 'llm', text: llmMessage }, ...prevMessages]);
       setInputText('');
     } catch (err) {
       console.error("Error fetching data:", err);
@@ -60,15 +63,15 @@ export default function LLMInput({ onFetchResults, onError }: LLMInputProps) {
   };
 
   return (
-    <div className="flex flex-col w-full">
-      <div className="flex-grow mb-4 overflow-auto rounded p-4 flex flex-col space-y-2">
+    <div className="flex flex-col w-full h-screen">
+      <div id="chat-container" className="flex-grow mb-4 overflow-auto rounded p-4 flex flex-col-reverse space-y-2">
         {chatMessages.map((message, index) => (
           <div key={index} className={`p-2 rounded-lg my-2 max-w-xs ${message.type === 'user' ? 'bg-blue-500 text-white self-end' : 'bg-green-500 text-white self-start'}`}>
             {message.text}
           </div>
         ))}
       </div>
-      <div className="w-full flex items-center">
+      <div className="sticky bottom-0 w-full flex items-center bg-white p-2 border-t border-gray-200">
         <input
           type="text"
           className="border rounded py-1 px-2 flex-grow text-black"
