@@ -5,40 +5,64 @@ generator client {
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+  relationMode = "prisma"
 }
 
 model User {
-  user_id    Int     @id @default(autoincrement())
-  first_name String? // Allowing null values
-  last_name  String? // Allowing null values
-  email      String  @unique
-}
-
-model Class {
-  class_id   Int    @id @default(autoincrement())
-  class_name String
-  user_id    Int
+  user_id        Int            @id @default(autoincrement())
+  first_name     String?
+  last_name      String?
+  email          String         @unique
+  notes          Note[] 
+  documents      Document[]
+  chatHistories  ChatHistory[]
+  classes        Class[]
 }
 
 model Note {
   note_id  Int    @id @default(autoincrement())
+  name     String
   content  String
-  user_id  Int
-  class_id Int
+  user     User   @relation(fields: [user_id], references: [user_id])
+  user_id  Int    
+  class    Class  @relation(fields: [class_id], references: [class_id])
+  class_id Int    
 }
 
 model Document {
   document_id Int    @id @default(autoincrement())
-  user_id     Int
-  class_id    Int
-  syllabus    String // Assuming this is a path or URL to the syllabus
-  // Add other fields if needed for new file types
+  name        String
+  content     String
+  user        User   @relation(fields: [user_id], references: [user_id])
+  user_id     Int    
+  class       Class  @relation(fields: [class_id], references: [class_id])
+  class_id    Int    
 }
 
 model ChatHistory {
-  chat_id    Int      @id @default(autoincrement())
-  message    String
-  timestamp  DateTime @default(now())
-  user_id    Int
-  class_id   Int
+  chat_id          Int          @id @default(autoincrement())
+  timestamp        DateTime     @default(now())
+  user             User         @relation(fields: [user_id], references: [user_id])
+  user_id          Int      
+  class            Class        @relation(fields: [class_id], references: [class_id])
+  class_id         Int
+  chatMessages     ChatMessage[]
+}
+
+model ChatMessage {
+  message_id       Int          @id @default(autoincrement())
+  content          String
+  direction        String       // "sent" or "received"
+  chatHistory      ChatHistory  @relation(fields: [chat_id], references: [chat_id])
+  chat_id          Int
+}
+
+model Class {
+  class_id       Int            @id @default(autoincrement())
+  class_name     String
+  user           User           @relation(fields: [user_id], references: [user_id])
+  user_id        Int
+  notes          Note[]
+  documents      Document[]
+  chatHistories  ChatHistory[]
 }
