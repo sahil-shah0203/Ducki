@@ -17,7 +17,7 @@ interface AsteroidComponentProps {
   style: React.CSSProperties;
 }
 
-const AsteroidComponent: React.FC<AsteroidComponentProps> = ({ id, style }) => {
+const AsteroidComponent: React.FC<AsteroidComponentProps> = ({ style }) => {
   return (
     <div style={style} className="asteroid">
       <Image src={logo} alt="Duck Logo" width={50} height={50} />
