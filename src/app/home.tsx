@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Calendar from './_components/Calendar';
 import ToDoList from './_components/ToDoList';
 import { api } from "~/trpc/react";
 
-import { useEffect } from 'react';
+interface HomeProps {
+  userId: number | undefined;
+}
 
-export default function Home() {
+export default function Home({ userId }: HomeProps) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [postName, setPostName] = useState<string>('');
   const [fetchPost, setFetchPost] = useState(false);
@@ -44,6 +46,8 @@ export default function Home() {
     e.preventDefault();
     createPostMutation.mutate({ name: postName });
   };
+
+  console.log("hi", userId);
 
   return (
     <div>
