@@ -1,18 +1,26 @@
 import { z } from "zod";
-
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
 export const userRouter = createTRPCRouter({
-    getUserByEmail: publicProcedure
-    .input(z.object({ email: z.string().email() }))
+  getUserByEmail: publicProcedure
+    .input(z.object({
+      email: z.string().email(),
+      firstName: z.string(),
+      lastName: z.string()
+    }))
     .query(async ({ ctx, input }) => {
+      const { email, firstName, lastName } = input;
+
       const user = await ctx.db.user.upsert({
-        where: { email: input.email },
-        update: {}, // If the user exists, don't change anything
+        where: { email },
+        update: {
+          first_name: firstName,
+          last_name: lastName,
+        },
         create: {
-          email: input.email,
-          first_name: "", // Default values if not provided
-          last_name: "",
+          email,
+          first_name: firstName,
+          last_name: lastName,
         },
       });
 
