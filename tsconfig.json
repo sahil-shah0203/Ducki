@@ -27,7 +27,7 @@
 
     /* Path Aliases */
     "baseUrl": ".",
-    "paths": {
+    "paths": {"~/*": ["src/*"]
     },
 
     /* Include Prisma Client Types */
