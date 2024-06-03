@@ -66,3 +66,11 @@ model Class {
   documents      Document[]
   chatHistories  ChatHistory[]
 }
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  name      String
+  content   String
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}

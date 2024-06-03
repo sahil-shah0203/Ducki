@@ -8,33 +8,35 @@
     "resolveJsonModule": true,
     "moduleDetection": "force",
     "isolatedModules": true,
-
     /* Strictness */
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "checkJs": true,
-
     /* Bundled projects */
     "lib": ["dom", "dom.iterable", "ES2022"],
     "noEmit": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "jsx": "preserve",
+    "moduleResolution": "Bundler",
+    "jsx": "preserve",
     "plugins": [{ "name": "next" }],
+    "incremental": true,
+
     "incremental": true,
 
     /* Path Aliases */
     "baseUrl": ".",
     "paths": {
-      "~/*": ["./src/*"]
     },
 
     /* Include Prisma Client Types */
-    "typeRoots": [
-      "./node_modules/@types",
-      "./node_modules/.prisma/client"
-    ]
   },
+  /* Include Prisma Client Types */
+  "typeRoots": [
+    "./node_modules/@types",
+    "./node_modules/.prisma/client"
+  ],
   "include": [
     ".eslintrc.cjs",
     "next-env.d.ts",
@@ -43,7 +45,6 @@
     "**/*.cjs",
     "**/*.js",
     ".next/types/**/*.ts",
-    "prisma/**/*.ts"  // Ensure to include the Prisma schema files
   ],
   "exclude": ["node_modules"]
 }
