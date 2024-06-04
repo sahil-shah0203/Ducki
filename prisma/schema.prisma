@@ -68,9 +68,12 @@ model Class {
 }
 
 model Post {
-  id        Int      @id @default(autoincrement())
-  name      String
-  content   String
-  updatedAt DateTime @updatedAt
-  createdAt DateTime @default(now())
+
+    id        Int      @id @default(autoincrement())
+    name      String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([name])
 }
+
