@@ -1,17 +1,53 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AddClassDialog from './AddClassDialog';
+import { api } from "~/trpc/react";
 
-export default function Sidebar() {
+interface HomeProps {
+  userId: number | undefined;
+}
+
+export default function Sidebar({ userId }: HomeProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [classes, setClasses] = useState<string[]>([]);
 
-  const handleAddClass = (className: string) => {
+  const { mutateAsync: addClassMutation } = api.class.addClass.useMutation();
+
+  const handleAddClass = async (classTemp: string) => {
+    const className = classTemp.trim();
     setClasses([...classes, className]);
-    // Add logic to persist the class in the database if needed
+
+    // Call function to add class to the database
+    if (userId) {
+      try {
+        const newClass = await addClassMutation({
+          user_id: userId,
+          class_name: className,
+        });
+        console.log("Added new class:", newClass);
+      } catch (error) {
+        console.error("Error adding class:", error);
+      }
+    }
   };
+
+  const { data, error, isLoading } = api.class.getClassesByUserId.useQuery(
+    { user_id: userId! },
+    {
+      enabled: !!userId, 
+    }
+  );
+
+  useEffect(() => {
+    if (data) {
+      setClasses(data.map((classItem) => classItem.class_name));
+    }
+  }, [data]);
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error loading classes</div>;
 
   return (
     <aside className="fixed top-16 left-0 h-[calc(100vh-4rem)] w-64 bg-gray-800 text-white p-4 overflow-y-auto">
