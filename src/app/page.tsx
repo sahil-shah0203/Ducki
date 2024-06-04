@@ -5,9 +5,6 @@ import Home from './home';
 
 import { api } from "~/trpc/react";
 
-interface HomeProps {
-  userId: number | undefined;
-}
 
 export default function MainPage() {
   const { user, isSignedIn } = useUser();
