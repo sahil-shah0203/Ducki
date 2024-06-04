@@ -16,16 +16,16 @@ export default function AddClassDialog({
 }: AddClassDialogProps) {
   const [className, setClassName] = useState('');
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const nextElement = document.getElementById('__next');
-      if (nextElement) {
-        Modal.setAppElement(nextElement);
-      } else {
-        console.error('Element with id "__next" not found');
-      }
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (typeof window !== 'undefined') {
+  //     const nextElement = document.getElementById('__next');
+  //     if (nextElement) {
+  //       Modal.setAppElement(nextElement);
+  //     } else {
+  //       console.error('Element with id "__next" not found');
+  //     }
+  //   }
+  // }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

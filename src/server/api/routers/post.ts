@@ -22,7 +22,6 @@ export const postRouter = createTRPCRouter({
       return ctx.db.post.create({
         data: {
           name: input.name,
-          content: input.content, // Include content here
           updatedAt: new Date(),
         },
       });
