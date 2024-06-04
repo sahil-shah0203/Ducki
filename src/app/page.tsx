@@ -1,7 +1,8 @@
 "use client";
 import { useUser } from '@clerk/nextjs';
 import Landing from './landing';
-import Home from './home';
+import Home from './home'; 
+import Sidebar from './_components/Sidebar';
 
 import { api } from "~/trpc/react";
 
@@ -14,7 +15,6 @@ export default function MainPage() {
     const user_email = user?.emailAddresses[0]?.emailAddress;
     const first_name = user?.firstName;
     const last_name = user?.lastName;
-
 
     if (!user_email || !first_name || !last_name) {
       return <div>Error: Unable to fetch user details</div>;
@@ -36,6 +36,13 @@ export default function MainPage() {
 
     const user_id = id?.user_id;
 
-    return <Home userId={user_id} />;
+    return (
+      <div className="flex h-full min-h-screen">
+        <Sidebar /> 
+        <div className="flex-1 ml-64 p-4 flex flex-col h-full justify-end">
+          <Home userId={user_id} />
+        </div>
+      </div>
+    );
   }
 }

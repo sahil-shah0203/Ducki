@@ -1,8 +1,8 @@
-
-import '../styles/globals.css';
-import { GeistSans } from "geist/font/sans";
-import { TRPCReactProvider } from "~/trpc/react";
+import '~/styles/globals.css';  // Unified import path
+import { GeistSans } from 'geist/font/sans';
+import { TRPCReactProvider } from '~/trpc/react';
 import { ClerkProvider } from '@clerk/nextjs';
+import Header from './_components/Header';
 import AuthWrapper from './_components/AuthWrapper';
 
 export const metadata = {
@@ -19,10 +19,12 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" className={`${GeistSans.variable}`}>
-        <body>
+        <body className="min-h-screen w-full flex flex-col">
           <TRPCReactProvider>
-            <AuthWrapper>{children}</AuthWrapper>
-
+            <div className="flex flex-1 flex-col w-full">
+              <Header /> {/* Include the Header component */}
+              <AuthWrapper>{children}</AuthWrapper> {/* Include AuthWrapper */}
+            </div>
           </TRPCReactProvider>
         </body>
       </html>

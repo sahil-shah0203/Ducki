@@ -8,15 +8,6 @@ datasource db {
   relationMode = "prisma"
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    @@index([name])
-}
-
 model User {
   user_id        Int            @id @default(autoincrement())
   first_name     String?
@@ -75,3 +66,14 @@ model Class {
   documents      Document[]
   chatHistories  ChatHistory[]
 }
+
+model Post {
+
+    id        Int      @id @default(autoincrement())
+    name      String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([name])
+}
+
