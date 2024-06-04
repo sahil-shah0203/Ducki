@@ -4,8 +4,15 @@ import { useState } from 'react';
 import Calendar from './_components/Calendar';
 import ToDoList from './_components/ToDoList';
 
-export default function Home() {
+interface HomeProps {
+  userId: number | undefined;
+}
+
+export default function Home({ userId }: HomeProps) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
+  console.log(userId);
+
 
   return (
     <div>
@@ -43,4 +50,3 @@ export default function Home() {
     </div>
   );
 }
-
