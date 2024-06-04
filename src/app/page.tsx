@@ -38,9 +38,9 @@ export default function MainPage() {
 
     return (
       <div className="flex h-full min-h-screen">
-        <Sidebar /> 
+        <Sidebar userId={user_id}/> 
         <div className="flex-1 ml-64 p-4 flex flex-col h-full justify-end">
-          <Home userId={user_id} />
+          <Home  />
         </div>
       </div>
     );

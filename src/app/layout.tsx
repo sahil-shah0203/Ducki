@@ -22,8 +22,8 @@ export default function RootLayout({
         <body className="min-h-screen w-full flex flex-col">
           <TRPCReactProvider>
             <div className="flex flex-1 flex-col w-full">
-              <Header /> {/* Include the Header component */}
-              <AuthWrapper>{children}</AuthWrapper> {/* Include AuthWrapper */}
+              <Header /> 
+              <AuthWrapper>{children}</AuthWrapper> 
             </div>
           </TRPCReactProvider>
         </body>
