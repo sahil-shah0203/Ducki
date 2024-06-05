@@ -11,8 +11,9 @@ html, body {
 body {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100%;
   width: 100%;
+  overflow: hidden;
 }
 
 #root, #__next {
@@ -99,4 +100,9 @@ body {
   100% {
     opacity: 0;
   }
+}
+
+.generation-stopped {
+  color: #808080;
+  font-style: italic;
 }
