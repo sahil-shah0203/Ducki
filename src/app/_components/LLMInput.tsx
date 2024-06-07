@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import {useState, useEffect, useRef} from 'react';
 
 interface LLMInputProps {
   onFetchResults: (choices: Choice[]) => void;
@@ -32,6 +32,8 @@ export default function LLMInput({ onFetchResults, onError }: LLMInputProps) {
   const [loading, setLoading] = useState<boolean>(false);
   const [displayResponse, setDisplayResponse] = useState<string>("");
   const [completedTyping, setCompletedTyping] = useState<boolean>(true);
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const abortController = useRef(new AbortController()); // Use useRef to create a persistent AbortController instance
 
   useEffect(() => {
     const chatContainer = document.getElementById('chat-container');
@@ -71,10 +73,13 @@ export default function LLMInput({ onFetchResults, onError }: LLMInputProps) {
   };
 
   const handleSubmit = async () => {
+    setIsGenerating(true);
     onError(null);
     setChatMessages(prevMessages => [{ type: 'user', text: inputText }, ...prevMessages]);
     setInputText(''); // Clear the input text immediately after submitting
     setLoading(true); // Set loading state to true
+    abortController.current = new AbortController(); // Create a new AbortController instance for each generation
+
     try {
       const response = await fetch("/api/LLM", {
         method: "POST",
@@ -82,6 +87,7 @@ export default function LLMInput({ onFetchResults, onError }: LLMInputProps) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ prompt: inputText }),
+        signal: abortController.current.signal, // Use the current property to access the AbortController instance
       });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -90,12 +96,25 @@ export default function LLMInput({ onFetchResults, onError }: LLMInputProps) {
       const llmMessage = formatText(result.choices[0].message.content);
       setChatMessages(prevMessages => [{ type: 'llm', text: llmMessage }, ...prevMessages]);
       setCompletedTyping(false); // Set completed typing to false for the new message
+      setIsGenerating(false);
     } catch (err) {
-      console.error("Error fetching data:", err);
-      onError("Failed to fetch response from the server.");
+      if ((err as Error).name === 'AbortError') {
+        console.log('Fetch aborted');
+      } else {
+        console.error("Error fetching data:", err);
+        onError("Failed to fetch response from the server.");
+      }
+      setIsGenerating(false);
     } finally {
       setLoading(false); // Set loading state to false
     }
+  };
+
+  const handleStopGeneration = () => {
+    abortController.current.abort(); // Use the current property to access the AbortController instance
+    setDisplayResponse('<span class="generation-stopped">ducki response generation stopped</span>'); // Immediately update the displayResponse state
+    setChatMessages(prevMessages => [{ type: 'llm', text: '<span class="generation-stopped">ducky response generation stopped</span>' }, ...prevMessages]);
+    setIsGenerating(false); // Set isGenerating to false when the generation is stopped
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -112,15 +131,15 @@ export default function LLMInput({ onFetchResults, onError }: LLMInputProps) {
   };
 
   return (
-    <div className="flex flex-col w-full h-screen">
-      <div id="chat-container" className="flex-grow mb-4 overflow-auto rounded p-4 flex flex-col-reverse space-y-2">
+    <div className="flex flex-col h-screen">
+      <div id="chat-container" className="overflow-auto rounded p-0 flex flex-col-reverse space-y-2 flex-grow">
         {loading && (
           <div className="p-2 rounded-lg my-2 max-w-sm text-sm bg-gray-300 text-white self-start animate-pulse">
             Loading...
           </div>
         )}
         {chatMessages.map((message, index) => (
-          <div key={index} className={`p-2 rounded-lg my-2 max-w-sm text-sm ${message.type === 'user' ? 'bg-blue-500 text-white self-end' : 'bg-green-500 text-white self-start'}`}>
+          <div key={index} className={`p-2 rounded-lg my-2 max-w-sm text-sm ${message.type === 'user' ? 'bg-blue-500 text-white self-end' : message.text.includes('generation-stopped') ? '' : 'bg-green-500 text-white self-start'}`}>
             {index === 0 && message.type === 'llm' ? (
               <span dangerouslySetInnerHTML={{ __html: displayResponse + (!completedTyping ? '<span class="cursor"></span>' : '') }}></span>
             ) : (
@@ -129,7 +148,7 @@ export default function LLMInput({ onFetchResults, onError }: LLMInputProps) {
           </div>
         ))}
       </div>
-      <div className="sticky bottom-0 w-full flex items-center bg-white p-2 border-t border-gray-200">
+      <div className="w-full flex items-center bg-transparent p-12 border-12 mb-12">
         <input
           type="text"
           className="border rounded py-1 px-2 flex-grow text-black text-sm"
@@ -141,10 +160,10 @@ export default function LLMInput({ onFetchResults, onError }: LLMInputProps) {
         />
         <button
           className="bg-blue-500 text-white py-2 px-4 rounded ml-2"
-          onClick={handleSubmit}
-          aria-label="Submit prompt to LLM"
+          onClick={isGenerating ? handleStopGeneration : handleSubmit}
+          aria-label={isGenerating ? "Stop Generation" : "Submit prompt to LLM"}
         >
-          Submit
+          {isGenerating ? "Stop Generation" : "Submit"}
         </button>
       </div>
     </div>
