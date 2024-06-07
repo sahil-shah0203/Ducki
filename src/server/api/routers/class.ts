@@ -27,4 +27,30 @@ export const classRouter = createTRPCRouter({
       });
       return newClass;
     }),
+
+  removeClass: publicProcedure
+    .input(z.object({
+      user_id: z.number(),
+      class_name: z.string().min(1),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const classToRemove = await ctx.db.class.findFirst({
+        where: {
+          class_name: input.class_name,
+          user_id: input.user_id,
+        },
+      });
+
+      if (!classToRemove) {
+        throw new Error('Class not found or you are not authorized to delete this class');
+      }
+
+      await ctx.db.class.delete({
+        where: {
+          class_id: classToRemove.class_id,
+        },
+      });
+
+      return { message: 'Class removed successfully' };
+    }),
 });
