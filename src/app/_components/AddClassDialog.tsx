@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Modal from 'react-modal';
 
 type AddClassDialogProps = {
   isOpen: boolean;
   onRequestClose: () => void;
-  onAddClass: (className: string) => void;
+  onAddClass: (className: string) => boolean; // Change the return type to boolean
 };
 
 export default function AddClassDialog({
@@ -15,23 +15,18 @@ export default function AddClassDialog({
   onAddClass,
 }: AddClassDialogProps) {
   const [className, setClassName] = useState('');
-
-  // useEffect(() => {
-  //   if (typeof window !== 'undefined') {
-  //     const nextElement = document.getElementById('__next');
-  //     if (nextElement) {
-  //       Modal.setAppElement(nextElement);
-  //     } else {
-  //       console.error('Element with id "__next" not found');
-  //     }
-  //   }
-  // }, []);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onAddClass(className);
-    setClassName('');
-    onRequestClose();
+    const success = onAddClass(className);
+    if (success) {
+      setClassName('');
+      setError(null);
+      onRequestClose();
+    } else {
+      setError('Class already exists');
+    }
   };
 
   return (
@@ -51,6 +46,7 @@ export default function AddClassDialog({
           placeholder="Class Name"
           className="border rounded py-1 px-2 mb-4 w-full"
         />
+        {error && <p className="text-red-500 mb-4">{error}</p>}
         <div className="flex justify-end space-x-2">
           <button
             type="button"
