@@ -1,4 +1,4 @@
-import '~/styles/globals.css';  // Unified import path
+import '~/styles/globals.css'; // Unified import path
 import { GeistSans } from 'geist/font/sans';
 import { TRPCReactProvider } from '~/trpc/react';
 import { ClerkProvider } from '@clerk/nextjs';
@@ -22,8 +22,8 @@ export default function RootLayout({
         <body className="min-h-screen w-full flex flex-col">
           <TRPCReactProvider>
             <div className="flex flex-1 flex-col w-full">
-              <Header /> 
-              <AuthWrapper>{children}</AuthWrapper> 
+              <Header />
+              <AuthWrapper>{children}</AuthWrapper>
             </div>
           </TRPCReactProvider>
         </body>

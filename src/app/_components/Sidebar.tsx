@@ -3,14 +3,15 @@
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import AddClassDialog from './AddClassDialog';
-import { api } from "~/trpc/react";
+import { api } from '~/trpc/react';
 import { FaEllipsisV, FaPlus } from 'react-icons/fa';
 
 interface HomeProps {
   userId: number | undefined;
+  onClassSelect: () => void; // New prop to handle class selection
 }
 
-export default function Sidebar({ userId }: HomeProps) {
+export default function Sidebar({ userId, onClassSelect }: HomeProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [classes, setClasses] = useState<string[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState<Record<string, boolean>>({});
@@ -111,7 +112,10 @@ export default function Sidebar({ userId }: HomeProps) {
         <ul className="space-y-0">
           {classes.map((className, index) => (
             <li key={index} className="relative">
-              <button className="w-full text-left p-4 bg-gray-700 hover:bg-gray-600 flex justify-between items-center">
+              <button
+                className="w-full text-left p-4 bg-gray-700 hover:bg-gray-600 flex justify-between items-center"
+                onClick={onClassSelect} // Call onClassSelect when a class is clicked
+              >
                 {className}
                 <div className="relative">
                   <button

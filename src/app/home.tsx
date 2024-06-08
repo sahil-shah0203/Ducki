@@ -1,12 +1,14 @@
-"use client";
+'use client';
 
 import { useState } from 'react';
 import LLMInput from './_components/LLMInput';
 
+interface HomeProps {
+  clearChatTrigger: boolean;
+}
 
-export default function Home() {
+export default function Home({ clearChatTrigger }: HomeProps) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  
   const [choices, setChoices] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,6 +20,7 @@ export default function Home() {
       <LLMInput
         onFetchResults={setChoices}
         onError={setError}
+        clearChatTrigger={clearChatTrigger} // Pass the trigger prop
       />
     </div>
   );
