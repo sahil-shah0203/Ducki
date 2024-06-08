@@ -1,8 +1,9 @@
-import {useState, useEffect, useRef} from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface LLMInputProps {
   onFetchResults: (choices: Choice[]) => void;
   onError: (error: string | null) => void;
+  clearChatTrigger: boolean;
 }
 
 interface ChatMessage {
@@ -26,14 +27,14 @@ const CursorSVG = () => (
   </svg>
 );
 
-export default function LLMInput({ onFetchResults, onError }: LLMInputProps) {
+export default function LLMInput({ onFetchResults, onError, clearChatTrigger }: LLMInputProps) {
   const [inputText, setInputText] = useState<string>("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [displayResponse, setDisplayResponse] = useState<string>("");
   const [completedTyping, setCompletedTyping] = useState<boolean>(true);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const abortController = useRef(new AbortController()); // Use useRef to create a persistent AbortController instance
+  const abortController = useRef(new AbortController());
 
   useEffect(() => {
     const chatContainer = document.getElementById('chat-container');
@@ -43,13 +44,7 @@ export default function LLMInput({ onFetchResults, onError }: LLMInputProps) {
   }, [chatMessages]);
 
   useEffect(() => {
-    if (
-      !completedTyping &&
-      chatMessages &&
-      chatMessages.length > 0 &&
-      chatMessages[0] &&
-      chatMessages[0].type === 'llm'
-    ) {
+    if (!completedTyping && chatMessages.length > 0 && chatMessages[0] && chatMessages[0].type === 'llm') {
       setCompletedTyping(false);
       let i = 0;
       const stringResponse = chatMessages[0].text;
@@ -67,6 +62,12 @@ export default function LLMInput({ onFetchResults, onError }: LLMInputProps) {
       return () => clearInterval(intervalId);
     }
   }, [chatMessages, completedTyping]);
+
+  useEffect(() => {
+    if (clearChatTrigger) {
+      setChatMessages([]); // Clear chat messages when the prop changes
+    }
+  }, [clearChatTrigger]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputText(e.target.value);
@@ -113,7 +114,7 @@ export default function LLMInput({ onFetchResults, onError }: LLMInputProps) {
   const handleStopGeneration = () => {
     abortController.current.abort(); // Use the current property to access the AbortController instance
     setDisplayResponse('<span class="generation-stopped">ducki response generation stopped</span>'); // Immediately update the displayResponse state
-    setChatMessages(prevMessages => [{ type: 'llm', text: '<span class="generation-stopped">ducky response generation stopped</span>' }, ...prevMessages]);
+    setChatMessages(prevMessages => [{ type: 'llm', text: '<span class="generation-stopped">ducki response generation stopped</span>' }, ...prevMessages]);
     setIsGenerating(false); // Set isGenerating to false when the generation is stopped
   };
 
