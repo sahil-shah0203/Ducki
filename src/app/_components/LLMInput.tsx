@@ -1,8 +1,10 @@
 import {useState, useEffect, useRef} from 'react';
 
 interface LLMInputProps {
-  onFetchResults: (choices: Choice[]) => void;
+  onFetchResults: (choices: any[]) => void;
   onError: (error: string | null) => void;
+  user_id: number | undefined;
+  selectedClass: string | null;
 }
 
 interface ChatMessage {
@@ -26,7 +28,7 @@ const CursorSVG = () => (
   </svg>
 );
 
-export default function LLMInput({ onFetchResults, onError }: LLMInputProps) {
+export default function LLMInput({ onFetchResults, onError, user_id, selectedClass }: LLMInputProps) {
   const [inputText, setInputText] = useState<string>("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -97,6 +99,37 @@ export default function LLMInput({ onFetchResults, onError }: LLMInputProps) {
       setChatMessages(prevMessages => [{ type: 'llm', text: llmMessage }, ...prevMessages]);
       setCompletedTyping(false); // Set completed typing to false for the new message
       setIsGenerating(false);
+
+      // Store the user's message in the database
+      await fetch('/api/chats/storeChatHistory', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: user_id,
+          class_id: selectedClass,
+          content: inputText,
+          direction: 'user',
+          timestamp: new Date().toISOString()
+        }),
+      });
+
+      // Store the LLM's message in the database
+      await fetch('/api/chats/storeChatHistory', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: user_id,
+          class_id: selectedClass,
+          content: llmMessage,
+          direction: 'llm',
+          timestamp: new Date().toISOString()
+        }),
+      });
+
     } catch (err) {
       if ((err as Error).name === 'AbortError') {
         console.log('Fetch aborted');

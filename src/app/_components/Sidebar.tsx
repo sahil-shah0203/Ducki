@@ -8,17 +8,22 @@ import { FaEllipsisV, FaPlus } from 'react-icons/fa';
 
 interface HomeProps {
   userId: number | undefined;
+  handleClassSelect: (selectedClass: string) => void;
 }
 
-export default function Sidebar({ userId }: HomeProps) {
+export default function Sidebar({ userId, handleClassSelect }: HomeProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [classes, setClasses] = useState<string[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState<Record<string, boolean>>({});
   const [classToDelete, setClassToDelete] = useState<string | null>(null);
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
+  const handleClassClick = (className: string) => {
+    handleClassSelect(className);
+    setSelectedClass(className);
+  };
   const { mutateAsync: addClassMutation } = api.class.addClass.useMutation();
   const { mutateAsync: removeClassMutation } = api.class.removeClass.useMutation();
+  const [selectedClass, setSelectedClass] = useState<string | null>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -104,14 +109,17 @@ export default function Sidebar({ userId }: HomeProps) {
           onClick={() => setIsDialogOpen(true)}
           className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center focus:outline-none"
         >
-          <FaPlus className="text-white" />
+          <FaPlus className="text-white"/>
         </button>
       </div>
       <nav>
         <ul className="space-y-0">
           {classes.map((className, index) => (
-            <li key={index} className="relative">
-              <button className="w-full text-left p-4 bg-gray-700 hover:bg-gray-600 flex justify-between items-center">
+            <li key={index} className={`relative ${className === selectedClass ? 'highlighted' : ''}`}>
+              <button
+                onClick={() => handleClassClick(className)} // Call handleClassClick when a class is clicked
+                className="w-full text-left p-4 bg-transparent hover:bg-gray-600 flex justify-between items-center"
+              >
                 {className}
                 <div className="relative">
                   <button
@@ -123,7 +131,7 @@ export default function Sidebar({ userId }: HomeProps) {
                     }
                     className="focus:outline-none"
                   >
-                    <FaEllipsisV />
+                    <FaEllipsisV/>
                   </button>
                   {isDropdownOpen[className] && (
                     <div
