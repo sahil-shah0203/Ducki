@@ -10,6 +10,7 @@ interface LLMInputProps {
 interface ChatMessage {
   type: 'user' | 'llm';
   text: string;
+  session: string; // Add a new property to hold the session ID
 }
 
 interface Choice {
@@ -38,6 +39,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
   const abortController = useRef(new AbortController()); // Use useRef to create a persistent AbortController instance
   const inputRef = useRef<HTMLInputElement>(null); // Create a reference to the input element
   const [lastMessage, setLastMessage] = useState<ChatMessage | null>(null);
+  const sessionId = useRef(Date.now().toString()); // Generate a new session ID when the component is mounted
 
   useEffect(() => {
     const chatContainer = document.getElementById('chat-container');
@@ -91,7 +93,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     setIsGenerating(true);
     onError(null);
     setChatMessages(prevMessages => {
-      const updatedChatMessages: ChatMessage[] = [{ type: 'user' as const, text: inputText }, ...prevMessages];
+      const updatedChatMessages: ChatMessage[] = [{ type: 'user' as const, text: inputText, session: sessionId.current }, ...prevMessages];
       localStorage.setItem('chatMessages', JSON.stringify(updatedChatMessages));
       return updatedChatMessages;
     });
@@ -114,11 +116,11 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
       const result = await response.json();
       const llmMessage = formatText(result.choices[0].message.content);
       setChatMessages(prevMessages => {
-        const updatedChatMessages: ChatMessage[] = [{ type: 'llm' as const, text: llmMessage }, ...prevMessages];
+        const updatedChatMessages: ChatMessage[] = [{ type: 'llm' as const, text: llmMessage, session: sessionId.current }, ...prevMessages];
         localStorage.setItem(`chatMessages-${selectedClass}`, JSON.stringify(updatedChatMessages));
         return updatedChatMessages;
       });
-      setLastMessage({ type: 'llm' as const, text: llmMessage });
+      setLastMessage({ type: 'llm' as const, text: llmMessage, session: sessionId.current });
       setCompletedTyping(false); // Set completed typing to false for the new message
       setIsGenerating(false);
 
@@ -167,9 +169,10 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
 
   const handleStopGeneration = () => {
     abortController.current.abort(); // Use the current property to access the AbortController instance
-    setDisplayResponse('<span class="generation-stopped">ducki response generation stopped</span>'); // Immediately update the displayResponse state
-    setChatMessages(prevMessages => [{ type: 'llm', text: '<span class="generation-stopped">ducky response generation stopped</span>' }, ...prevMessages]);
+    setDisplayResponse('<span class="generation-stopped">ducky response generation stopped</span>'); // Immediately update the displayResponse state
+    setChatMessages(prevMessages => [{ type: 'llm', text: '<span class="generation-stopped">ducky response generation stopped</span>', session: sessionId.current }, ...prevMessages]);
     setIsGenerating(false); // Set isGenerating to false when the generation is stopped
+    setCompletedTyping(true); // Immediately mark the typing as completed
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -195,7 +198,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
         )}
         {chatMessages.map((message, index) => (
           <div key={index} className={`p-2 rounded-lg my-2 max-w-sm text-sm ${message.type === 'user' ? 'bg-blue-500 text-white self-end' : message.text.includes('generation-stopped') ? '' : 'bg-green-500 text-white self-start'}`}>
-            {index === 0 && message.type === 'llm' ? (
+            {index === 0 && message.type === 'llm' && message.session === sessionId.current ? (
               <span dangerouslySetInnerHTML={{ __html: displayResponse + (!completedTyping ? '<span class="cursor"></span>' : '') }}></span>
             ) : (
               <span dangerouslySetInnerHTML={{ __html: message.text }}></span>
@@ -219,7 +222,6 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
           className="bg-blue-500 text-white py-2 px-4 rounded ml-2"
           onClick={isGenerating ? handleStopGeneration : handleSubmit}
           aria-label={isGenerating ? "Stop Generation" : "Submit prompt to LLM"}
-          disabled={isGenerating} // Disable the button when LLM is generating
         >
           {isGenerating ? "Stop Generation" : "Submit"}
         </button>

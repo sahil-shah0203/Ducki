@@ -55,7 +55,9 @@ export default function Sidebar({ userId, handleClassSelect }: HomeProps) {
           class_name: classToDelete,
         });
         console.log("Removed class:", classToDelete);
+
         setClasses(classes.filter(className => className !== classToDelete));
+        handleClassSelect('');
       } catch (error) {
         console.error("Error removing class:", error);
       }
