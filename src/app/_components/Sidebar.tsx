@@ -68,6 +68,7 @@ export default function Sidebar({ userId, handleClassSelect }: HomeProps) {
   const handleAddClass = (classTemp: string): boolean => {
     const className = classTemp.trim();
     if (classes.includes(className)) {
+      alert("Class name already exists. Please choose a different name.");
       return false;
     }
     setClasses([...classes, className]);
