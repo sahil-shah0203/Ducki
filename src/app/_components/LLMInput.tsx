@@ -36,6 +36,8 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
   const [completedTyping, setCompletedTyping] = useState<boolean>(true);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const abortController = useRef(new AbortController()); // Use useRef to create a persistent AbortController instance
+  const inputRef = useRef<HTMLInputElement>(null); // Create a reference to the input element
+  const [lastMessage, setLastMessage] = useState<ChatMessage | null>(null);
 
   useEffect(() => {
     const chatContainer = document.getElementById('chat-container');
@@ -43,6 +45,16 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
       chatContainer.scrollTop = chatContainer.scrollHeight;
     }
   }, [chatMessages]);
+
+  useEffect(() => {
+    const storedChatMessages = localStorage.getItem(`chatMessages-${selectedClass}`);
+    if (storedChatMessages) {
+      setChatMessages(JSON.parse(storedChatMessages));
+    } else {
+      setChatMessages([]); // Clear the chat history if there's no stored chat messages for the selected class
+    }
+    setCompletedTyping(false);
+  }, [selectedClass]);
 
   useEffect(() => {
     if (
@@ -63,6 +75,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
         if (i > stringResponse.length) {
           clearInterval(intervalId);
           setCompletedTyping(true);
+          inputRef.current?.focus(); // Refocus on the input element when the typing animation is completed
         }
       }, 20);
 
@@ -77,7 +90,11 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
   const handleSubmit = async () => {
     setIsGenerating(true);
     onError(null);
-    setChatMessages(prevMessages => [{ type: 'user', text: inputText }, ...prevMessages]);
+    setChatMessages(prevMessages => {
+      const updatedChatMessages: ChatMessage[] = [{ type: 'user' as const, text: inputText }, ...prevMessages];
+      localStorage.setItem('chatMessages', JSON.stringify(updatedChatMessages));
+      return updatedChatMessages;
+    });
     setInputText(''); // Clear the input text immediately after submitting
     setLoading(true); // Set loading state to true
     abortController.current = new AbortController(); // Create a new AbortController instance for each generation
@@ -96,7 +113,12 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
       }
       const result = await response.json();
       const llmMessage = formatText(result.choices[0].message.content);
-      setChatMessages(prevMessages => [{ type: 'llm', text: llmMessage }, ...prevMessages]);
+      setChatMessages(prevMessages => {
+        const updatedChatMessages: ChatMessage[] = [{ type: 'llm' as const, text: llmMessage }, ...prevMessages];
+        localStorage.setItem(`chatMessages-${selectedClass}`, JSON.stringify(updatedChatMessages));
+        return updatedChatMessages;
+      });
+      setLastMessage({ type: 'llm' as const, text: llmMessage });
       setCompletedTyping(false); // Set completed typing to false for the new message
       setIsGenerating(false);
 
@@ -183,6 +205,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
       </div>
       <div className="w-full flex items-center bg-transparent p-12 border-12 mb-12">
         <input
+          ref={inputRef} // Attach the reference to the input element
           type="text"
           className="border rounded py-1 px-2 flex-grow text-black text-sm"
           value={inputText}
@@ -190,11 +213,13 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
           onKeyPress={handleKeyPress}
           placeholder="Enter text for LLM"
           aria-label="Text input for LLM prompt"
+          disabled={isGenerating} // Disable the input field when LLM is generating
         />
         <button
           className="bg-blue-500 text-white py-2 px-4 rounded ml-2"
           onClick={isGenerating ? handleStopGeneration : handleSubmit}
           aria-label={isGenerating ? "Stop Generation" : "Submit prompt to LLM"}
+          disabled={isGenerating} // Disable the button when LLM is generating
         >
           {isGenerating ? "Stop Generation" : "Submit"}
         </button>
