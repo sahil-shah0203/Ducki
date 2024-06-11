@@ -67,10 +67,6 @@ export default function Sidebar({ userId, handleClassSelect }: HomeProps) {
 
   const handleAddClass = (classTemp: string): boolean => {
     const className = classTemp.trim();
-    if (classes.includes(className)) {
-      alert("Class name already exists. Please choose a different name.");
-      return false;
-    }
     setClasses([...classes, className]);
 
     if (userId) {
@@ -126,13 +122,14 @@ export default function Sidebar({ userId, handleClassSelect }: HomeProps) {
                 {className}
                 <div className="relative">
                   <button
-                    onClick={() =>
+                    onClick={(e) => {
+                      e.stopPropagation(); // Stop the propagation of the click event
                       setIsDropdownOpen(prevState => ({
                         ...prevState,
                         [className]: !prevState[className],
-                      }))
-                    }
-                    className="focus:outline-none"
+                      }));
+                    }}
+                    className="focus:outline-none hover:bg-gray-500 rounded-full w-10 h-10 flex items-center justify-center" // Add rounded-full, w-10, h-10, flex, items-center, justify-center
                   >
                     <FaEllipsisV/>
                   </button>
@@ -178,6 +175,7 @@ export default function Sidebar({ userId, handleClassSelect }: HomeProps) {
         isOpen={isDialogOpen}
         onRequestClose={() => setIsDialogOpen(false)}
         onAddClass={handleAddClass}
+        classes={classes} // Pass the classes array as a prop
       />
       {classToDelete && (
         <ConfirmDeleteDialog

@@ -13,22 +13,6 @@ interface ChatMessage {
   session: string; // Add a new property to hold the session ID
 }
 
-interface Choice {
-  message: {
-    content: string;
-  };
-}
-
-const CursorSVG = () => (
-  <svg
-    viewBox="8 4 8 16"
-    xmlns="http://www.w3.org/2000/svg"
-    className="cursor"
-  >
-    <rect x="10" y="6" width="4" height="12" fill="#fff" />
-  </svg>
-);
-
 export default function LLMInput({ onFetchResults, onError, user_id, selectedClass }: LLMInputProps) {
   const [inputText, setInputText] = useState<string>("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
