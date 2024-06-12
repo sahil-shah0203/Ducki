@@ -116,11 +116,6 @@ body {
   scrollbar-width: none;  /* Firefox */
 }
 
-.llm-input {
-  width: 80%;
-  margin-left: auto;
-}
-
 .highlighted {
   background-color: #4B5563;
 }

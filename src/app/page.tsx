@@ -47,21 +47,23 @@ export default function MainPage() {
     const user_id = id?.user_id;
 
     return (
-      <div className="flex flex-col h-full justify-end">
+      <div className="flex flex-col h-full justify-between">
         <Sidebar userId={user_id} handleClassSelect={handleClassSelect} />
         {selectedClass ? (
           <>
             <div className="flex-grow p-4 overflow-auto">
               {error && <p className="text-red-500">{error}</p>}
             </div>
-            <div className="llm-input">
-              <LLMInput
-                onFetchResults={setChoices}
-                onError={setError}
-                user_id={user_id}
-                selectedClassName={selectedClass?.class_name}
-                selectedClassID={selectedClass?.class_id}
-              />
+            <div className="ml-64">
+              <div className="llm-input">
+                <LLMInput
+                  onFetchResults={setChoices}
+                  onError={setError}
+                  user_id={user_id}
+                  selectedClassName={selectedClass?.class_name}
+                  selectedClassID={selectedClass?.class_id}
+                />
+              </div>
             </div>
           </>
         ) : (

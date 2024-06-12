@@ -27,7 +27,10 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
   const [lastMessage, setLastMessage] = useState<ChatMessage | null>(null);
   const sessionId = useRef(Date.now().toString()); // Generate a new session ID when the component is mounted
   const storeChatHistoryMutation = api.chats.storeChatHistory.useMutation();
-  //const getChatHistoryQuery = api.chats.getChatHistory.useQuery({ user_id: user_id, class_id: selectedClassID });
+  let chatHistoryQuery: ReturnType<typeof api.chats.getChatHistory.useQuery> | undefined;
+  if (typeof user_id === 'number' && typeof selectedClassID === 'number') {
+    chatHistoryQuery = api.chats.getChatHistory.useQuery({ user_id: user_id, class_id: selectedClassID });
+  }
 
   useEffect(() => {
     const chatContainer = document.getElementById('chat-container');
@@ -37,14 +40,23 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
   }, [chatMessages]);
 
   useEffect(() => {
-    const storedChatMessages = localStorage.getItem(`chatMessages-${selectedClassID}`);
-    if (storedChatMessages) {
-      setChatMessages(JSON.parse(storedChatMessages));
+    if (typeof user_id === 'number' && typeof selectedClassID === 'number' && chatHistoryQuery) {
+      const storedChatMessages = chatHistoryQuery.data as { direction: string, content: string }[];
+      if (storedChatMessages) {
+        const chatMessages: ChatMessage[] = storedChatMessages.map(message => ({
+          type: message.direction === 'user' ? 'user' : 'llm',
+          text: message.content,
+          session: sessionId.current // replace this with the appropriate session id for each message
+        }));
+        setChatMessages(chatMessages);
+      } else {
+        setChatMessages([]); // Clear the chat history if there's no stored chat messages for the selected class
+      }
     } else {
-      setChatMessages([]); // Clear the chat history if there's no stored chat messages for the selected class
+      setChatMessages([]);
     }
     setCompletedTyping(false);
-  }, [selectedClassID]);
+  }, [selectedClassID, user_id]);
 
   useEffect(() => {
     if (
@@ -82,7 +94,6 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     onError(null);
     setChatMessages(prevMessages => {
       const updatedChatMessages: ChatMessage[] = [{ type: 'user' as const, text: inputText, session: sessionId.current }, ...prevMessages];
-      localStorage.setItem('chatMessages', JSON.stringify(updatedChatMessages));
       return updatedChatMessages;
     });
     setInputText(''); // Clear the input text immediately after submitting
@@ -105,7 +116,6 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
       const llmMessage = formatText(result.choices[0].message.content);
       setChatMessages(prevMessages => {
         const updatedChatMessages: ChatMessage[] = [{ type: 'llm' as const, text: llmMessage, session: sessionId.current }, ...prevMessages];
-        localStorage.setItem(`chatMessages-${selectedClassID}`, JSON.stringify(updatedChatMessages));
         return updatedChatMessages;
       });
       setLastMessage({ type: 'llm' as const, text: llmMessage, session: sessionId.current });
