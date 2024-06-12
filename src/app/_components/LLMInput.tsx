@@ -1,19 +1,21 @@
 import {useState, useEffect, useRef} from 'react';
+import { api } from "~/trpc/react";
 
 interface LLMInputProps {
   onFetchResults: (choices: any[]) => void;
   onError: (error: string | null) => void;
   user_id: number | undefined;
-  selectedClass: string | null;
+  selectedClassName: string | null;
+  selectedClassID: number | null;
 }
 
 interface ChatMessage {
   type: 'user' | 'llm';
   text: string;
-  session: string; // Add a new property to hold the session ID
+  session: string;
 }
 
-export default function LLMInput({ onFetchResults, onError, user_id, selectedClass }: LLMInputProps) {
+export default function LLMInput({ onFetchResults, onError, user_id, selectedClassName, selectedClassID }: LLMInputProps) {
   const [inputText, setInputText] = useState<string>("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -24,6 +26,8 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
   const inputRef = useRef<HTMLInputElement>(null); // Create a reference to the input element
   const [lastMessage, setLastMessage] = useState<ChatMessage | null>(null);
   const sessionId = useRef(Date.now().toString()); // Generate a new session ID when the component is mounted
+  const storeChatHistoryMutation = api.chats.storeChatHistory.useMutation();
+  //const getChatHistoryQuery = api.chats.getChatHistory.useQuery({ user_id: user_id, class_id: selectedClassID });
 
   useEffect(() => {
     const chatContainer = document.getElementById('chat-container');
@@ -33,14 +37,14 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
   }, [chatMessages]);
 
   useEffect(() => {
-    const storedChatMessages = localStorage.getItem(`chatMessages-${selectedClass}`);
+    const storedChatMessages = localStorage.getItem(`chatMessages-${selectedClassID}`);
     if (storedChatMessages) {
       setChatMessages(JSON.parse(storedChatMessages));
     } else {
       setChatMessages([]); // Clear the chat history if there's no stored chat messages for the selected class
     }
     setCompletedTyping(false);
-  }, [selectedClass]);
+  }, [selectedClassID]);
 
   useEffect(() => {
     if (
@@ -101,42 +105,30 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
       const llmMessage = formatText(result.choices[0].message.content);
       setChatMessages(prevMessages => {
         const updatedChatMessages: ChatMessage[] = [{ type: 'llm' as const, text: llmMessage, session: sessionId.current }, ...prevMessages];
-        localStorage.setItem(`chatMessages-${selectedClass}`, JSON.stringify(updatedChatMessages));
+        localStorage.setItem(`chatMessages-${selectedClassID}`, JSON.stringify(updatedChatMessages));
         return updatedChatMessages;
       });
       setLastMessage({ type: 'llm' as const, text: llmMessage, session: sessionId.current });
       setCompletedTyping(false); // Set completed typing to false for the new message
       setIsGenerating(false);
 
-      // Store the user's message in the database
-      await fetch('/api/chats/storeChatHistory', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      if (typeof user_id === 'number' && typeof selectedClassID === 'number') {
+        storeChatHistoryMutation.mutate({
           user_id: user_id,
-          class_id: selectedClass,
+          class_id: selectedClassID,
           content: inputText,
           direction: 'user',
-          timestamp: new Date().toISOString()
-        }),
-      });
+          timestamp: new Date().toISOString(),
+        });
 
-      // Store the LLM's message in the database
-      await fetch('/api/chats/storeChatHistory', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+        storeChatHistoryMutation.mutate({
           user_id: user_id,
-          class_id: selectedClass,
+          class_id: selectedClassID,
           content: llmMessage,
           direction: 'llm',
-          timestamp: new Date().toISOString()
-        }),
-      });
+          timestamp: new Date().toISOString(),
+        });
+      }
 
     } catch (err) {
       if ((err as Error).name === 'AbortError') {

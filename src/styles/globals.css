@@ -117,7 +117,8 @@ body {
 }
 
 .llm-input {
-  margin-left: 10%;
+  width: 80%;
+  margin-left: auto;
 }
 
 .highlighted {

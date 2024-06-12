@@ -25,18 +25,18 @@ export const classRouter = createTRPCRouter({
           class_name: input.class_name,
         },
       });
-      return newClass;
+      return { class_id: newClass.class_id, class_name: newClass.class_name }; // Return the class_id and class_name of the new class
     }),
 
   removeClass: publicProcedure
     .input(z.object({
       user_id: z.number(),
-      class_name: z.string().min(1),
+      class_id: z.number(), // Change from class_name to class_id
     }))
     .mutation(async ({ ctx, input }) => {
       const classToRemove = await ctx.db.class.findFirst({
         where: {
-          class_name: input.class_name,
+          class_id: input.class_id, // Change from class_name to class_id
           user_id: input.user_id,
         },
       });
@@ -47,7 +47,7 @@ export const classRouter = createTRPCRouter({
 
       await ctx.db.class.delete({
         where: {
-          class_id: classToRemove.class_id,
+          class_id: classToRemove.class_id, // Change from class_name to class_id
         },
       });
 

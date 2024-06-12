@@ -1,7 +1,7 @@
 "use client";
 import { useUser } from '@clerk/nextjs';
 import Landing from './landing';
-import Home from './home'; 
+import Home from './home';
 import Sidebar from './_components/Sidebar';
 
 import { api } from "~/trpc/react";
@@ -11,11 +11,11 @@ import LLMInput from "~/app/_components/LLMInput";
 export default function MainPage() {
   const { user, isSignedIn } = useUser();
   // New state for selected class
-  const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  const [selectedClass, setSelectedClass] = useState<{ class_id: number, class_name: string } | null>(null);
   const [choices, setChoices] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   // Function to handle class selection from sidebar
-  const handleClassSelect = (selectedClass: string) => {
+  const handleClassSelect = (selectedClass: { class_id: number, class_name: string } | null) => {
     setSelectedClass(selectedClass);
   };
 
@@ -59,7 +59,8 @@ export default function MainPage() {
                 onFetchResults={setChoices}
                 onError={setError}
                 user_id={user_id}
-                selectedClass={selectedClass}
+                selectedClassName={selectedClass?.class_name}
+                selectedClassID={selectedClass?.class_id}
               />
             </div>
           </>

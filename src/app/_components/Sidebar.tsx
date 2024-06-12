@@ -6,24 +6,25 @@ import AddClassDialog from './AddClassDialog';
 import { api } from "~/trpc/react";
 import { FaEllipsisV, FaPlus } from 'react-icons/fa';
 
-interface HomeProps {
+type SidebarProps = {
   userId: number | undefined;
-  handleClassSelect: (selectedClass: string) => void;
-}
+  handleClassSelect: (selectedClass: { class_id: number, class_name: string } | null) => void;
+};
 
-export default function Sidebar({ userId, handleClassSelect }: HomeProps) {
+export default function Sidebar({ userId, handleClassSelect }: SidebarProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [classes, setClasses] = useState<string[]>([]);
+  const [classes, setClasses] = useState<{ class_id: number, class_name: string }[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState<Record<string, boolean>>({});
   const [classToDelete, setClassToDelete] = useState<string | null>(null);
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const handleClassClick = (className: string) => {
-    handleClassSelect(className);
-    setSelectedClass(className);
+  const handleClassClick = (classItem: { class_id: number, class_name: string }) => {
+    handleClassSelect(classItem);
+    setSelectedClass(classItem);
   };
   const { mutateAsync: addClassMutation } = api.class.addClass.useMutation();
   const { mutateAsync: removeClassMutation } = api.class.removeClass.useMutation();
-  const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  const [selectedClass, setSelectedClass] = useState<{ class_id: number, class_name: string } | null>(null);
+  const { mutateAsync: removeChatHistoryMutation } = api.chats.removeChatHistory.useMutation();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -49,39 +50,62 @@ export default function Sidebar({ userId, handleClassSelect }: HomeProps) {
 
   const handleRemoveClass = async () => {
     if (classToDelete && userId) {
-      try {
-        await removeClassMutation({
-          user_id: userId,
-          class_name: classToDelete,
-        });
-        console.log("Removed class:", classToDelete);
+      // Find the class to delete
+      const classToRemove = classes.find(classItem => classItem.class_name === classToDelete);
 
-        setClasses(classes.filter(className => className !== classToDelete));
-        handleClassSelect('');
-      } catch (error) {
-        console.error("Error removing class:", error);
+      if (classToRemove) {
+        try {
+          // Fetch the chat histories associated with this class
+          const chatHistoriesResult = api.chats.getChatHistoryByClassId.useQuery({ class_id: classToRemove.class_id });
+
+          if (chatHistoriesResult.data) {
+            // Iterate over each chat history and delete it
+            for (const chatHistory of chatHistoriesResult.data) {
+              if (chatHistory.chat_id !== undefined) {
+                try {
+                  await removeChatHistoryMutation({ chat_id: chatHistory.chat_id });
+                } catch (error) {
+                  console.error("Error removing chat history:", error);
+                }
+              }
+            }
+          }
+
+          // Now you can delete the class
+          await removeClassMutation({
+            user_id: userId,
+            class_id: classToRemove.class_id,
+          });
+          console.log("Removed class:", classToRemove);
+
+          setClasses(classes.filter(classItem => classItem.class_name !== classToDelete));
+          handleClassSelect(null);
+        } catch (error) {
+          console.error("Error removing class:", error);
+        }
       }
+
       setClassToDelete(null);
     }
   };
 
-  const handleAddClass = (classTemp: string): boolean => {
+  const handleAddClass = async (classTemp: string): Promise<boolean> => {
     const className = classTemp.trim();
-    setClasses([...classes, className]);
 
     if (userId) {
       try {
-        addClassMutation({
+        const newClass = await addClassMutation({
           user_id: userId,
           class_name: className,
-        }).then((newClass) => {
-          console.log("Added new class:", newClass);
         });
+        console.log("Added new class:", newClass);
+        setClasses(prevClasses => [...prevClasses, newClass]);
+        return true;
       } catch (error) {
         console.error("Error adding class:", error);
       }
     }
-    return true;
+    return false;
   };
 
   const { data, error, isLoading } = api.class.getClassesByUserId.useQuery(
@@ -93,7 +117,7 @@ export default function Sidebar({ userId, handleClassSelect }: HomeProps) {
 
   useEffect(() => {
     if (data) {
-      setClasses(data.map((classItem) => classItem.class_name));
+      setClasses(data);
     }
   }, [data]);
 
@@ -113,30 +137,30 @@ export default function Sidebar({ userId, handleClassSelect }: HomeProps) {
       </div>
       <nav>
         <ul className="space-y-0">
-          {classes.map((className, index) => (
-            <li key={index} className={`relative ${className === selectedClass ? 'highlighted' : ''}`}>
+          {classes.map((classItem, index) => (
+            <li key={index} className={`relative ${classItem.class_name === selectedClass?.class_name ? 'highlighted' : ''}`}>
               <button
-                onClick={() => handleClassClick(className)} // Call handleClassClick when a class is clicked
+                onClick={() => handleClassClick(classItem)}
                 className="w-full text-left p-4 bg-transparent hover:bg-gray-600 flex justify-between items-center"
               >
-                {className}
+                {classItem.class_name}
                 <div className="relative">
                   <button
                     onClick={(e) => {
                       e.stopPropagation(); // Stop the propagation of the click event
                       setIsDropdownOpen(prevState => ({
                         ...prevState,
-                        [className]: !prevState[className],
+                        [classItem.class_name]: !prevState[classItem.class_name],
                       }));
                     }}
                     className="focus:outline-none hover:bg-gray-500 rounded-full w-10 h-10 flex items-center justify-center" // Add rounded-full, w-10, h-10, flex, items-center, justify-center
                   >
                     <FaEllipsisV/>
                   </button>
-                  {isDropdownOpen[className] && (
+                  {isDropdownOpen[classItem.class_name] && (
                     <div
                       ref={(ref) => {
-                        dropdownRefs.current[className] = ref;
+                        dropdownRefs.current[classItem.class_name] = ref;
                       }}
                       className="absolute right-0 mt-2 w-48 bg-white rounded-md overflow-hidden shadow-xl z-10"
                     >
@@ -144,7 +168,7 @@ export default function Sidebar({ userId, handleClassSelect }: HomeProps) {
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
-                          setClassToDelete(className);
+                          setClassToDelete(classItem.class_name);
                           setIsDropdownOpen({});
                         }}
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-500 hover:text-white"
