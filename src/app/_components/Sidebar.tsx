@@ -50,16 +50,11 @@ export default function Sidebar({ userId, handleClassSelect }: SidebarProps) {
 
   const handleRemoveClass = async () => {
     if (classToDelete && userId) {
-      // Find the class to delete
       const classToRemove = classes.find(classItem => classItem.class_name === classToDelete);
-
       if (classToRemove) {
         try {
-          // Fetch the chat histories associated with this class
           const chatHistoriesResult = api.chats.getChatHistoryByClassId.useQuery({ class_id: classToRemove.class_id });
-
           if (chatHistoriesResult.data) {
-            // Iterate over each chat history and delete it
             for (const chatHistory of chatHistoriesResult.data) {
               if (chatHistory.chat_id !== undefined) {
                 try {
@@ -70,21 +65,17 @@ export default function Sidebar({ userId, handleClassSelect }: SidebarProps) {
               }
             }
           }
-
-          // Now you can delete the class
           await removeClassMutation({
             user_id: userId,
             class_id: classToRemove.class_id,
           });
           console.log("Removed class:", classToRemove);
-
           setClasses(classes.filter(classItem => classItem.class_name !== classToDelete));
           handleClassSelect(null);
         } catch (error) {
           console.error("Error removing class:", error);
         }
       }
-
       setClassToDelete(null);
     }
   };

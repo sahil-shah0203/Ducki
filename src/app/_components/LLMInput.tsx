@@ -40,22 +40,25 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
   }, [chatMessages]);
 
   useEffect(() => {
-    if (typeof user_id === 'number' && typeof selectedClassID === 'number' && chatHistoryQuery) {
-      const storedChatMessages = chatHistoryQuery.data as { direction: string, content: string }[];
-      if (storedChatMessages) {
-        const chatMessages: ChatMessage[] = storedChatMessages.map(message => ({
-          type: message.direction === 'user' ? 'user' : 'llm',
-          text: message.content,
-          session: sessionId.current // replace this with the appropriate session id for each message
-        }));
-        setChatMessages(chatMessages);
-      } else {
-        setChatMessages([]); // Clear the chat history if there's no stored chat messages for the selected class
+    if (typeof user_id === 'number' && typeof selectedClassID === 'number') {
+      if (chatHistoryQuery?.error) {
+        console.error("Error fetching chat history:", chatHistoryQuery.error);
+      } else if (chatHistoryQuery?.data) {
+        const storedChatMessages = chatHistoryQuery.data as { direction: string, content: string }[];
+        if (storedChatMessages) {
+          const chatMessages: ChatMessage[] = storedChatMessages.map(message => ({
+            type: message.direction === 'user' ? 'user' : 'llm',
+            text: message.content,
+            session: sessionId.current // replace this with the appropriate session id for each message
+          }));
+          setChatMessages(chatMessages.reverse()); // Add the .reverse() method
+        } else {
+          setChatMessages([]); // Clear the chat history if there's no stored chat messages for the selected class
+        }
       }
     } else {
       setChatMessages([]);
     }
-    setCompletedTyping(false);
   }, [selectedClassID, user_id]);
 
   useEffect(() => {
@@ -176,7 +179,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
 
   return (
     <div className="flex flex-col h-screen">
-      <div id="chat-container" className="overflow-auto rounded p-0 flex flex-col-reverse space-y-2 flex-grow">
+      <div id="chat-container" className="overflow-auto rounded p-0 flex space-y-2 flex-grow">
         {loading && (
           <div className="p-2 rounded-lg my-2 max-w-sm text-sm bg-gray-300 text-white self-start animate-pulse">
             Loading...
