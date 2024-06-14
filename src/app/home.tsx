@@ -15,7 +15,6 @@ export default function Home({ clearChatTrigger }: HomeProps) {
   return (
     <div className="flex flex-col h-full justify-end">
       <div className="flex-grow p-4 overflow-auto">
-        hello
         {error && <p className="text-red-500">{error}</p>}
       </div>
       <LLMInput
