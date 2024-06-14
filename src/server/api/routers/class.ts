@@ -25,32 +25,59 @@ export const classRouter = createTRPCRouter({
           class_name: input.class_name,
         },
       });
-      return { class_id: newClass.class_id, class_name: newClass.class_name }; // Return the class_id and class_name of the new class
+      return { class_id: newClass.class_id, class_name: newClass.class_name }; 
     }),
 
+  // Will try to optimize this when we migrate to mongo
   removeClass: publicProcedure
     .input(z.object({
       user_id: z.number(),
-      class_id: z.number(), // Change from class_name to class_id
+      class_id: z.number(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const classToRemove = await ctx.db.class.findFirst({
+      const classToDelete = await ctx.db.class.findFirst({
         where: {
-          class_id: input.class_id, // Change from class_name to class_id
           user_id: input.user_id,
+          class_id: input.class_id,
         },
       });
 
-      if (!classToRemove) {
-        throw new Error('Class not found or you are not authorized to delete this class');
+      if (!classToDelete) {
+        throw new Error("Class not found or not owned by user");
       }
+
+      await ctx.db.chatMessage.deleteMany({
+        where: {
+          chatHistory: {
+            class_id: input.class_id,
+          },
+        },
+      });
+
+      await ctx.db.chatHistory.deleteMany({
+        where: {
+          class_id: input.class_id,
+        },
+      });
+
+      await ctx.db.note.deleteMany({
+        where: {
+          class_id: input.class_id,
+        },
+      });
+
+      await ctx.db.document.deleteMany({
+        where: {
+          class_id: input.class_id,
+        },
+      });
 
       await ctx.db.class.delete({
         where: {
-          class_id: classToRemove.class_id, // Change from class_name to class_id
+          class_id: input.class_id,
         },
       });
 
-      return { message: 'Class removed successfully' };
+      return { success: true };
     }),
 });
