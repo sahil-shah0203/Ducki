@@ -37,12 +37,8 @@ export default function Landing() {
     }
   }, [isSignedIn, router]);
 
-  // console.log("Rendering Landing");
-
   useEffect(() => {
     const interval = setInterval(() => {
-      console.log("Adding asteroid");
-      console.log(asteroidsRef.current.length);
       if (asteroidsRef.current.length < 10) {
         setAsteroids((prevAsteroids) => {
           const newAsteroids = [
@@ -58,7 +54,6 @@ export default function Landing() {
           return newAsteroids;
         });
       } else {
-        console.log("Asteroids are full");
         clearInterval(interval);
       }
     }, 5000);
@@ -93,7 +88,7 @@ export default function Landing() {
 
     animationLoop();
   }, []);
-  
+
   const renderAsteroids = () => {
     return asteroids.map((asteroid, index) => (
       <AsteroidComponent
