@@ -47,3 +47,10 @@
     - Other courses may not have such relationships.
 
 
+# Implementation
+- I think the compute should be abstracted away to the cloud.
+    - A user enters a prompt
+    - That prompt is sent to a server on the cloud
+    - The server handles the logic (the whole RAG system)
+    - The server returns the LLM response to the client
+    - Client displays the response to the user
