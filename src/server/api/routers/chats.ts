@@ -33,7 +33,7 @@ export const chatRouter = createTRPCRouter({
       user_id: z.number(),
       class_id: z.number(),
       content: z.string().min(1),
-      direction: z.string().min(1),
+      sentByUser: z.boolean(), // Updated to boolean
       timestamp: z.string().min(1),
     }))
     .mutation(async ({ ctx, input }) => {
@@ -60,7 +60,7 @@ export const chatRouter = createTRPCRouter({
       const newChatMessage = await ctx.db.chatMessage.create({
         data: {
           content: input.content,
-          direction: input.direction,
+          sentByUser: input.sentByUser, // Updated to boolean
           chat_id: chatHistory.chat_id,
         },
       });
