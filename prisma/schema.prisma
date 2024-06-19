@@ -55,6 +55,7 @@ model ChatMessage {
   sentByUser  Boolean
   chatHistory ChatHistory @relation(fields: [chat_id], references: [chat_id], onDelete: Cascade)
   chat_id     Int
+  timestamp   DateTime    @default(now())
 }
 
 model Class {

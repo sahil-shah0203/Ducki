@@ -13,6 +13,7 @@ interface ChatMessage {
   type: boolean;
   text: string;
   session: string;
+  timestamp: Date;
 }
 
 export default function LLMInput({ onFetchResults, onError, user_id, selectedClassName, selectedClassID }: LLMInputProps) {
@@ -41,22 +42,19 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
 
   useEffect(() => {
     if (chatHistoryQuery && chatHistoryQuery.data) {
-      const storedChatMessages = chatHistoryQuery.data as { sentByUser: boolean, content: string }[];
+      const storedChatMessages = chatHistoryQuery.data as { content: string, sentByUser: boolean, timestamp: Date }[];
       const chatMessages: ChatMessage[] = storedChatMessages.map(message => ({
         type: message.sentByUser ? true : false,
         text: message.content,
         session: sessionId.current,
+        timestamp: new Date(message.timestamp), // Ensure timestamp is a Date object
       }));
-      setChatMessages(chatMessages.reverse());
+      setChatMessages(chatMessages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
     }
   }, [chatHistoryQuery?.data]);
 
   useEffect(() => {
-    if (
-      !completedTyping &&
-      chatMessages.length > 0 &&
-      chatMessages[0].type === false
-    ) {
+    if (!completedTyping && chatMessages.length > 0 && chatMessages[0]?.type === false) {
       let i = 0;
       const stringResponse = chatMessages[0].text;
       const intervalId = setInterval(() => {
@@ -76,15 +74,27 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     setInputText(e.target.value);
   };
 
-  const handleSubmit = async () => {
-    setIsGenerating(true);
-    onError(null);
-    const userMessage: ChatMessage = { type: true, text: inputText, session: sessionId.current };
-    setChatMessages(prevMessages => [userMessage, ...prevMessages]);
-    setInputText('');
+  const getPreciseTimestamp = () => {
+    const timeOrigin = performance.timeOrigin;
+    const now = performance.now();
+    return new Date(timeOrigin + now);
+  };
+
+  const storeChatHistory = (message: ChatMessage, isUserMessage: boolean) => {
+    if (typeof user_id === 'number' && typeof selectedClassID === 'number') {
+      storeChatHistoryMutation.mutate({
+        user_id: user_id,
+        class_id: selectedClassID,
+        content: message.text,
+        sentByUser: isUserMessage,
+        timestamp: message.timestamp.toISOString(), // Store as string in ISO format
+      });
+    }
+  };
+
+  const fetchAndStoreChatHistory = async (inputText: string, userMessage: ChatMessage) => {
     setLoading(true);
     abortController.current = new AbortController();
-
     try {
       const response = await fetch("/api/LLM", {
         method: "POST",
@@ -99,28 +109,14 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
       }
       const result = await response.json();
       const llmMessage = formatText(result.choices[0].message.content);
-      const llmResponseMessage: ChatMessage = { type: false, text: llmMessage, session: sessionId.current };
-      setChatMessages(prevMessages => [llmResponseMessage, ...prevMessages]);
+      const llmTimestamp = getPreciseTimestamp();
+      const llmResponseMessage: ChatMessage = { type: false, text: llmMessage, session: sessionId.current, timestamp: llmTimestamp };
+      setChatMessages(prevMessages => [...prevMessages, llmResponseMessage].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
       setLastMessage(llmResponseMessage);
-      setCompletedTyping(false);
+      setCompletedTyping(false); // Reset typing animation state
       setIsGenerating(false);
-
-      if (typeof user_id === 'number' && typeof selectedClassID === 'number') {
-        storeChatHistoryMutation.mutate({
-          user_id: user_id,
-          class_id: selectedClassID,
-          content: userMessage.text,
-          sentByUser: true,
-          timestamp: new Date().toISOString(),
-        });
-        storeChatHistoryMutation.mutate({
-          user_id: user_id,
-          class_id: selectedClassID,
-          content: llmMessage,
-          sentByUser: false,
-          timestamp: new Date().toISOString(),
-        });
-      }
+      //storeChatHistory(userMessage, true);
+      storeChatHistory(llmResponseMessage, false);
     } catch (err) {
       if ((err as Error).name === 'AbortError') {
         console.log('Fetch aborted');
@@ -134,10 +130,24 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     }
   };
 
+  const handleSubmit = async () => {
+    setIsGenerating(true);
+    onError(null);
+    const userTimestamp = getPreciseTimestamp();
+    const userMessage: ChatMessage = { type: true, text: inputText, session: sessionId.current, timestamp: userTimestamp };
+    setChatMessages(prevMessages => [...prevMessages, userMessage].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
+    setInputText('');
+    storeChatHistory(userMessage, true);
+    setTimeout(() => {
+      fetchAndStoreChatHistory(inputText, userMessage);
+    }, 1000); // 1 second delay before calling fetchAndStoreChatHistory
+  };
+
   const handleStopGeneration = () => {
     abortController.current.abort();
     setDisplayResponse('<span class="generation-stopped">Response generation stopped</span>');
-    setChatMessages(prevMessages => [{ type: false, text: '<span class="generation-stopped">Response generation stopped</span>', session: sessionId.current }, ...prevMessages]);
+    const stopTimestamp = getPreciseTimestamp();
+    setChatMessages(prevMessages => [...prevMessages, { type: false, text: '<span class="generation-stopped">Response generation stopped</span>', session: sessionId.current, timestamp: stopTimestamp }].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
     setIsGenerating(false);
     setCompletedTyping(true);
   };
@@ -152,7 +162,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     return text
       .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')  // Bold
       .replace(/\*(.*?)\*/g, '<i>$1</i>')      // Italic
-      .replace(/\+(.*?)\+/g, '<u>$1</u>');     // Underline
+      .replace(/\+(.*?)\+/g, '<u>$1\u200B</u>');     // Underline and add zero-width space
   };
 
   return (
@@ -165,7 +175,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
         )}
         {chatMessages.map((message, index) => (
           <div key={index} className={`p-2 rounded-lg my-2 max-w-sm text-sm ${message.type === true ? 'bg-blue-500 text-white self-end' : message.text.includes('generation-stopped') ? '' : 'bg-green-500 text-white self-start'}`}>
-            {index === 0 && message.type === false && message.session === sessionId.current ? (
+            {index === 0 && message.type === false && message.session === sessionId.current && !completedTyping ? (
               <span dangerouslySetInnerHTML={{ __html: displayResponse + (!completedTyping ? '<span class="cursor"></span>' : '') }}></span>
             ) : (
               <span dangerouslySetInnerHTML={{ __html: message.text }}></span>

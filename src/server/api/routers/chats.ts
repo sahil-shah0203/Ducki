@@ -15,7 +15,13 @@ export const chatRouter = createTRPCRouter({
           class_id: input.class_id,
         },
         include: {
-          chatMessages: true, // Include the associated ChatMessages
+          chatMessages: {
+            select: {
+              sentByUser: true,
+              content: true,
+              timestamp: true, // Ensure timestamp is included here
+            },
+          },
         },
       });
 
@@ -27,6 +33,8 @@ export const chatRouter = createTRPCRouter({
       // Return the chat messages
       return chatHistory.chatMessages;
     }),
+
+
 
   storeChatHistory: publicProcedure
     .input(z.object({
