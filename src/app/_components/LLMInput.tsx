@@ -44,7 +44,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     if (chatHistoryQuery && chatHistoryQuery.data) {
       const storedChatMessages = chatHistoryQuery.data as { content: string, sentByUser: boolean, timestamp: Date }[];
       const chatMessages: ChatMessage[] = storedChatMessages.map(message => ({
-        type: message.sentByUser ? true : false,
+        type: message.sentByUser,
         text: message.content,
         session: sessionId.current,
         timestamp: new Date(message.timestamp), // Ensure timestamp is a Date object
@@ -115,7 +115,6 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
       setLastMessage(llmResponseMessage);
       setCompletedTyping(false); // Reset typing animation state
       setIsGenerating(false);
-      //storeChatHistory(userMessage, true);
       storeChatHistory(llmResponseMessage, false);
     } catch (err) {
       if ((err as Error).name === 'AbortError') {
@@ -140,7 +139,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     storeChatHistory(userMessage, true);
     setTimeout(() => {
       fetchAndStoreChatHistory(inputText, userMessage);
-    }, 1000); // 1 second delay before calling fetchAndStoreChatHistory
+    }, 1000);
   };
 
   const handleStopGeneration = () => {
@@ -174,8 +173,8 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
           </div>
         )}
         {chatMessages.map((message, index) => (
-          <div key={index} className={`p-2 rounded-lg my-2 max-w-sm text-sm ${message.type === true ? 'bg-blue-500 text-white self-end' : message.text.includes('generation-stopped') ? '' : 'bg-green-500 text-white self-start'}`}>
-            {index === 0 && message.type === false && message.session === sessionId.current && !completedTyping ? (
+          <div key={index} className={`p-2 rounded-lg my-2 max-w-sm text-sm ${message.type ? 'bg-blue-500 text-white self-end' : message.text.includes('generation-stopped') ? '' : 'bg-green-500 text-white self-start'}`}>
+            {index === 0 && !message.type && message.session === sessionId.current && !completedTyping ? (
               <span dangerouslySetInnerHTML={{ __html: displayResponse + (!completedTyping ? '<span class="cursor"></span>' : '') }}></span>
             ) : (
               <span dangerouslySetInnerHTML={{ __html: message.text }}></span>
