@@ -1,5 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { api } from "~/trpc/react";
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { solarizedlight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import ReactMarkdown, { Components } from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
+import { CSSProperties } from 'react';
 
 interface LLMInputProps {
   onFetchResults: (choices: any[]) => void;
@@ -32,6 +39,19 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
   const chatHistoryQuery = typeof user_id === 'number' && typeof selectedClassID === 'number'
     ? api.chats.getChatHistory.useQuery({ user_id: user_id, class_id: selectedClassID })
     : undefined;
+
+  const CodeBlock = ({ language, value }: { language: string; value: string }) => {
+    return <SyntaxHighlighter style={solarizedlight} language={language}>{value}</SyntaxHighlighter>;
+  };
+
+  const components: Components = {
+    code({node, className, children, ...props}) {
+      const match = /language-(\w+)/.exec(className ?? '')
+      return match
+        ? <SyntaxHighlighter style={solarizedlight as CSSProperties} language={match[1]} PreTag="div" {...props}>{String(children).replace(/\n$/, '')}</SyntaxHighlighter>
+        : <code className={className} {...props}>{children}</code>
+    }
+  };
 
   useEffect(() => {
     const chatContainer = document.getElementById('chat-container');
@@ -108,7 +128,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const result = await response.json();
-      const llmMessage = formatText(result.choices[0].message.content);
+      const llmMessage = result.choices[0].message.content;
       const llmTimestamp = getPreciseTimestamp();
       const llmResponseMessage: ChatMessage = { type: false, text: llmMessage, session: sessionId.current, timestamp: llmTimestamp };
       setChatMessages(prevMessages => [...prevMessages, llmResponseMessage].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
@@ -157,13 +177,6 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     }
   };
 
-  const formatText = (text: string): string => {
-    return text
-      .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')  // Bold
-      .replace(/\*(.*?)\*/g, '<i>$1</i>')      // Italic
-      .replace(/\+(.*?)\+/g, '<u>$1\u200B</u>');     // Underline and add zero-width space
-  };
-
   return (
     <div className="flex flex-col h-screen">
       <div id="chat-container" className="overflow-auto rounded p-0 flex space-y-2 flex-grow">
@@ -175,9 +188,13 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
         {chatMessages.map((message, index) => (
           <div key={index} className={`p-2 rounded-lg my-2 max-w-sm text-sm ${message.type ? 'bg-blue-500 text-white self-end' : message.text.includes('generation-stopped') ? '' : 'bg-green-500 text-white self-start'}`}>
             {index === 0 && !message.type && message.session === sessionId.current && !completedTyping ? (
-              <span dangerouslySetInnerHTML={{ __html: displayResponse + (!completedTyping ? '<span class="cursor"></span>' : '') }}></span>
+              <ReactMarkdown components={components} rehypePlugins={[rehypeRaw, rehypeKatex]}>
+                {displayResponse + (!completedTyping ? '<span class="cursor"></span>' : '')}
+              </ReactMarkdown>
             ) : (
-              <span dangerouslySetInnerHTML={{ __html: message.text }}></span>
+              <ReactMarkdown components={components} rehypePlugins={[rehypeRaw, rehypeKatex]}>
+                {message.text}
+              </ReactMarkdown>
             )}
           </div>
         ))}
