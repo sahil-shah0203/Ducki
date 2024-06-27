@@ -45,11 +45,20 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
   };
 
   const components: Components = {
-    code({node, className, children, ...props}) {
+    code({ node, className, children, ...props }) {
       const match = /language-(\w+)/.exec(className ?? '')
       return match
         ? <SyntaxHighlighter style={solarizedlight as CSSProperties} language={match[1]} PreTag="div" {...props}>{String(children).replace(/\n$/, '')}</SyntaxHighlighter>
         : <code className={className} {...props}>{children}</code>
+    },
+    ul({ children }) {
+      return <ul className="list-disc ml-5">{children}</ul>;
+    },
+    ol({ children }) {
+      return <ol className="list-decimal ml-5">{children}</ol>;
+    },
+    li({ children }) {
+      return <li className="mb-1">{children}</li>;
     }
   };
 
@@ -67,7 +76,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
         type: message.sentByUser,
         text: message.content,
         session: sessionId.current,
-        timestamp: new Date(message.timestamp), // Ensure timestamp is a Date object
+        timestamp: new Date(message.timestamp),
       }));
       setChatMessages(chatMessages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
     }
@@ -107,7 +116,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
         class_id: selectedClassID,
         content: message.text,
         sentByUser: isUserMessage,
-        timestamp: message.timestamp.toISOString(), // Store as string in ISO format
+        timestamp: message.timestamp.toISOString(),
       });
     }
   };
@@ -133,7 +142,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
       const llmResponseMessage: ChatMessage = { type: false, text: llmMessage, session: sessionId.current, timestamp: llmTimestamp };
       setChatMessages(prevMessages => [...prevMessages, llmResponseMessage].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
       setLastMessage(llmResponseMessage);
-      setCompletedTyping(false); // Reset typing animation state
+      setCompletedTyping(false);
       setIsGenerating(false);
       storeChatHistory(llmResponseMessage, false);
     } catch (err) {
