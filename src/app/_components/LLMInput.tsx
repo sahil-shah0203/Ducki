@@ -5,7 +5,9 @@ import { solarizedlight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import ReactMarkdown, { Components } from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import rehypeKatex from 'rehype-katex';
+import remarkMath from 'remark-math';
 import 'katex/dist/katex.min.css';
+import 'highlight.js/styles/github.css'; // Import a highlight.js CSS style for code blocks
 import { CSSProperties } from 'react';
 
 interface LLMInputProps {
@@ -59,6 +61,12 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     },
     li({ children }) {
       return <li className="mb-1">{children}</li>;
+    },
+    math({ value }) {
+      return <span className="katex-display">{value}</span>;
+    },
+    inlineMath({ value }) {
+      return <span className="katex-inline">{value}</span>;
     }
   };
 
@@ -86,15 +94,16 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     if (!completedTyping && chatMessages.length > 0 && chatMessages[0]?.type === false) {
       let i = 0;
       const stringResponse = chatMessages[0].text;
+      const charactersPerInterval = 3; // Number of characters to display per interval
       const intervalId = setInterval(() => {
         setDisplayResponse(stringResponse.slice(0, i));
-        i++;
+        i += charactersPerInterval;
         if (i > stringResponse.length) {
           clearInterval(intervalId);
           setCompletedTyping(true);
           inputRef.current?.focus();
         }
-      }, 20);
+      }, 20); // Adjust interval duration as needed
       return () => clearInterval(intervalId);
     }
   }, [chatMessages, completedTyping]);
@@ -197,11 +206,11 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
         {chatMessages.map((message, index) => (
           <div key={index} className={`p-2 rounded-lg my-2 max-w-sm text-sm ${message.type ? 'bg-blue-500 text-white self-end' : message.text.includes('generation-stopped') ? '' : 'bg-green-500 text-white self-start'}`}>
             {index === 0 && !message.type && message.session === sessionId.current && !completedTyping ? (
-              <ReactMarkdown components={components} rehypePlugins={[rehypeRaw, rehypeKatex]}>
+              <ReactMarkdown components={components} rehypePlugins={[rehypeRaw, rehypeKatex]} remarkPlugins={[remarkMath]}>
                 {displayResponse + (!completedTyping ? '<span class="cursor"></span>' : '')}
               </ReactMarkdown>
             ) : (
-              <ReactMarkdown components={components} rehypePlugins={[rehypeRaw, rehypeKatex]}>
+              <ReactMarkdown components={components} rehypePlugins={[rehypeRaw, rehypeKatex]} remarkPlugins={[remarkMath]}>
                 {message.text}
               </ReactMarkdown>
             )}
