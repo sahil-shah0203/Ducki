@@ -1,6 +1,6 @@
 "use client";
 import { SignInButton, useUser } from "@clerk/nextjs";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import logo from "../../public/duck.png";
@@ -29,6 +29,7 @@ export default function Landing() {
   const { isSignedIn } = useUser();
   const router = useRouter();
   const [asteroids, setAsteroids] = useState<Asteroid[]>([]);
+  const asteroidsRef = useRef<Asteroid[]>([]);
 
   useEffect(() => {
     if (isSignedIn) {
@@ -38,37 +39,49 @@ export default function Landing() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setAsteroids((prevAsteroids) => [
-        ...prevAsteroids,
-        {
-          x: Math.random() * window.innerWidth,
-          y: Math.random() * window.innerHeight,
-          vx: (Math.random() - 0.5) * 2,
-          vy: (Math.random() - 0.5) * 2,
-        },
-      ]);
+      if (asteroidsRef.current.length < 10) {
+        setAsteroids((prevAsteroids) => {
+          const newAsteroids = [
+            ...prevAsteroids,
+            {
+              x: Math.random() * window.innerWidth,
+              y: Math.random() * window.innerHeight,
+              vx: (Math.random() - 0.5) * 2,
+              vy: (Math.random() - 0.5) * 2,
+            },
+          ];
+          asteroidsRef.current = newAsteroids;
+          return newAsteroids;
+        });
+      } else {
+        clearInterval(interval);
+      }
     }, 5000);
 
     return () => clearInterval(interval);
   }, []);
 
+
   useEffect(() => {
     const animationLoop = () => {
-      setAsteroids((prevAsteroids) =>
-        prevAsteroids.map((asteroid) => {
-          asteroid.x += asteroid.vx;
-          asteroid.y += asteroid.vy;
+      setAsteroids((prevAsteroids) => {
+        const newAsteroids = prevAsteroids.map((asteroid) => {
+          const newAsteroid = { ...asteroid };
+          newAsteroid.x += newAsteroid.vx;
+          newAsteroid.y += newAsteroid.vy;
 
-          if (asteroid.x < 0 || asteroid.x > window.innerWidth) {
-            asteroid.vx = -asteroid.vx;
+          if (newAsteroid.x < 0 || newAsteroid.x > window.innerWidth) {
+            newAsteroid.vx = -newAsteroid.vx;
           }
-          if (asteroid.y < 0 || asteroid.y > window.innerHeight) {
-            asteroid.vy = -asteroid.vy;
+          if (newAsteroid.y < 0 || newAsteroid.y > window.innerHeight) {
+            newAsteroid.vy = -newAsteroid.vy;
           }
 
-          return asteroid;
-        })
-      );
+          return newAsteroid;
+        });
+        asteroidsRef.current = newAsteroids;
+        return newAsteroids;
+      });
 
       requestAnimationFrame(animationLoop);
     };
