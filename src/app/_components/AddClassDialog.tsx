@@ -6,8 +6,8 @@ import Modal from 'react-modal';
 type AddClassDialogProps = {
   isOpen: boolean;
   onRequestClose: () => void;
-  onAddClass: (className: string) => boolean;
-  classes: string[];
+  onAddClass: (className: string) => Promise<boolean>; // Update the type to return a Promise<boolean>
+  classes: { class_id: number, class_name: string }[]; // Update the type to be an array of objects
 };
 
 export default function AddClassDialog({
@@ -27,20 +27,23 @@ export default function AddClassDialog({
     }
   }, [isOpen]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (classes.includes(className)) {
+    if (classes.some(classItem => classItem.class_name === className)) {
       setError('Class already exists');
       return;
     }
 
-    const success = onAddClass(className);
-    if (success) {
-      onRequestClose();
-    } else {
-      setError('Error adding class');
-    }
+    onAddClass(className)
+      .then(success => {
+        if (success) {
+          onRequestClose();
+        } else {
+          setError('Error adding class');
+        }
+      })
+      .catch(() => setError('Error adding class'));
   };
 
   return (

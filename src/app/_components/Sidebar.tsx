@@ -1,35 +1,46 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useState, useEffect, useRef } from 'react';
-import AddClassDialog from './AddClassDialog';
+import Link from "next/link";
+import { useState, useEffect, useRef } from "react";
+import AddClassDialog from "./AddClassDialog";
 import { api } from "~/trpc/react";
-import { FaEllipsisV, FaPlus } from 'react-icons/fa';
+import { FaEllipsisV, FaPlus } from "react-icons/fa";
 
-interface HomeProps {
+type SidebarProps = {
   userId: number | undefined;
-  handleClassSelect: (selectedClass: string) => void;
-}
+  handleClassSelect: (
+    selectedClass: { class_id: number; class_name: string } | null,
+  ) => void;
+};
 
-export default function Sidebar({ userId, handleClassSelect }: HomeProps) {
+type ClassItem = {
+  class_id: number;
+  class_name: string;
+};
+
+export default function Sidebar({ userId, handleClassSelect }: SidebarProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [classes, setClasses] = useState<string[]>([]);
-  const [isDropdownOpen, setIsDropdownOpen] = useState<Record<string, boolean>>({});
-  const [classToDelete, setClassToDelete] = useState<string | null>(null);
+  const [classes, setClasses] = useState<
+    { class_id: number; class_name: string }[]
+  >([]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState<Record<string, boolean>>(
+    {},
+  );
+  const [classToDelete, setClassToDelete] = useState<ClassItem | null>(null);
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const handleClassClick = (className: string) => {
-    handleClassSelect(className);
-    setSelectedClass(className);
+  const handleClassClick = (classItem: ClassItem) => {
+    handleClassSelect(classItem);
+    setSelectedClass(classItem);
   };
   const { mutateAsync: addClassMutation } = api.class.addClass.useMutation();
   const { mutateAsync: removeClassMutation } = api.class.removeClass.useMutation();
-  const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  const [selectedClass, setSelectedClass] = useState<ClassItem | null>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRefs.current) {
         let isClickOutside = true;
-        Object.values(dropdownRefs.current).forEach(ref => {
+        Object.values(dropdownRefs.current).forEach((ref) => {
           if (ref?.contains(event.target as Node)) {
             isClickOutside = false;
           }
@@ -41,59 +52,63 @@ export default function Sidebar({ userId, handleClassSelect }: HomeProps) {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [dropdownRefs]);
 
   const handleRemoveClass = async () => {
-    if (classToDelete && userId) {
+    if (userId && classToDelete) {
       try {
-        await removeClassMutation({
+        const deleteClass = await removeClassMutation({
           user_id: userId,
-          class_name: classToDelete,
+          class_id: classToDelete?.class_id,
         });
-        console.log("Removed class:", classToDelete);
-
-        setClasses(classes.filter(className => className !== classToDelete));
-        handleClassSelect('');
+        console.log("Deleted class:", deleteClass);
+        setClasses(
+          classes.filter(
+            (classItem) => classItem.class_id !== classToDelete?.class_id,
+          ),
+        );
       } catch (error) {
-        console.error("Error removing class:", error);
+        console.error("Error deleting class:", error);
       }
+
+      handleClassSelect(null);
       setClassToDelete(null);
     }
   };
 
-  const handleAddClass = (classTemp: string): boolean => {
+  const handleAddClass = async (classTemp: string): Promise<boolean> => {
     const className = classTemp.trim();
-    setClasses([...classes, className]);
 
     if (userId) {
       try {
-        addClassMutation({
+        const newClass = await addClassMutation({
           user_id: userId,
           class_name: className,
-        }).then((newClass) => {
-          console.log("Added new class:", newClass);
         });
+        console.log("Added new class:", newClass);
+        setClasses((prevClasses) => [...prevClasses, newClass]);
+        return true;
       } catch (error) {
         console.error("Error adding class:", error);
       }
     }
-    return true;
+    return false;
   };
 
   const { data, error, isLoading } = api.class.getClassesByUserId.useQuery(
     { user_id: userId! },
     {
-      enabled: !!userId, 
-    }
+      enabled: !!userId,
+    },
   );
 
   useEffect(() => {
     if (data) {
-      setClasses(data.map((classItem) => classItem.class_name));
+      setClasses(data);
     }
   }, [data]);
 
@@ -101,50 +116,54 @@ export default function Sidebar({ userId, handleClassSelect }: HomeProps) {
   if (error) return <div>Error loading classes</div>;
 
   return (
-    <aside className="fixed top-16 left-0 h-[calc(100vh-4rem)] w-64 bg-gray-800 text-white p-4 overflow-y-auto">
-      <div className="flex justify-between items-center mb-4">
+    <aside className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 overflow-y-auto bg-gray-800 p-4 text-white">
+      <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Classes</h1>
         <button
           onClick={() => setIsDialogOpen(true)}
-          className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center focus:outline-none"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 focus:outline-none"
         >
-          <FaPlus className="text-white"/>
+          <FaPlus className="text-white" />
         </button>
       </div>
       <nav>
         <ul className="space-y-0">
-          {classes.map((className, index) => (
-            <li key={index} className={`relative ${className === selectedClass ? 'highlighted' : ''}`}>
+          {classes.map((classItem, index) => (
+            <li
+              key={index}
+              className={`relative ${classItem.class_name === selectedClass?.class_name ? "highlighted" : ""}`}
+            >
               <button
-                onClick={() => handleClassClick(className)} // Call handleClassClick when a class is clicked
-                className="w-full text-left p-4 bg-transparent hover:bg-gray-600 flex justify-between items-center"
+                onClick={() => handleClassClick(classItem)}
+                className="flex w-full items-center justify-between bg-transparent p-4 text-left hover:bg-gray-600"
               >
-                {className}
+                {classItem.class_name}
                 <div className="relative">
                   <button
                     onClick={(e) => {
                       e.stopPropagation(); // Stop the propagation of the click event
-                      setIsDropdownOpen(prevState => ({
+                      setIsDropdownOpen((prevState) => ({
                         ...prevState,
-                        [className]: !prevState[className],
+                        [classItem.class_name]:
+                          !prevState[classItem.class_name],
                       }));
                     }}
-                    className="focus:outline-none hover:bg-gray-500 rounded-full w-10 h-10 flex items-center justify-center" // Add rounded-full, w-10, h-10, flex, items-center, justify-center
+                    className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-gray-500 focus:outline-none" // Add rounded-full, w-10, h-10, flex, items-center, justify-center
                   >
-                    <FaEllipsisV/>
+                    <FaEllipsisV />
                   </button>
-                  {isDropdownOpen[className] && (
+                  {isDropdownOpen[classItem.class_name] && (
                     <div
                       ref={(ref) => {
-                        dropdownRefs.current[className] = ref;
+                        dropdownRefs.current[classItem.class_name] = ref;
                       }}
-                      className="absolute right-0 mt-2 w-48 bg-white rounded-md overflow-hidden shadow-xl z-10"
+                      className="absolute right-0 z-10 mt-2 w-48 overflow-hidden rounded-md bg-white shadow-xl"
                     >
                       <a
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
-                          setClassToDelete(className);
+                          setClassToDelete(classItem);
                           setIsDropdownOpen({});
                         }}
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-500 hover:text-white"
@@ -159,7 +178,7 @@ export default function Sidebar({ userId, handleClassSelect }: HomeProps) {
           ))}
         </ul>
       </nav>
-      <footer>
+      {/* <footer>
         <div className="py-2">
           <Link href="#" className="hover:underline">
             Archived
@@ -170,7 +189,7 @@ export default function Sidebar({ userId, handleClassSelect }: HomeProps) {
             Fall 2022
           </Link>
         </div>
-      </footer>
+      </footer> */}
       <AddClassDialog
         isOpen={isDialogOpen}
         onRequestClose={() => setIsDialogOpen(false)}
@@ -179,7 +198,7 @@ export default function Sidebar({ userId, handleClassSelect }: HomeProps) {
       />
       {classToDelete && (
         <ConfirmDeleteDialog
-          className={classToDelete}
+          className={classToDelete.class_name}
           onCancel={() => setClassToDelete(null)}
           onConfirm={handleRemoveClass}
         />
@@ -194,16 +213,28 @@ interface ConfirmDeleteDialogProps {
   onConfirm: () => void;
 }
 
-function ConfirmDeleteDialog({ className, onCancel, onConfirm }: ConfirmDeleteDialogProps) {
+function ConfirmDeleteDialog({
+  className,
+  onCancel,
+  onConfirm,
+}: ConfirmDeleteDialogProps) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white p-4 rounded-md shadow-md">
-        <h2 className="text-xl mb-4 text-black">Are you sure you want to delete &quot;{className}&quot;?</h2>
+      <div className="rounded-md bg-white p-4 shadow-md">
+        <h2 className="mb-4 text-xl text-black">
+          Are you sure you want to delete &quot;{className}&quot;?
+        </h2>
         <div className="flex justify-end">
-          <button onClick={onCancel} className="mr-4 px-4 py-2 bg-gray-200 rounded">
+          <button
+            onClick={onCancel}
+            className="mr-4 rounded bg-gray-200 px-4 py-2"
+          >
             Cancel
           </button>
-          <button onClick={onConfirm} className="px-4 py-2 bg-red-500 text-white rounded">
+          <button
+            onClick={onConfirm}
+            className="rounded bg-red-500 px-4 py-2 text-white"
+          >
             Delete
           </button>
         </div>
