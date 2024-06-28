@@ -1,40 +1,29 @@
-import { useState, useEffect, useRef } from 'react';
+import {useState, useEffect, useRef} from 'react';
 
 interface LLMInputProps {
-  onFetchResults: (choices: Choice[]) => void;
+  onFetchResults: (choices: any[]) => void;
   onError: (error: string | null) => void;
-  clearChatTrigger: boolean;
+  user_id: number | undefined;
+  selectedClass: string | null;
 }
 
 interface ChatMessage {
   type: 'user' | 'llm';
   text: string;
+  session: string; // Add a new property to hold the session ID
 }
 
-interface Choice {
-  message: {
-    content: string;
-  };
-}
-
-const CursorSVG = () => (
-  <svg
-    viewBox="8 4 8 16"
-    xmlns="http://www.w3.org/2000/svg"
-    className="cursor"
-  >
-    <rect x="10" y="6" width="4" height="12" fill="#fff" />
-  </svg>
-);
-
-export default function LLMInput({ onFetchResults, onError, clearChatTrigger }: LLMInputProps) {
+export default function LLMInput({ onFetchResults, onError, user_id, selectedClass }: LLMInputProps) {
   const [inputText, setInputText] = useState<string>("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [displayResponse, setDisplayResponse] = useState<string>("");
   const [completedTyping, setCompletedTyping] = useState<boolean>(true);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const abortController = useRef(new AbortController());
+  const abortController = useRef(new AbortController()); // Use useRef to create a persistent AbortController instance
+  const inputRef = useRef<HTMLInputElement>(null); // Create a reference to the input element
+  const [lastMessage, setLastMessage] = useState<ChatMessage | null>(null);
+  const sessionId = useRef(Date.now().toString()); // Generate a new session ID when the component is mounted
 
   useEffect(() => {
     const chatContainer = document.getElementById('chat-container');
@@ -44,7 +33,23 @@ export default function LLMInput({ onFetchResults, onError, clearChatTrigger }: 
   }, [chatMessages]);
 
   useEffect(() => {
-    if (!completedTyping && chatMessages.length > 0 && chatMessages[0] && chatMessages[0].type === 'llm') {
+    const storedChatMessages = localStorage.getItem(`chatMessages-${selectedClass}`);
+    if (storedChatMessages) {
+      setChatMessages(JSON.parse(storedChatMessages));
+    } else {
+      setChatMessages([]); // Clear the chat history if there's no stored chat messages for the selected class
+    }
+    setCompletedTyping(false);
+  }, [selectedClass]);
+
+  useEffect(() => {
+    if (
+      !completedTyping &&
+      chatMessages &&
+      chatMessages.length > 0 &&
+      chatMessages[0] &&
+      chatMessages[0].type === 'llm'
+    ) {
       setCompletedTyping(false);
       let i = 0;
       const stringResponse = chatMessages[0].text;
@@ -56,18 +61,13 @@ export default function LLMInput({ onFetchResults, onError, clearChatTrigger }: 
         if (i > stringResponse.length) {
           clearInterval(intervalId);
           setCompletedTyping(true);
+          inputRef.current?.focus(); // Refocus on the input element when the typing animation is completed
         }
       }, 20);
 
       return () => clearInterval(intervalId);
     }
   }, [chatMessages, completedTyping]);
-
-  useEffect(() => {
-    if (clearChatTrigger) {
-      setChatMessages([]); // Clear chat messages when the prop changes
-    }
-  }, [clearChatTrigger]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputText(e.target.value);
@@ -76,7 +76,11 @@ export default function LLMInput({ onFetchResults, onError, clearChatTrigger }: 
   const handleSubmit = async () => {
     setIsGenerating(true);
     onError(null);
-    setChatMessages(prevMessages => [{ type: 'user', text: inputText }, ...prevMessages]);
+    setChatMessages(prevMessages => {
+      const updatedChatMessages: ChatMessage[] = [{ type: 'user' as const, text: inputText, session: sessionId.current }, ...prevMessages];
+      localStorage.setItem('chatMessages', JSON.stringify(updatedChatMessages));
+      return updatedChatMessages;
+    });
     setInputText(''); // Clear the input text immediately after submitting
     setLoading(true); // Set loading state to true
     abortController.current = new AbortController(); // Create a new AbortController instance for each generation
@@ -95,9 +99,45 @@ export default function LLMInput({ onFetchResults, onError, clearChatTrigger }: 
       }
       const result = await response.json();
       const llmMessage = formatText(result.choices[0].message.content);
-      setChatMessages(prevMessages => [{ type: 'llm', text: llmMessage }, ...prevMessages]);
+      setChatMessages(prevMessages => {
+        const updatedChatMessages: ChatMessage[] = [{ type: 'llm' as const, text: llmMessage, session: sessionId.current }, ...prevMessages];
+        localStorage.setItem(`chatMessages-${selectedClass}`, JSON.stringify(updatedChatMessages));
+        return updatedChatMessages;
+      });
+      setLastMessage({ type: 'llm' as const, text: llmMessage, session: sessionId.current });
       setCompletedTyping(false); // Set completed typing to false for the new message
       setIsGenerating(false);
+
+      // Store the user's message in the database
+      await fetch('/api/chats/storeChatHistory', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: user_id,
+          class_id: selectedClass,
+          content: inputText,
+          direction: 'user',
+          timestamp: new Date().toISOString()
+        }),
+      });
+
+      // Store the LLM's message in the database
+      await fetch('/api/chats/storeChatHistory', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: user_id,
+          class_id: selectedClass,
+          content: llmMessage,
+          direction: 'llm',
+          timestamp: new Date().toISOString()
+        }),
+      });
+
     } catch (err) {
       if ((err as Error).name === 'AbortError') {
         console.log('Fetch aborted');
@@ -113,9 +153,10 @@ export default function LLMInput({ onFetchResults, onError, clearChatTrigger }: 
 
   const handleStopGeneration = () => {
     abortController.current.abort(); // Use the current property to access the AbortController instance
-    setDisplayResponse('<span class="generation-stopped">ducki response generation stopped</span>'); // Immediately update the displayResponse state
-    setChatMessages(prevMessages => [{ type: 'llm', text: '<span class="generation-stopped">ducki response generation stopped</span>' }, ...prevMessages]);
+    setDisplayResponse('<span class="generation-stopped">ducky response generation stopped</span>'); // Immediately update the displayResponse state
+    setChatMessages(prevMessages => [{ type: 'llm', text: '<span class="generation-stopped">ducky response generation stopped</span>', session: sessionId.current }, ...prevMessages]);
     setIsGenerating(false); // Set isGenerating to false when the generation is stopped
+    setCompletedTyping(true); // Immediately mark the typing as completed
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -141,7 +182,7 @@ export default function LLMInput({ onFetchResults, onError, clearChatTrigger }: 
         )}
         {chatMessages.map((message, index) => (
           <div key={index} className={`p-2 rounded-lg my-2 max-w-sm text-sm ${message.type === 'user' ? 'bg-blue-500 text-white self-end' : message.text.includes('generation-stopped') ? '' : 'bg-green-500 text-white self-start'}`}>
-            {index === 0 && message.type === 'llm' ? (
+            {index === 0 && message.type === 'llm' && message.session === sessionId.current ? (
               <span dangerouslySetInnerHTML={{ __html: displayResponse + (!completedTyping ? '<span class="cursor"></span>' : '') }}></span>
             ) : (
               <span dangerouslySetInnerHTML={{ __html: message.text }}></span>
@@ -151,6 +192,7 @@ export default function LLMInput({ onFetchResults, onError, clearChatTrigger }: 
       </div>
       <div className="w-full flex items-center bg-transparent p-12 border-12 mb-12">
         <input
+          ref={inputRef} // Attach the reference to the input element
           type="text"
           className="border rounded py-1 px-2 flex-grow text-black text-sm"
           value={inputText}
@@ -158,6 +200,7 @@ export default function LLMInput({ onFetchResults, onError, clearChatTrigger }: 
           onKeyPress={handleKeyPress}
           placeholder="Enter text for LLM"
           aria-label="Text input for LLM prompt"
+          disabled={isGenerating} // Disable the input field when LLM is generating
         />
         <button
           className="bg-blue-500 text-white py-2 px-4 rounded ml-2"

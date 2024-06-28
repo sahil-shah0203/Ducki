@@ -1,27 +1,9 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import LLMInput from './_components/LLMInput';
-
-interface HomeProps {
-  clearChatTrigger: boolean;
-}
-
-export default function Home({ clearChatTrigger }: HomeProps) {
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [choices, setChoices] = useState<any[]>([]);
-  const [error, setError] = useState<string | null>(null);
-
+export default function Home() {
   return (
-    <div className="flex flex-col h-full justify-end">
-      <div className="flex-grow p-4 overflow-auto">
-        {error && <p className="text-red-500">{error}</p>}
-      </div>
-      <LLMInput
-        onFetchResults={setChoices}
-        onError={setError}
-        clearChatTrigger={clearChatTrigger} // Pass the trigger prop
-      />
+    <div className="flex flex-col h-full justify-center items-center">
+      <div>lmao</div>
     </div>
   );
 }

@@ -1,31 +1,45 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Modal from 'react-modal';
 
 type AddClassDialogProps = {
   isOpen: boolean;
   onRequestClose: () => void;
-  onAddClass: (className: string) => boolean; // Change the return type to boolean
+  onAddClass: (className: string) => boolean;
+  classes: string[];
 };
 
 export default function AddClassDialog({
   isOpen,
   onRequestClose,
   onAddClass,
+  classes,
 }: AddClassDialogProps) {
   const [className, setClassName] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const success = onAddClass(className);
-    if (success) {
+  useEffect(() => {
+    if (!isOpen) {
+      // Clear the state when the dialog closes
       setClassName('');
       setError(null);
+    }
+  }, [isOpen]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (classes.includes(className)) {
+      setError('Class already exists');
+      return;
+    }
+
+    const success = onAddClass(className);
+    if (success) {
       onRequestClose();
     } else {
-      setError('Class already exists');
+      setError('Error adding class');
     }
   };
 

@@ -1,18 +1,22 @@
-'use client';
-
-import { useState } from 'react';
+"use client";
 import { useUser } from '@clerk/nextjs';
 import Landing from './landing';
-import Home from './home';
+import Home from './home'; 
 import Sidebar from './_components/Sidebar';
-import { api } from '~/trpc/react';
+
+import { api } from "~/trpc/react";
+import React, {useState} from "react";
+import LLMInput from "~/app/_components/LLMInput";
 
 export default function MainPage() {
   const { user, isSignedIn } = useUser();
-  const [clearChatTrigger, setClearChatTrigger] = useState<boolean>(false);
-
-  const handleClassSelect = () => {
-    setClearChatTrigger(prev => !prev); // Toggle the trigger to clear chat messages
+  // New state for selected class
+  const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  const [choices, setChoices] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  // Function to handle class selection from sidebar
+  const handleClassSelect = (selectedClass: string) => {
+    setSelectedClass(selectedClass);
   };
 
   if (!isSignedIn) {
@@ -43,11 +47,25 @@ export default function MainPage() {
     const user_id = id?.user_id;
 
     return (
-      <div className="flex h-full min-h-screen">
-        <Sidebar userId={user_id} onClassSelect={handleClassSelect} /> {/* Adjust userId as needed */}
-        <div className="flex-1 ml-64 p-4 flex flex-col h-full justify-end">
-          <Home clearChatTrigger={clearChatTrigger} /> {/* Pass the trigger prop */}
-        </div>
+      <div className="flex flex-col h-full justify-end">
+        <Sidebar userId={user_id} handleClassSelect={handleClassSelect} />
+        {selectedClass ? (
+          <>
+            <div className="flex-grow p-4 overflow-auto">
+              {error && <p className="text-red-500">{error}</p>}
+            </div>
+            <div className="llm-input">
+              <LLMInput
+                onFetchResults={setChoices}
+                onError={setError}
+                user_id={user_id}
+                selectedClass={selectedClass}
+              />
+            </div>
+          </>
+        ) : (
+          <Home />
+        )}
       </div>
     );
   }
