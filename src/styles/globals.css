@@ -156,3 +156,19 @@ body {
     background-color: black;
   }
 }
+
+pre code {
+  display: block;
+  padding: 1em;
+  background: #000000;
+  border-radius: 5px;
+  overflow-x: auto;
+}
+
+.code-block {
+  background: #000000;
+  padding: 10px;
+  border-radius: 5px;
+  overflow-x: auto;
+}
+

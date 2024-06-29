@@ -1,14 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
+import DOMPurify from 'dompurify';
 import { api } from "~/trpc/react";
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { solarizedlight } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import ReactMarkdown, { Components } from 'react-markdown';
-import rehypeRaw from 'rehype-raw';
-import rehypeKatex from 'rehype-katex';
-import remarkMath from 'remark-math';
 import 'katex/dist/katex.min.css';
-import 'highlight.js/styles/github.css'; // Import a highlight.js CSS style for code blocks
-import { CSSProperties } from 'react';
+import katex from 'katex';
 
 interface LLMInputProps {
   onFetchResults: (choices: any[]) => void;
@@ -24,6 +18,36 @@ interface ChatMessage {
   session: string;
   timestamp: Date;
 }
+
+const formatText = (text: string): string => {
+  // LaTeX rendering
+  text = text.replace(/\$\$(.*?)\$\$/gs, (_, tex) => {
+    try {
+      return katex.renderToString(tex, { throwOnError: false });
+    } catch {
+      return tex;
+    }
+  });
+
+  // Code blocks
+  text = text.replace(/```([\s\S]*?)```/g, (_, code) => `<div class="code-block"><pre><code>${DOMPurify.sanitize(code)}</code></pre></div>`);
+
+  // Inline code
+  text = text.replace(/`([^`]+)`/g, (_, code) => `<code>${DOMPurify.sanitize(code)}</code>`);
+
+  // Newlines
+  text = text.replace(/\n/g, '<br>');
+
+  // Indents
+  text = text.replace(/^\s+/gm, match => '&nbsp;'.repeat(match.length));
+
+  // Other formats
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')    // Bold
+    .replace(/\*(.*?)\*/g, '<i>$1</i>')        // Italic
+    .replace(/\+(.*?)\+/g, '<u>$1</u>')        // Underline
+    .replace(/~~(.*?)~~/g, '<s>$1</s>');       // Strikethrough
+};
 
 export default function LLMInput({ onFetchResults, onError, user_id, selectedClassName, selectedClassID }: LLMInputProps) {
   const [inputText, setInputText] = useState<string>("");
@@ -42,34 +66,6 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     ? api.chats.getChatHistory.useQuery({ user_id: user_id, class_id: selectedClassID })
     : undefined;
 
-  const CodeBlock = ({ language, value }: { language: string; value: string }) => {
-    return <SyntaxHighlighter style={solarizedlight} language={language}>{value}</SyntaxHighlighter>;
-  };
-
-  const components: Components = {
-    code({ node, className, children, ...props }) {
-      const match = /language-(\w+)/.exec(className ?? '')
-      return match
-        ? <SyntaxHighlighter style={solarizedlight as CSSProperties} language={match[1]} PreTag="div" {...props}>{String(children).replace(/\n$/, '')}</SyntaxHighlighter>
-        : <code className={className} {...props}>{children}</code>
-    },
-    ul({ children }) {
-      return <ul className="list-disc ml-5">{children}</ul>;
-    },
-    ol({ children }) {
-      return <ol className="list-decimal ml-5">{children}</ol>;
-    },
-    li({ children }) {
-      return <li className="mb-1">{children}</li>;
-    },
-    math({ value }) {
-      return <span className="katex-display">{value}</span>;
-    },
-    inlineMath({ value }) {
-      return <span className="katex-inline">{value}</span>;
-    }
-  };
-
   useEffect(() => {
     const chatContainer = document.getElementById('chat-container');
     if (chatContainer) {
@@ -84,7 +80,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
         type: message.sentByUser,
         text: message.content,
         session: sessionId.current,
-        timestamp: new Date(message.timestamp),
+        timestamp: new Date(message.timestamp), // Ensure timestamp is a Date object
       }));
       setChatMessages(chatMessages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
     }
@@ -94,16 +90,15 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     if (!completedTyping && chatMessages.length > 0 && chatMessages[0]?.type === false) {
       let i = 0;
       const stringResponse = chatMessages[0].text;
-      const charactersPerInterval = 3; // Number of characters to display per interval
       const intervalId = setInterval(() => {
         setDisplayResponse(stringResponse.slice(0, i));
-        i += charactersPerInterval;
+        i++;
         if (i > stringResponse.length) {
           clearInterval(intervalId);
           setCompletedTyping(true);
           inputRef.current?.focus();
         }
-      }, 20); // Adjust interval duration as needed
+      }, 20);
       return () => clearInterval(intervalId);
     }
   }, [chatMessages, completedTyping]);
@@ -125,7 +120,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
         class_id: selectedClassID,
         content: message.text,
         sentByUser: isUserMessage,
-        timestamp: message.timestamp.toISOString(),
+        timestamp: message.timestamp.toISOString(), // Store as string in ISO format
       });
     }
   };
@@ -146,12 +141,12 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const result = await response.json();
-      const llmMessage = result.choices[0].message.content;
+      const llmMessage = formatText(result.choices[0].message.content);
       const llmTimestamp = getPreciseTimestamp();
       const llmResponseMessage: ChatMessage = { type: false, text: llmMessage, session: sessionId.current, timestamp: llmTimestamp };
       setChatMessages(prevMessages => [...prevMessages, llmResponseMessage].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
       setLastMessage(llmResponseMessage);
-      setCompletedTyping(false);
+      setCompletedTyping(false); // Reset typing animation state
       setIsGenerating(false);
       storeChatHistory(llmResponseMessage, false);
     } catch (err) {
@@ -195,6 +190,10 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     }
   };
 
+  const sanitizedHtml = (html: string) => {
+    return { __html: DOMPurify.sanitize(html) };
+  };
+
   return (
     <div className="flex flex-col h-screen">
       <div id="chat-container" className="overflow-auto rounded p-0 flex space-y-2 flex-grow">
@@ -206,13 +205,9 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
         {chatMessages.map((message, index) => (
           <div key={index} className={`p-2 rounded-lg my-2 max-w-sm text-sm ${message.type ? 'bg-blue-500 text-white self-end' : message.text.includes('generation-stopped') ? '' : 'bg-green-500 text-white self-start'}`}>
             {index === 0 && !message.type && message.session === sessionId.current && !completedTyping ? (
-              <ReactMarkdown components={components} rehypePlugins={[rehypeRaw, rehypeKatex]} remarkPlugins={[remarkMath]}>
-                {displayResponse + (!completedTyping ? '<span class="cursor"></span>' : '')}
-              </ReactMarkdown>
+              <span dangerouslySetInnerHTML={sanitizedHtml(displayResponse + (!completedTyping ? '<span class="cursor"></span>' : ''))}></span>
             ) : (
-              <ReactMarkdown components={components} rehypePlugins={[rehypeRaw, rehypeKatex]} remarkPlugins={[remarkMath]}>
-                {message.text}
-              </ReactMarkdown>
+              <span dangerouslySetInnerHTML={sanitizedHtml(message.text)}></span>
             )}
           </div>
         ))}
