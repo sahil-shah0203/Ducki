@@ -20,20 +20,24 @@ interface ChatMessage {
 }
 
 const formatText = (text: string): string => {
-  // LaTeX rendering
-  text = text.replace(/\$\$(.*?)\$\$/gs, (_, tex) => {
-    try {
-      return katex.renderToString(tex, { throwOnError: false });
-    } catch {
-      return tex;
-    }
+  console.log("Formatting text:", text);
+
+  // Save LaTeX sections
+  const latexSections: Record<string, string> = {};
+  let sectionIndex = 0;
+  // Detect LaTeX sections by identifying common mathematical patterns or keywords
+  const latexRegex = /([A-Za-z0-9]+(?:\s*[\+\-\*\/\^]\s*[A-Za-z0-9]+)+|\\(?:frac|sqrt|sum|int|lim|sin|cos|tan|log|exp|pi|theta|alpha|beta|gamma|delta|epsilon|lambda|mu|nu|rho|sigma|tau|phi|chi|psi|omega)[^<>\s]*)/g;
+  text = text.replace(latexRegex, (match: string) => {
+    const key = `__LATEX_${sectionIndex++}__`;
+    latexSections[key] = match;
+    return key;
   });
 
   // Code blocks
-  text = text.replace(/```([\s\S]*?)```/g, (_, code) => `<div class="code-block"><pre><code>${DOMPurify.sanitize(code)}</code></pre></div>`);
+  text = text.replace(/```([\s\S]*?)```/g, (_, code: string) => `<div class="code-block"><pre><code>${DOMPurify.sanitize(code)}</code></pre></div>`);
 
   // Inline code
-  text = text.replace(/`([^`]+)`/g, (_, code) => `<code>${DOMPurify.sanitize(code)}</code>`);
+  text = text.replace(/`([^`]+)`/g, (_, code: string) => `<code>${DOMPurify.sanitize(code)}</code>`);
 
   // Newlines
   text = text.replace(/\n/g, '<br>');
@@ -42,11 +46,25 @@ const formatText = (text: string): string => {
   text = text.replace(/^\s+/gm, match => '&nbsp;'.repeat(match.length));
 
   // Other formats
-  return text
+  text = text
     .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')    // Bold
     .replace(/\*(.*?)\*/g, '<i>$1</i>')        // Italic
-    .replace(/\+(.*?)\+/g, '<u>$1</u>')        // Underline
+    .replace(/~(.*?)~/g, '<u>$1</u>')          // Underline
     .replace(/~~(.*?)~~/g, '<s>$1</s>');       // Strikethrough
+
+  // Restore LaTeX sections
+  text = text.replace(/__LATEX_(\d+)__/g, (_, index: string) => {
+    const latexKey = `__LATEX_${index}__`;
+    const latexMatch = latexSections[latexKey] ?? '';
+    try {
+      return katex.renderToString(latexMatch, { throwOnError: false });
+    } catch {
+      return latexMatch;
+    }
+  });
+
+  console.log("Formatted text:", text);
+  return text;
 };
 
 export default function LLMInput({ onFetchResults, onError, user_id, selectedClassName, selectedClassID }: LLMInputProps) {
@@ -141,6 +159,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const result = await response.json();
+      console.log("Fetched result:", result);
       const llmMessage = formatText(result.choices[0].message.content);
       const llmTimestamp = getPreciseTimestamp();
       const llmResponseMessage: ChatMessage = { type: false, text: llmMessage, session: sessionId.current, timestamp: llmTimestamp };
@@ -167,6 +186,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     onError(null);
     const userTimestamp = getPreciseTimestamp();
     const userMessage: ChatMessage = { type: true, text: inputText, session: sessionId.current, timestamp: userTimestamp };
+    console.log("User message:", userMessage);
     setChatMessages(prevMessages => [...prevMessages, userMessage].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
     setInputText('');
     storeChatHistory(userMessage, true);
