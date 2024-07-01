@@ -40,7 +40,7 @@ export default function Header() {
   };
 
   return (
-    <div className="flex justify-between items-center p-4 bg-gray-800 text-white fixed w-full top-0">
+    <div className="flex justify-between items-center p-4 text-white fixed w-full top-0" style={{ backgroundColor: 'transparent', zIndex: 10 }}>
       <div className="flex items-center space-x-4">
         {/* Placeholder for logo */}
         <div className="w-8 h-8 bg-gray-500 rounded-full"></div>
@@ -56,7 +56,7 @@ export default function Header() {
         {isDropdownOpen && (
           <div
             ref={dropdownRef}
-            className="absolute right-0 mt-2 w-48 bg-white rounded-md overflow-hidden shadow-xl z-10"
+            className="absolute right-0 mt-2 w-48 bg-white rounded-md overflow-hidden shadow-xl z-20"
           >
             <button
               onClick={handleProfileSettings}

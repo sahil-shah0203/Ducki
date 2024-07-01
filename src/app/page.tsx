@@ -5,16 +5,16 @@ import Home from './home';
 import Sidebar from './_components/Sidebar';
 
 import { api } from "~/trpc/react";
-import React, {useState} from "react";
+import React, { useState } from "react";
 import LLMInput from "~/app/_components/LLMInput";
+import Background from './Background'; // Import the Background component
 
 export default function MainPage() {
   const { user, isSignedIn } = useUser();
-  // New state for selected class
   const [selectedClass, setSelectedClass] = useState<{ class_id: number, class_name: string } | null>(null);
   const [choices, setChoices] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
-  // Function to handle class selection from sidebar
+
   const handleClassSelect = (selectedClass: { class_id: number, class_name: string } | null) => {
     setSelectedClass(selectedClass);
   };
@@ -47,8 +47,9 @@ export default function MainPage() {
     const user_id = id?.user_id;
 
     return (
-      <div className="flex flex-col h-full justify-between">
-        <Sidebar userId={user_id} handleClassSelect={handleClassSelect} />
+      <div className="relative flex flex-col h-full justify-between" style={{zIndex: 0}}>
+        <Sidebar userId={user_id} handleClassSelect={handleClassSelect}/>
+        <Background/>
         {selectedClass ? (
           <>
             <div className="flex-grow p-4 overflow-auto">

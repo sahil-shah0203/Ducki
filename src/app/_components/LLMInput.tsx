@@ -3,6 +3,7 @@ import DOMPurify from 'dompurify';
 import { api } from "~/trpc/react";
 import 'katex/dist/katex.min.css';
 import katex from 'katex';
+import HomeBackground from '~/app/HomeBackground'; // Import the HomeBackground component
 
 interface LLMInputProps {
   onFetchResults: (choices: any[]) => void;
@@ -216,6 +217,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
 
   return (
     <div className="flex flex-col h-screen">
+      <HomeBackground />
       <div id="chat-container" className="overflow-auto rounded p-0 flex space-y-2 flex-grow">
         {loading && (
           <div className="p-2 rounded-lg my-2 max-w-sm text-sm bg-gray-300 text-white self-start animate-pulse">

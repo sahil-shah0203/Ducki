@@ -116,7 +116,7 @@ export default function Sidebar({ userId, handleClassSelect }: SidebarProps) {
   if (error) return <div>Error loading classes</div>;
 
   return (
-    <aside className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 overflow-y-auto bg-gray-800 p-4 text-white">
+    <aside className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 overflow-y-auto p-4 text-white bg-transparent">
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Classes</h1>
         <button
@@ -135,7 +135,7 @@ export default function Sidebar({ userId, handleClassSelect }: SidebarProps) {
             >
               <button
                 onClick={() => handleClassClick(classItem)}
-                className="flex w-full items-center justify-between bg-transparent p-4 text-left hover:bg-gray-600"
+                className="flex w-full items-center justify-between bg-transparent p-4 text-left hover-green-darker"
               >
                 {classItem.class_name}
                 <div className="relative">
@@ -178,18 +178,6 @@ export default function Sidebar({ userId, handleClassSelect }: SidebarProps) {
           ))}
         </ul>
       </nav>
-      {/* <footer>
-        <div className="py-2">
-          <Link href="#" className="hover:underline">
-            Archived
-          </Link>
-        </div>
-        <div className="py-2 text-orange-400">
-          <Link href="#" className="hover:underline">
-            Fall 2022
-          </Link>
-        </div>
-      </footer> */}
       <AddClassDialog
         isOpen={isDialogOpen}
         onRequestClose={() => setIsDialogOpen(false)}
@@ -214,10 +202,10 @@ interface ConfirmDeleteDialogProps {
 }
 
 function ConfirmDeleteDialog({
-  className,
-  onCancel,
-  onConfirm,
-}: ConfirmDeleteDialogProps) {
+                               className,
+                               onCancel,
+                               onConfirm,
+                             }: ConfirmDeleteDialogProps) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
       <div className="rounded-md bg-white p-4 shadow-md">

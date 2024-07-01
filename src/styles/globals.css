@@ -117,7 +117,7 @@ body {
 }
 
 .highlighted {
-  background-color: #4B5563;
+  background-color: #334d43;
 }
 
 .list-disc {
@@ -170,5 +170,9 @@ pre code {
   padding: 10px;
   border-radius: 5px;
   overflow-x: auto;
+}
+
+.hover-green-darker:hover {
+  background-color: #334d43; /* Slightly darker shade of #3A5E4D */
 }
 
