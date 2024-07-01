@@ -148,12 +148,23 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     setLoading(true);
     abortController.current = new AbortController();
     try {
+      // Construct the chat history to send to the backend
+      const chatHistory = chatMessages.map(message => ({
+        role: message.type ? 'user' : 'assistant',
+        content: message.text,
+      }));
+      // Add the new user message
+      chatHistory.push({
+        role: 'user',
+        content: inputText,
+      });
+
       const response = await fetch("/api/LLM", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ prompt: inputText }),
+        body: JSON.stringify({ prompt: inputText, chatHistory }), // Send chatHistory
         signal: abortController.current.signal,
       });
       if (!response.ok) {
@@ -218,7 +229,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
   return (
     <div className="flex flex-col h-screen">
       <HomeBackground />
-      <div id="chat-container" className="overflow-auto rounded p-0 flex space-y-2 flex-grow">
+      <div id="chat-container" className="overflow-auto rounded p-4 flex space-y-2 flex-grow">
         {loading && (
           <div className="p-2 rounded-lg my-2 max-w-sm text-sm bg-gray-300 text-white self-start animate-pulse">
             Loading...
