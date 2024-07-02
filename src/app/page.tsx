@@ -7,7 +7,8 @@ import Sidebar from './_components/Sidebar';
 import { api } from "~/trpc/react";
 import React, { useState } from "react";
 import LLMInput from "~/app/_components/LLMInput";
-import Background from './Background'; // Import the Background component
+import Background from './Background';
+import HomeBackground from "~/app/HomeBackground"; // Import the Background component
 
 export default function MainPage() {
   const { user, isSignedIn } = useUser();
@@ -50,6 +51,7 @@ export default function MainPage() {
       <div className="relative flex flex-col h-full justify-between" style={{zIndex: 0}}>
         <Sidebar userId={user_id} handleClassSelect={handleClassSelect}/>
         <Background/>
+        <HomeBackground/>
         {selectedClass ? (
           <>
             <div className="flex-grow p-4 overflow-auto">
