@@ -176,18 +176,25 @@ pre code {
   background-color: #334d43; /* Slightly darker shade of #3A5E4D */
 }
 
-.home-background-outer {
-  position: absolute;
-  top: -3%;
-  left: 3%;
-  right: -2.5%;
-  bottom: -1%;
+.home-background-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  background-color: transparent;
+  pointer-events: none;
   z-index: -1;
-  padding: 2vh 2vw;
+}
+
+.home-background-container {
+  width: 90%;
+  height: 95vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .home-background-inner {
@@ -196,5 +203,4 @@ pre code {
   background-color: white;
   border-radius: 1rem;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  box-sizing: border-box;
 }
