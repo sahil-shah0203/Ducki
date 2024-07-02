@@ -2,19 +2,32 @@ import React from 'react';
 
 const HomeBackground: React.FC = () => {
   return (
-    <div style={{
-      position: 'absolute',
-      top: '2.5vh', // Relative to viewport height
-      left: '20vw', // Adjusted for the sidebar width, assuming sidebar takes 20% of viewport width
-      width: '75vw', // Adjust width to be proportional
-      height: '90vh', // Adjust height to be proportional
-      backgroundColor: 'white',
-      borderRadius: '1rem', // Use rem for better scaling with font size
-      boxSizing: 'border-box',
-      zIndex: -1, // Ensure it overlays the green background
-      padding: '0rem' // Use rem for better scaling with font size
-    }} />
+    <div style={outerContainerStyle}>
+      <div style={innerContainerStyle} />
+    </div>
   );
+};
+
+const outerContainerStyle: React.CSSProperties = {
+  position: 'absolute',
+  top: -10,
+  left: 100,
+  width: '96%',
+  height: '99%',
+  display: 'flex',
+  justifyContent: 'right',
+  alignItems: 'center',
+  backgroundColor: 'transparent',
+  zIndex: -1,
+};
+
+const innerContainerStyle: React.CSSProperties = {
+  width: '95%',
+  height: '90%',
+  backgroundColor: 'white',
+  borderRadius: '1rem',
+  boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
+  boxSizing: 'border-box',
 };
 
 export default HomeBackground;
