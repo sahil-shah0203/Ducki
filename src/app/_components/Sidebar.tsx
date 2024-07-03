@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import AddClassDialog from "./AddClassDialog";
 import { api } from "~/trpc/react";
-import { FaEllipsisV, FaPlus } from "react-icons/fa";
+import { FaEllipsisV, FaPlus, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 type SidebarProps = {
   userId: number | undefined;
@@ -20,13 +20,10 @@ type ClassItem = {
 
 export default function Sidebar({ userId, handleClassSelect }: SidebarProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [classes, setClasses] = useState<
-    { class_id: number; class_name: string }[]
-  >([]);
-  const [isDropdownOpen, setIsDropdownOpen] = useState<Record<string, boolean>>(
-    {},
-  );
+  const [classes, setClasses] = useState<ClassItem[]>([]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState<Record<string, boolean>>({});
   const [classToDelete, setClassToDelete] = useState<ClassItem | null>(null);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const handleClassClick = (classItem: ClassItem) => {
     handleClassSelect(classItem);
@@ -116,81 +113,91 @@ export default function Sidebar({ userId, handleClassSelect }: SidebarProps) {
   if (error) return <div>Error loading classes</div>;
 
   return (
-    <aside className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 overflow-y-auto p-4 text-white bg-transparent">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Classes</h1>
-        <button
-          onClick={() => setIsDialogOpen(true)}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 focus:outline-none"
-        >
-          <FaPlus className="text-white" />
-        </button>
-      </div>
-      <nav>
-        <ul className="space-y-0">
-          {classes.map((classItem, index) => (
-            <li
-              key={index}
-              className={`relative ${classItem.class_name === selectedClass?.class_name ? "highlighted" : ""}`}
+    <aside className={`fixed left-0 top-16 h-[calc(100vh-4rem)] ${isCollapsed ? 'w-16' : 'w-64'} overflow-y-auto p-4 text-white bg-transparent transition-width duration-300`}>
+      {!isCollapsed && (
+        <>
+          <div className="mb-4 flex items-center justify-between">
+            <h1 className={`text-2xl font-bold ${isCollapsed ? 'hidden' : 'block'}`}>Classes</h1>
+            <button
+              onClick={() => setIsDialogOpen(true)}
+              className={`flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 focus:outline-none ${isCollapsed ? 'mx-auto' : ''}`}
             >
-              <button
-                onClick={() => handleClassClick(classItem)}
-                className="flex w-full items-center justify-between bg-transparent p-4 text-left hover-green-darker"
-              >
-                {classItem.class_name}
-                <div className="relative">
+              <FaPlus className="text-white" />
+            </button>
+          </div>
+          <nav>
+            <ul className="space-y-0">
+              {classes.map((classItem, index) => (
+                <li
+                  key={index}
+                  className={`relative ${classItem.class_name === selectedClass?.class_name ? "highlighted" : ""}`}
+                >
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation(); // Stop the propagation of the click event
-                      setIsDropdownOpen((prevState) => ({
-                        ...prevState,
-                        [classItem.class_name]:
-                          !prevState[classItem.class_name],
-                      }));
-                    }}
-                    className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-gray-500 focus:outline-none" // Add rounded-full, w-10, h-10, flex, items-center, justify-center
+                    onClick={() => handleClassClick(classItem)}
+                    className="flex w-full items-center justify-between bg-transparent p-4 text-left hover-green-darker"
                   >
-                    <FaEllipsisV />
-                  </button>
-                  {isDropdownOpen[classItem.class_name] && (
-                    <div
-                      ref={(ref) => {
-                        dropdownRefs.current[classItem.class_name] = ref;
-                      }}
-                      className="absolute right-0 z-10 mt-2 w-48 overflow-hidden rounded-md bg-white shadow-xl"
-                    >
-                      <a
-                        href="#"
+                    {isCollapsed ? '' : classItem.class_name}
+                    <div className="relative">
+                      <button
                         onClick={(e) => {
-                          e.preventDefault();
-                          setClassToDelete(classItem);
-                          setIsDropdownOpen({});
+                          e.stopPropagation(); // Stop the propagation of the click event
+                          setIsDropdownOpen((prevState) => ({
+                            ...prevState,
+                            [classItem.class_name]:
+                              !prevState[classItem.class_name],
+                          }));
                         }}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-500 hover:text-white"
+                        className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-gray-500 focus:outline-none" // Add rounded-full, w-10, h-10, flex, items-center, justify-center
                       >
-                        Delete Class
-                      </a>
+                        <FaEllipsisV />
+                      </button>
+                      {isDropdownOpen[classItem.class_name] && (
+                        <div
+                          ref={(ref) => {
+                            dropdownRefs.current[classItem.class_name] = ref;
+                          }}
+                          className="absolute right-0 z-10 mt-2 w-48 overflow-hidden rounded-md bg-white shadow-xl"
+                        >
+                          <a
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setClassToDelete(classItem);
+                              setIsDropdownOpen({});
+                            }}
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-500 hover:text-white"
+                          >
+                            Delete Class
+                          </a>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </nav>
-      <AddClassDialog
-        isOpen={isDialogOpen}
-        onRequestClose={() => setIsDialogOpen(false)}
-        onAddClass={handleAddClass}
-        classes={classes} // Pass the classes array as a prop
-      />
-      {classToDelete && (
-        <ConfirmDeleteDialog
-          className={classToDelete.class_name}
-          onCancel={() => setClassToDelete(null)}
-          onConfirm={handleRemoveClass}
-        />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <AddClassDialog
+            isOpen={isDialogOpen}
+            onRequestClose={() => setIsDialogOpen(false)}
+            onAddClass={handleAddClass}
+            classes={classes} // Pass the classes array as a prop
+          />
+          {classToDelete && (
+            <ConfirmDeleteDialog
+              className={classToDelete.class_name}
+              onCancel={() => setClassToDelete(null)}
+              onConfirm={handleRemoveClass}
+            />
+          )}
+        </>
       )}
+      <button
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="absolute bottom-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-gray-500 focus:outline-none"
+      >
+        {isCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
+      </button>
     </aside>
   );
 }
