@@ -148,15 +148,10 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     abortController.current = new AbortController();
     try {
       // Construct the chat history to send to the backend
-      const chatHistory = chatMessages.map(message => ({
+      const chatHistory = [...chatMessages, userMessage].map(message => ({
         role: message.type ? 'user' : 'assistant',
         content: message.text,
-      }));
-      // Add the new user message
-      chatHistory.push({
-        role: 'user',
-        content: inputText,
-      });
+      })).reverse(); // Reverse to ensure chronological order
 
       const response = await fetch("/api/LLM", {
         method: "POST",
