@@ -15,9 +15,14 @@ export default function MainPage() {
   const [selectedClass, setSelectedClass] = useState<{ class_id: number, class_name: string } | null>(null);
   const [choices, setChoices] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const handleClassSelect = (selectedClass: { class_id: number, class_name: string } | null) => {
     setSelectedClass(selectedClass);
+  };
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
   };
 
   if (!isSignedIn) {
@@ -48,30 +53,32 @@ export default function MainPage() {
     const user_id = id?.user_id;
 
     return (
-      <div className="relative flex flex-col h-full justify-between" style={{zIndex: 0}}>
-        <Sidebar userId={user_id} handleClassSelect={handleClassSelect}/>
-        <Background/>
-        <HomeBackground/>
-        {selectedClass ? (
-          <>
-            <div className="flex-grow p-4 overflow-auto">
-              {error && <p className="text-red-500">{error}</p>}
-            </div>
-            <div className="ml-64">
-              <div className="llm-input">
-                <LLMInput
-                  onFetchResults={setChoices}
-                  onError={setError}
-                  user_id={user_id}
-                  selectedClassName={selectedClass?.class_name}
-                  selectedClassID={selectedClass?.class_id}
-                />
+      <div className="relative flex h-full" style={{ zIndex: 0 }}>
+        <Sidebar userId={user_id} handleClassSelect={handleClassSelect} toggleSidebar={toggleSidebar} isCollapsed={isSidebarCollapsed} />
+        <div className={`flex-grow transition-all duration-300 ${isSidebarCollapsed ? 'ml-20' : 'ml-64'}`}>
+          <Background />
+          <HomeBackground />
+          {selectedClass ? (
+            <>
+              <div className="flex-grow p-4 overflow-auto">
+                {error && <p className="text-red-500">{error}</p>}
               </div>
-            </div>
-          </>
-        ) : (
-          <Home />
-        )}
+              <div className="ml-64">
+                <div className="llm-input">
+                  <LLMInput
+                    onFetchResults={setChoices}
+                    onError={setError}
+                    user_id={user_id}
+                    selectedClassName={selectedClass?.class_name}
+                    selectedClassID={selectedClass?.class_id}
+                  />
+                </div>
+              </div>
+            </>
+          ) : (
+            <Home />
+          )}
+        </div>
       </div>
     );
   }

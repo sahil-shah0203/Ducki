@@ -8,9 +8,9 @@ import { FaEllipsisV, FaPlus, FaChevronLeft, FaChevronRight } from "react-icons/
 
 type SidebarProps = {
   userId: number | undefined;
-  handleClassSelect: (
-    selectedClass: { class_id: number; class_name: string } | null,
-  ) => void;
+  handleClassSelect: (selectedClass: { class_id: number; class_name: string } | null) => void;
+  toggleSidebar: () => void;
+  isCollapsed: boolean;
 };
 
 type ClassItem = {
@@ -18,12 +18,11 @@ type ClassItem = {
   class_name: string;
 };
 
-export default function Sidebar({ userId, handleClassSelect }: SidebarProps) {
+export default function Sidebar({ userId, handleClassSelect, toggleSidebar, isCollapsed }: SidebarProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState<Record<string, boolean>>({});
   const [classToDelete, setClassToDelete] = useState<ClassItem | null>(null);
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const handleClassClick = (classItem: ClassItem) => {
     handleClassSelect(classItem);
@@ -63,11 +62,7 @@ export default function Sidebar({ userId, handleClassSelect }: SidebarProps) {
           class_id: classToDelete?.class_id,
         });
         console.log("Deleted class:", deleteClass);
-        setClasses(
-          classes.filter(
-            (classItem) => classItem.class_id !== classToDelete?.class_id,
-          ),
-        );
+        setClasses(classes.filter((classItem) => classItem.class_id !== classToDelete?.class_id));
       } catch (error) {
         console.error("Error deleting class:", error);
       }
@@ -130,11 +125,11 @@ export default function Sidebar({ userId, handleClassSelect }: SidebarProps) {
               {classes.map((classItem, index) => (
                 <li
                   key={index}
-                  className={`relative ${classItem.class_name === selectedClass?.class_name ? "highlighted" : ""}`}
+                  className={`relative ${classItem.class_name === selectedClass?.class_name ? "bg-[#334d43]" : ""}`}
                 >
                   <button
                     onClick={() => handleClassClick(classItem)}
-                    className="flex w-full items-center justify-between bg-transparent p-4 text-left hover-green-darker"
+                    className="flex w-full items-center justify-between bg-transparent p-4 text-left hover:bg-[#334d43]"
                   >
                     {isCollapsed ? '' : classItem.class_name}
                     <div className="relative">
@@ -143,11 +138,10 @@ export default function Sidebar({ userId, handleClassSelect }: SidebarProps) {
                           e.stopPropagation(); // Stop the propagation of the click event
                           setIsDropdownOpen((prevState) => ({
                             ...prevState,
-                            [classItem.class_name]:
-                              !prevState[classItem.class_name],
+                            [classItem.class_name]: !prevState[classItem.class_name],
                           }));
                         }}
-                        className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-gray-500 focus:outline-none" // Add rounded-full, w-10, h-10, flex, items-center, justify-center
+                        className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-gray-500 focus:outline-none"
                       >
                         <FaEllipsisV />
                       </button>
@@ -181,7 +175,7 @@ export default function Sidebar({ userId, handleClassSelect }: SidebarProps) {
             isOpen={isDialogOpen}
             onRequestClose={() => setIsDialogOpen(false)}
             onAddClass={handleAddClass}
-            classes={classes} // Pass the classes array as a prop
+            classes={classes}
           />
           {classToDelete && (
             <ConfirmDeleteDialog
@@ -193,7 +187,7 @@ export default function Sidebar({ userId, handleClassSelect }: SidebarProps) {
         </>
       )}
       <button
-        onClick={() => setIsCollapsed(!isCollapsed)}
+        onClick={toggleSidebar}
         className="absolute bottom-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-gray-500 focus:outline-none"
       >
         {isCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
@@ -209,10 +203,10 @@ interface ConfirmDeleteDialogProps {
 }
 
 function ConfirmDeleteDialog({
-                               className,
-                               onCancel,
-                               onConfirm,
-                             }: ConfirmDeleteDialogProps) {
+  className,
+  onCancel,
+  onConfirm,
+}: ConfirmDeleteDialogProps) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
       <div className="rounded-md bg-white p-4 shadow-md">

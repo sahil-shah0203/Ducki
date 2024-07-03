@@ -8,7 +8,6 @@ export default function Home() {
         position: 'relative',
         zIndex: 2 // Ensure the content is above the HomeBackground
       }}>
-        lmao
       </div>
     </div>
   );
