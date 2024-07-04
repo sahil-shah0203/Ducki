@@ -125,11 +125,11 @@ export default function Sidebar({ userId, handleClassSelect, toggleSidebar, isCo
   };
 
   return (
-    <aside className={`fixed left-0 top-0 h-full ${isCollapsed ? 'w-16' : 'w-64'} overflow-y-auto p-4 text-white bg-transparent transition-width duration-300`}>
-      <div className="absolute top-0 left-0 w-full p-4 flex items-center space-x-4">
+    <aside className={`fixed left-0 top-0 h-full ${isCollapsed ? 'w-16' : 'w-64'} overflow-y-auto overflow-x-hidden p-4 text-white bg-transparent transition-width duration-300`}>
+      <div className="absolute top-0 left-0 w-full p-4 flex items-center space-x-4" style={{ paddingLeft: isCollapsed ? '12px' : '' }}>
         {/* Placeholder for logo */}
         <div className="w-8 h-8 bg-gray-500 rounded-full"></div>
-        <h1 className="text-2xl font-bold">Ducki</h1>
+        {!isCollapsed && <h1 className="text-2xl font-bold">Ducki</h1>}
       </div>
       {!isCollapsed && (
         <>
@@ -268,10 +268,10 @@ interface ConfirmDeleteDialogProps {
 }
 
 function ConfirmDeleteDialog({
-  className,
-  onCancel,
-  onConfirm,
-}: ConfirmDeleteDialogProps) {
+                               className,
+                               onCancel,
+                               onConfirm,
+                             }: ConfirmDeleteDialogProps) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
       <div className="rounded-md bg-white p-4 shadow-md">

@@ -62,7 +62,7 @@ export default function MainPage() {
           isCollapsed={isSidebarCollapsed}
           userImage={user_image} // Pass the user's image URL to Sidebar
         />
-        <div className={`flex-grow transition-all duration-300 ${isSidebarCollapsed ? 'ml-0' : 'ml-64'}`}>
+        <div className={`flex-grow transition-all duration-300 ${isSidebarCollapsed ? 'ml-10' : 'ml-64'}`}>
           <Background />
           <HomeBackground isCollapsed={isSidebarCollapsed}/>
           {selectedClass ? (
