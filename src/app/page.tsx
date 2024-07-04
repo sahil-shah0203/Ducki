@@ -31,6 +31,7 @@ export default function MainPage() {
     const user_email = user?.emailAddresses[0]?.emailAddress;
     const first_name = user?.firstName;
     const last_name = user?.lastName;
+    const user_image = user?.imageUrl; // Get the user's image URL
 
     if (!user_email || !first_name || !last_name) {
       return <div>Error: Unable to fetch user details</div>;
@@ -53,8 +54,14 @@ export default function MainPage() {
     const user_id = id?.user_id;
 
     return (
-      <div className="relative flex h-full" style={{ zIndex: 0 }}>
-        <Sidebar userId={user_id} handleClassSelect={handleClassSelect} toggleSidebar={toggleSidebar} isCollapsed={isSidebarCollapsed} />
+      <div className="relative flex h-screen" style={{ zIndex: 0 }}>
+        <Sidebar 
+          userId={user_id} 
+          handleClassSelect={handleClassSelect} 
+          toggleSidebar={toggleSidebar} 
+          isCollapsed={isSidebarCollapsed}
+          userImage={user_image} // Pass the user's image URL to Sidebar
+        />
         <div className={`flex-grow transition-all duration-300 ${isSidebarCollapsed ? 'ml-0' : 'ml-64'}`}>
           <Background />
           <HomeBackground isCollapsed={isSidebarCollapsed}/>
