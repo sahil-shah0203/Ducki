@@ -125,11 +125,11 @@ export default function Sidebar({ userId, handleClassSelect, toggleSidebar, isCo
               {classes.map((classItem, index) => (
                 <li
                   key={index}
-                  className={`relative ${classItem.class_name === selectedClass?.class_name ? "bg-[#334d43]" : ""}`}
+                  className={`relative ${classItem.class_name === selectedClass?.class_name ? "bg-[#217853] rounded-lg" : ""}`}
                 >
                   <button
                     onClick={() => handleClassClick(classItem)}
-                    className="flex w-full items-center justify-between bg-transparent p-4 text-left hover:bg-[#334d43]"
+                    className="flex w-full items-center justify-between bg-transparent p-1 pl-3 text-left hover:bg-[#217853] rounded-lg"
                   >
                     {isCollapsed ? '' : classItem.class_name}
                     <div className="relative">
