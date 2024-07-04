@@ -55,7 +55,7 @@ export default function MainPage() {
     return (
       <div className="relative flex h-full" style={{ zIndex: 0 }}>
         <Sidebar userId={user_id} handleClassSelect={handleClassSelect} toggleSidebar={toggleSidebar} isCollapsed={isSidebarCollapsed} />
-        <div className={`flex-grow transition-all duration-300 ${isSidebarCollapsed ? 'ml-20' : 'ml-64'}`}>
+        <div className={`flex-grow transition-all duration-300 ${isSidebarCollapsed ? 'ml-0' : 'ml-64'}`}>
           <Background />
           <HomeBackground isCollapsed={isSidebarCollapsed}/>
           {selectedClass ? (
@@ -63,7 +63,7 @@ export default function MainPage() {
               <div className="flex-grow p-4 overflow-auto">
                 {error && <p className="text-red-500">{error}</p>}
               </div>
-              <div className="ml-64">
+              <div>
                 <div className="llm-input">
                   <LLMInput
                     onFetchResults={setChoices}

@@ -111,7 +111,7 @@ export default function Sidebar({ userId, handleClassSelect, toggleSidebar, isCo
   return (
     <>
       <HomeBackground isCollapsed={isCollapsed} />
-      <aside className={`fixed left-0 top-16 h-[calc(100vh-4rem)] ${isCollapsed ? 'w-16' : 'w-64'} overflow-y-auto p-4 text-white bg-transparent transition-width duration-300`}>
+      <aside className={`fixed left-0 top-16 h-[calc(100vh-4rem)] ${isCollapsed ? 'w-16' : 'w-64'} overflow-y-auto overflow-x-hidden p-4 text-white bg-transparent transition-width duration-300`}>
         {!isCollapsed && (
           <>
             <div className="mb-4 flex items-center justify-between">
