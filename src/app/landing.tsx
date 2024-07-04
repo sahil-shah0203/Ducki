@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import logo from "../../public/duck.png";
+import Background from "./Background";
 
 interface Asteroid {
   x: number;
@@ -91,9 +92,10 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-400 to-indigo-500 relative">
+    <div className="min-h-screen flex flex-col items-center justify-center">
+      <Background />
       <div className="mb-8 flex items-center">
-        <h1 className="text-6xl font-bold text-gray-800">ducki</h1>
+        <h1 className="text-6xl font-bold text-white">ducki</h1>
       </div>
       <div className="mx-auto max-w-md rounded-lg bg-white p-8 shadow-lg">
         <div className="mb-6 flex justify-center">
