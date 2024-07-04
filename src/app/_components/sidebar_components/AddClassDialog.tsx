@@ -1,0 +1,46 @@
+import { useState } from "react";
+
+type AddClassDialogProps = {
+  isOpen: boolean;
+  onRequestClose: () => void;
+  onAddClass: (classTemp: string) => Promise<boolean>;
+  classes: { class_id: number; class_name: string }[];
+};
+
+export default function AddClassDialog({ isOpen, onRequestClose, onAddClass, classes }: AddClassDialogProps) {
+  const [newClass, setNewClass] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (await onAddClass(newClass)) {
+      setNewClass("");
+      onRequestClose();
+    }
+  };
+
+  return (
+    <div className={`fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 ${isOpen ? "" : "hidden"}`}>
+      <div className="bg-white p-4 rounded-md shadow-md">
+        <h2 className="text-xl mb-4">Add a New Class</h2>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            value={newClass}
+            onChange={(e) => setNewClass(e.target.value)}
+            className="border p-2 rounded w-full mb-4"
+            placeholder="Class name"
+            required
+          />
+          <div className="flex justify-end">
+            <button type="button" onClick={onRequestClose} className="mr-4 bg-gray-200 px-4 py-2 rounded">
+              Cancel
+            </button>
+            <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded">
+              Add
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}

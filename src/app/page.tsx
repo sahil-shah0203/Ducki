@@ -2,11 +2,11 @@
 import { useUser } from '@clerk/nextjs';
 import Landing from './landing';
 import Home from './home';
-import Sidebar from './_components/Sidebar';
+import Sidebar from './_components/sidebar_components/Sidebar';
 
 import { api } from "~/trpc/react";
 import React, { useState } from "react";
-import LLMInput from "~/app/_components/LLMInput";
+import LLMInput from "~/app/_components/llm_input_components/LLMInput";
 import Background from './Background';
 import HomeBackground from "~/app/HomeBackground"; // Import the Background component
 
@@ -55,10 +55,10 @@ export default function MainPage() {
 
     return (
       <div className="relative flex h-screen" style={{ zIndex: 0 }}>
-        <Sidebar 
-          userId={user_id} 
-          handleClassSelect={handleClassSelect} 
-          toggleSidebar={toggleSidebar} 
+        <Sidebar
+          userId={user_id}
+          handleClassSelect={handleClassSelect}
+          toggleSidebar={toggleSidebar}
           isCollapsed={isSidebarCollapsed}
           userImage={user_image} // Pass the user's image URL to Sidebar
         />

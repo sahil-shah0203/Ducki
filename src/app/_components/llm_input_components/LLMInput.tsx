@@ -2,7 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import DOMPurify from 'dompurify';
 import { api } from "~/trpc/react";
 import 'katex/dist/katex.min.css';
-import katex from 'katex';
+import { ChatMessageType } from './ChatMessage';
+import { formatText } from './formatText';
+import ChatContainer from './ChatContainer';
+import InputField from './InputField';
 
 interface LLMInputProps {
   onFetchResults: (choices: any[]) => void;
@@ -12,71 +15,15 @@ interface LLMInputProps {
   selectedClassID: number | null;
 }
 
-interface ChatMessage {
-  type: boolean;
-  text: string;
-  session: string;
-  timestamp: Date;
-}
-
-const formatText = (text: string): string => {
-  console.log("Formatting text:", text);
-
-  // Save LaTeX sections
-  const latexSections: Record<string, string> = {};
-  let sectionIndex = 0;
-  // Detect LaTeX sections by identifying common mathematical patterns or keywords
-  const latexRegex = /([A-Za-z0-9]+(?:\s*[\+\-\*\/\^]\s*[A-Za-z0-9]+)+|\\(?:frac|sqrt|sum|int|lim|sin|cos|tan|log|exp|pi|theta|alpha|beta|gamma|delta|epsilon|lambda|mu|nu|rho|sigma|tau|phi|chi|psi|omega)[^<>\s]*)/g;
-  text = text.replace(latexRegex, (match: string) => {
-    const key = `__LATEX_${sectionIndex++}__`;
-    latexSections[key] = match;
-    return key;
-  });
-
-  // Code blocks
-  text = text.replace(/```([\s\S]*?)```/g, (_, code: string) => `<div class="code-block"><pre><code>${DOMPurify.sanitize(code)}</code></pre></div>`);
-
-  // Inline code
-  text = text.replace(/`([^`]+)`/g, (_, code: string) => `<code>${DOMPurify.sanitize(code)}</code>`);
-
-  // Newlines
-  text = text.replace(/\n/g, '<br>');
-
-  // Indents
-  text = text.replace(/^\s+/gm, match => '&nbsp;'.repeat(match.length));
-
-  // Other formats
-  text = text
-    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')    // Bold
-    .replace(/\*(.*?)\*/g, '<i>$1</i>')        // Italic
-    .replace(/~(.*?)~/g, '<u>$1</u>')          // Underline
-    .replace(/~~(.*?)~~/g, '<s>$1</s>');       // Strikethrough
-
-  // Restore LaTeX sections
-  text = text.replace(/__LATEX_(\d+)__/g, (_, index: string) => {
-    const latexKey = `__LATEX_${index}__`;
-    const latexMatch = latexSections[latexKey] ?? '';
-    try {
-      return katex.renderToString(latexMatch, { throwOnError: false });
-    } catch {
-      return latexMatch;
-    }
-  });
-
-  console.log("Formatted text:", text);
-  return text;
-};
-
 export default function LLMInput({ onFetchResults, onError, user_id, selectedClassName, selectedClassID }: LLMInputProps) {
   const [inputText, setInputText] = useState<string>("");
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatMessages, setChatMessages] = useState<ChatMessageType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [displayResponse, setDisplayResponse] = useState<string>("");
   const [completedTyping, setCompletedTyping] = useState<boolean>(true);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const abortController = useRef(new AbortController());
   const inputRef = useRef<HTMLInputElement>(null);
-  const [lastMessage, setLastMessage] = useState<ChatMessage | null>(null);
   const sessionId = useRef(Date.now().toString());
   const storeChatHistoryMutation = api.chats.storeChatHistory.useMutation();
 
@@ -94,11 +41,11 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
   useEffect(() => {
     if (chatHistoryQuery && chatHistoryQuery.data) {
       const storedChatMessages = chatHistoryQuery.data as { content: string, sentByUser: boolean, timestamp: Date }[];
-      const chatMessages: ChatMessage[] = storedChatMessages.map(message => ({
+      const chatMessages: ChatMessageType[] = storedChatMessages.map(message => ({
         type: message.sentByUser,
         text: message.content,
         session: sessionId.current,
-        timestamp: new Date(message.timestamp), // Ensure timestamp is a Date object
+        timestamp: new Date(message.timestamp),
       }));
       setChatMessages(chatMessages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
     }
@@ -131,34 +78,33 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     return new Date(timeOrigin + now);
   };
 
-  const storeChatHistory = (message: ChatMessage, isUserMessage: boolean) => {
+  const storeChatHistory = (message: ChatMessageType, isUserMessage: boolean) => {
     if (typeof user_id === 'number' && typeof selectedClassID === 'number') {
       storeChatHistoryMutation.mutate({
         user_id: user_id,
         class_id: selectedClassID,
         content: message.text,
         sentByUser: isUserMessage,
-        timestamp: message.timestamp.toISOString(), // Store as string in ISO format
+        timestamp: message.timestamp.toISOString(),
       });
     }
   };
 
-  const fetchAndStoreChatHistory = async (inputText: string, userMessage: ChatMessage) => {
+  const fetchAndStoreChatHistory = async (inputText: string, userMessage: ChatMessageType) => {
     setLoading(true);
     abortController.current = new AbortController();
     try {
-      // Construct the chat history to send to the backend
       const chatHistory = [...chatMessages, userMessage].map(message => ({
         role: message.type ? 'user' : 'assistant',
         content: message.text,
-      })).reverse(); // Reverse to ensure chronological order
+      })).reverse();
 
       const response = await fetch("/api/LLM", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ prompt: inputText, chatHistory }), // Send chatHistory
+        body: JSON.stringify({ prompt: inputText, chatHistory }),
         signal: abortController.current.signal,
       });
       if (!response.ok) {
@@ -168,10 +114,9 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
       console.log("Fetched result:", result);
       const llmMessage = formatText(result.choices[0].message.content);
       const llmTimestamp = getPreciseTimestamp();
-      const llmResponseMessage: ChatMessage = { type: false, text: llmMessage, session: sessionId.current, timestamp: llmTimestamp };
+      const llmResponseMessage: ChatMessageType = { type: false, text: llmMessage, session: sessionId.current, timestamp: llmTimestamp };
       setChatMessages(prevMessages => [...prevMessages, llmResponseMessage].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
-      setLastMessage(llmResponseMessage);
-      setCompletedTyping(false); // Reset typing animation state
+      setCompletedTyping(false);
       setIsGenerating(false);
       storeChatHistory(llmResponseMessage, false);
     } catch (err) {
@@ -191,7 +136,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     setIsGenerating(true);
     onError(null);
     const userTimestamp = getPreciseTimestamp();
-    const userMessage: ChatMessage = { type: true, text: inputText, session: sessionId.current, timestamp: userTimestamp };
+    const userMessage: ChatMessageType = { type: true, text: inputText, session: sessionId.current, timestamp: userTimestamp };
     console.log("User message:", userMessage);
     setChatMessages(prevMessages => [...prevMessages, userMessage].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
     setInputText('');
@@ -222,58 +167,23 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
 
   return (
     <div className="flex flex-col h-screen">
-      <div id="chat-container" className="overflow-auto rounded p-4 flex space-y-2 flex-grow">
-        {loading && (
-          <div className="p-2 rounded-lg my-2 max-w-sm text-sm bg-gray-300 text-white self-start animate-pulse">
-            Loading...
-          </div>
-        )}
-        {chatMessages.map((message, index) => (
-          <div key={index} className={`p-2 rounded-lg my-2 max-w-sm text-sm ${message.type ? 'bg-[#d3e4dd] text-lime-950 self-end' : message.text.includes('generation-stopped') ? '' : 'bg-green-100 text-stone-900 self-start'}`}>
-            {index === 0 && !message.type && message.session === sessionId.current && !completedTyping ? (
-              <span dangerouslySetInnerHTML={sanitizedHtml(displayResponse + (!completedTyping ? '<span class="cursor"></span>' : ''))}></span>
-            ) : (
-              <span dangerouslySetInnerHTML={sanitizedHtml(message.text)}></span>
-            )}
-          </div>
-        ))}
-      </div>
-      <div className="w-full flex items-center bg-transparent p-12 border-12 mb-12">
-        <input
-          ref={inputRef}
-          type="text"
-          className="border rounded py-1 px-2 flex-grow text-black text-sm mr-2"
-          value={inputText}
-          onChange={handleInputChange}
-          onKeyPress={handleKeyPress}
-          placeholder="Enter text for LLM"
-          aria-label="Text input for LLM prompt"
-          disabled={isGenerating}
-        />
-        <button
-          className="group relative inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-[#3a5e4d]"
-          onClick={isGenerating ? handleStopGeneration : handleSubmit}
-          aria-label={isGenerating ? "Stop Generation" : "Submit prompt to LLM"}
-        >
-          <div className="transition duration-300 group-hover:rotate-[360deg]">
-            <svg
-              width="15"
-              height="15"
-              viewBox="0 0 15 15"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-[#f9ce36]"
-            >
-              <path
-                d="M8.14645 3.14645C8.34171 2.95118 8.65829 2.95118 8.85355 3.14645L12.8536 7.14645C13.0488 7.34171 13.0488 7.65829 12.8536 7.85355L8.85355 11.8536C8.65829 12.0488 8.34171 12.0488 8.14645 11.8536C7.95118 11.6583 7.95118 11.3417 8.14645 11.1464L11.2929 8H2.5C2.22386 8 2 7.77614 2 7.5C2 7.22386 2.22386 7 2.5 7H11.2929L8.14645 3.85355C7.95118 3.65829 7.95118 3.34171 8.14645 3.14645Z"
-                fill="currentColor"
-                fillRule="evenodd"
-                clipRule="evenodd"
-              ></path>
-            </svg>
-          </div>
-        </button>
-      </div>
+      <ChatContainer
+        chatMessages={chatMessages}
+        displayResponse={displayResponse}
+        loading={loading}
+        completedTyping={completedTyping}
+        sessionId={sessionId.current}
+        sanitizedHtml={sanitizedHtml}
+      />
+      <InputField
+        inputRef={inputRef}
+        inputText={inputText}
+        isGenerating={isGenerating}
+        handleInputChange={handleInputChange}
+        handleKeyPress={handleKeyPress}
+        handleSubmit={handleSubmit}
+        handleStopGeneration={handleStopGeneration}
+      />
     </div>
   );
 }
