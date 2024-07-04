@@ -97,6 +97,7 @@ body {
 
 .list-decimal {
   list-style-type: decimal;
+
 }
 
 .ml-5 {
@@ -134,4 +135,8 @@ pre code {
   background: #000000;
   border-radius: 5px;
   overflow-x: auto;
+}
+
+.transition-width {
+  transition: width 0.3s ease-in-out;
 }

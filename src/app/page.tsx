@@ -57,7 +57,7 @@ export default function MainPage() {
         <Sidebar userId={user_id} handleClassSelect={handleClassSelect} toggleSidebar={toggleSidebar} isCollapsed={isSidebarCollapsed} />
         <div className={`flex-grow transition-all duration-300 ${isSidebarCollapsed ? 'ml-20' : 'ml-64'}`}>
           <Background />
-          <HomeBackground />
+          <HomeBackground isCollapsed={isSidebarCollapsed}/>
           {selectedClass ? (
             <>
               <div className="flex-grow p-4 overflow-auto">
