@@ -5,10 +5,10 @@ interface ConfirmDeleteDialogProps {
 }
 
 export default function ConfirmDeleteDialog({
-                                              className,
-                                              onCancel,
-                                              onConfirm,
-                                            }: ConfirmDeleteDialogProps) {
+  className,
+  onCancel,
+  onConfirm,
+}: ConfirmDeleteDialogProps) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
       <div className="rounded-md bg-white p-4 shadow-md">
