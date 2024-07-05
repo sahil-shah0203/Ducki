@@ -2,21 +2,27 @@
 import { useUser } from '@clerk/nextjs';
 import Landing from './landing';
 import Home from './home';
-import Sidebar from './_components/Sidebar';
+import Sidebar from './_components/sidebar_components/Sidebar';
 
 import { api } from "~/trpc/react";
-import React, {useState} from "react";
-import LLMInput from "~/app/_components/LLMInput";
+import React, { useState } from "react";
+import LLMInput from "~/app/_components/llm_input_components/LLMInput";
+import Background from './Background';
+import HomeBackground from "~/app/HomeBackground"; // Import the Background component
 
 export default function MainPage() {
   const { user, isSignedIn } = useUser();
-  // New state for selected class
   const [selectedClass, setSelectedClass] = useState<{ class_id: number, class_name: string } | null>(null);
   const [choices, setChoices] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
-  // Function to handle class selection from sidebar
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
   const handleClassSelect = (selectedClass: { class_id: number, class_name: string } | null) => {
     setSelectedClass(selectedClass);
+  };
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
   };
 
   if (!isSignedIn) {
@@ -25,6 +31,7 @@ export default function MainPage() {
     const user_email = user?.emailAddresses[0]?.emailAddress;
     const first_name = user?.firstName;
     const last_name = user?.lastName;
+    const user_image = user?.imageUrl; // Get the user's image URL
 
     if (!user_email || !first_name || !last_name) {
       return <div>Error: Unable to fetch user details</div>;
@@ -47,28 +54,38 @@ export default function MainPage() {
     const user_id = id?.user_id;
 
     return (
-      <div className="flex flex-col h-full justify-between">
-        <Sidebar userId={user_id} handleClassSelect={handleClassSelect} />
-        {selectedClass ? (
-          <>
-            <div className="flex-grow p-4 overflow-auto">
-              {error && <p className="text-red-500">{error}</p>}
-            </div>
-            <div className="ml-64">
-              <div className="llm-input">
-                <LLMInput
-                  onFetchResults={setChoices}
-                  onError={setError}
-                  user_id={user_id}
-                  selectedClassName={selectedClass?.class_name}
-                  selectedClassID={selectedClass?.class_id}
-                />
+      <div className="relative flex h-screen" style={{ zIndex: 0 }}>
+        <Sidebar
+          userId={user_id}
+          handleClassSelect={handleClassSelect}
+          toggleSidebar={toggleSidebar}
+          isCollapsed={isSidebarCollapsed}
+          userImage={user_image} // Pass the user's image URL to Sidebar
+        />
+        <div className={`flex-grow transition-all duration-300 ${isSidebarCollapsed ? 'ml-10' : 'ml-64'}`}>
+          <Background />
+          <HomeBackground isCollapsed={isSidebarCollapsed}/>
+          {selectedClass ? (
+            <>
+              <div className="flex-grow p-4 overflow-auto">
+                {error && <p className="text-red-500">{error}</p>}
               </div>
-            </div>
-          </>
-        ) : (
-          <Home />
-        )}
+              <div>
+                <div className="llm-input">
+                  <LLMInput
+                    onFetchResults={setChoices}
+                    onError={setError}
+                    user_id={user_id}
+                    selectedClassName={selectedClass?.class_name}
+                    selectedClassID={selectedClass?.class_id}
+                  />
+                </div>
+              </div>
+            </>
+          ) : (
+            <Home />
+          )}
+        </div>
       </div>
     );
   }

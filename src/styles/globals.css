@@ -41,40 +41,11 @@ body {
   bottom: 0;
 }
 
-.header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 10;
-}
-
-.main-content {
-  margin-top: 64px; /* Adjust based on header height */
-}
-
-.sidebar {
-  position: fixed;
-  top: 64px; /* Adjust based on header height */
-  left: 0;
-  height: calc(100% - 64px); /* Adjust based on header height */
-  width: 64px;
-  background: linear-gradient(to bottom, #A084CA, #7E57C2); /* Lavender ombre */
-}
-
 .content {
   margin-left: 64px; /* Adjust based on sidebar width */
   padding: 16px;
   overflow-y: auto;
   height: calc(100% - 64px); /* Adjust based on header height */
-}
-
-.sticky-bottom {
-  position: -webkit-sticky;
-  position: sticky;
-  bottom: 0;
-  background-color: white;
-  padding: 1rem;
 }
 
 #chat-container {
@@ -117,5 +88,55 @@ body {
 }
 
 .highlighted {
-  background-color: #4B5563;
+  background-color: #334d43;
+}
+
+.list-disc {
+  list-style-type: disc;
+}
+
+.list-decimal {
+  list-style-type: decimal;
+
+}
+
+.ml-5 {
+  margin-left: 1.25rem;
+}
+
+.mb-1 {
+  margin-bottom: 0.25rem;
+}
+
+.generation-stopped {
+  color: red;
+  font-weight: bold;
+}
+
+.cursor {
+  display: inline-block;
+  width: 1px;
+  background-color: black;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  from, to {
+    background-color: transparent;
+  }
+  50% {
+    background-color: black;
+  }
+}
+
+pre code {
+  display: block;
+  padding: 1em;
+  background: #000000;
+  border-radius: 5px;
+  overflow-x: auto;
+}
+
+.transition-width {
+  transition: width 0.3s ease-in-out;
 }
