@@ -5,13 +5,13 @@ import Home from './home';
 import Sidebar from './_components/sidebar_components/Sidebar';
 
 import { api } from "~/trpc/react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import LLMInput from "~/app/_components/llm_input_components/LLMInput";
 import Background from './Background';
 import HomeBackground from "~/app/HomeBackground"; // Import the Background component
 
 export default function MainPage() {
-  const { user, isSignedIn } = useUser();
+  const { user, isSignedIn, isLoaded } = useUser(); // Add isLoaded to determine when user data is fully loaded
   const [selectedClass, setSelectedClass] = useState<{ class_id: number, class_name: string } | null>(null);
   const [choices, setChoices] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -24,6 +24,16 @@ export default function MainPage() {
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
+
+  useEffect(() => {
+    if (!isLoaded) {
+      return; // Don't render anything until the user data is fully loaded
+    }
+  }, [isLoaded]);
+
+  if (!isLoaded) {
+    return <div>Loading...</div>; // Display a loading state while user data is being fetched
+  }
 
   if (!isSignedIn) {
     return <Landing />;

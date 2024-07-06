@@ -8,6 +8,9 @@ import ProfileDropdown from "./ProfileDropdown";
 import { api } from "~/trpc/react";
 import { FaEllipsisV, FaPlus, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { SignOutButton } from '@clerk/nextjs';
+import DashboardButton from './DashboardButton';
+import CalendarButton from './CalendarButton';
+import ChatButton from './ChatButton';
 
 type SidebarProps = {
   userId: number | undefined;
@@ -122,16 +125,19 @@ export default function Sidebar({ userId, handleClassSelect, toggleSidebar, isCo
       </div>
       {!isCollapsed && (
         <>
-          <div className="mt-16 mb-4 flex items-center justify-between">
-            <h1 className="text-2xl font-bold">Classes</h1>
+          <nav className="mt-16 space-y-4">
+            <DashboardButton/>
+            <CalendarButton/>
+            <ChatButton/>
+          </nav>
+          <div className="mt-8 mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Sections</h2>
             <button
               onClick={() => setIsDialogOpen(true)}
-              className="group flex h-10 w-10 select-none items-center justify-center rounded-lg border border-zinc-100 bg-white leading-8 text-zinc-950 shadow-[0_-1px_0_0px_#d4d4d8_inset,0_0_0_1px_#f4f4f5_inset,0_0.5px_0_1.5px_#fff_inset] hover:bg-zinc-50 hover:via-zinc-900 hover:to-zinc-800 active:shadow-[-1px_0px_1px_0px_#e4e4e7_inset,1px_0px_1px_0px_#e4e4e7_inset,0px_0.125rem_1px_0px_#d4d4d8_inset] focus:outline-none"
+              className="flex h-6 w-6 items-center justify-center rounded-lg bg-transparent text-white hover:text-gray-300 focus:outline-none"
               aria-label="Add"
             >
-              <span className="flex items-center group-active:[transform:translate3d(0,1px,0)]">
-                <FaPlus className="h-4 w-4" style={{ color: '#217853' }} />
-              </span>
+              <FaPlus className="h-4 w-4"/>
             </button>
           </div>
           <nav>
@@ -157,7 +163,7 @@ export default function Sidebar({ userId, handleClassSelect, toggleSidebar, isCo
                         }}
                         className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-gray-500 focus:outline-none"
                       >
-                        <FaEllipsisV />
+                        <FaEllipsisV/>
                       </button>
                       {isDropdownOpen[classItem.class_name] && (
                         <div
@@ -204,10 +210,10 @@ export default function Sidebar({ userId, handleClassSelect, toggleSidebar, isCo
         onClick={toggleSidebar}
         className="absolute bottom-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-gray-500 focus:outline-none"
       >
-        {isCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
+        {isCollapsed ? <FaChevronRight/> : <FaChevronLeft/>}
       </button>
       {!isCollapsed && (
-        <ProfileDropdown userImage={userImage} />
+        <ProfileDropdown userImage={userImage}/>
       )}
     </aside>
   );
