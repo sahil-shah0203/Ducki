@@ -3,7 +3,6 @@ import React, { useState, useRef, RefObject } from 'react';
 import AWS from 'aws-sdk';
 import uuid from 'react-uuid'
 
-
 interface InputFieldProps {
   inputRef: RefObject<HTMLInputElement>;
   inputText: string;
@@ -41,8 +40,8 @@ export default function InputField({
     const REGION = "us-east-1"; // Replace with your region
 
     AWS.config.update({
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      accessKeyId: "",
+      secretAccessKey: "",
     });
 
     const s3 = new AWS.S3({
@@ -83,8 +82,8 @@ export default function InputField({
     const REGION = "us-east-1";
 
     AWS.config.update({
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      accessKeyId: "",
+      secretAccessKey: "",
     });
 
     const lambda = new AWS.Lambda({
