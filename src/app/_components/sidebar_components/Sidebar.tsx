@@ -119,8 +119,8 @@ export default function Sidebar({ userId, handleClassSelect, toggleSidebar, isCo
 
   return (
     <aside className={`fixed left-0 top-0 h-full ${isCollapsed ? 'w-16' : 'w-64'} overflow-y-auto overflow-x-hidden p-4 text-white bg-transparent transition-width duration-300`}>
-      <div className="absolute top-0 left-0 w-full p-4 flex items-center space-x-4" style={{ paddingLeft: isCollapsed ? '12px' : '' }}>
-        <div className="w-8 h-8 bg-gray-500 rounded-full"></div>
+      <div className="absolute top-0 left-1 w-full p-4 flex items-center space-x-4" style={{ paddingLeft: isCollapsed ? '12px' : '' }}>
+        <img src="\duck.png" alt="Ducki" className="w-7 h-7 rounded-full" />
         {!isCollapsed && <h1 className="text-2xl font-bold">Ducki</h1>}
       </div>
       {!isCollapsed && (
@@ -134,7 +134,7 @@ export default function Sidebar({ userId, handleClassSelect, toggleSidebar, isCo
             <h2 className="text-lg font-semibold">Sections</h2>
             <button
               onClick={() => setIsDialogOpen(true)}
-              className="flex h-6 w-6 items-center justify-center rounded-lg bg-transparent text-white hover:text-gray-300 focus:outline-none"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-white hover:text-gray-300 focus:outline-none"
               aria-label="Add"
             >
               <FaPlus className="h-4 w-4"/>
@@ -161,7 +161,7 @@ export default function Sidebar({ userId, handleClassSelect, toggleSidebar, isCo
                             [classItem.class_name]: !prevState[classItem.class_name],
                           }));
                         }}
-                        className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-gray-500 focus:outline-none"
+                        className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-transparent focus:outline-none"
                       >
                         <FaEllipsisV/>
                       </button>
@@ -170,8 +170,17 @@ export default function Sidebar({ userId, handleClassSelect, toggleSidebar, isCo
                           ref={(ref) => {
                             dropdownRefs.current[classItem.class_name] = ref;
                           }}
-                          className="absolute right-0 z-10 mt-2 w-48 overflow-hidden rounded-md bg-white shadow-xl"
+                          className="absolute right-0 z-10 mt-2 w-48 rounded-md bg-white shadow-xl"
                         >
+                          <a
+                            href="#"
+                            onClick={(e) => {
+                              {/*enter function to show all uploaded files from s3 (another api :| )*/}
+                            }}
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-400 hover:text-white"
+                          >
+                            See Files
+                          </a>
                           <a
                             href="#"
                             onClick={(e) => {
@@ -208,7 +217,7 @@ export default function Sidebar({ userId, handleClassSelect, toggleSidebar, isCo
       )}
       <button
         onClick={toggleSidebar}
-        className="absolute bottom-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-gray-500 focus:outline-none"
+        className="absolute bottom-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-transparent focus:outline-none"
       >
         {isCollapsed ? <FaChevronRight/> : <FaChevronLeft/>}
       </button>

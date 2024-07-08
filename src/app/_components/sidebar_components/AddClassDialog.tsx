@@ -38,7 +38,7 @@ export default function AddClassDialog({ isOpen, onRequestClose, onAddClass, cla
 
   return (
     <div className={`fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 ${isOpen ? "" : "hidden"}`}>
-      <div className="bg-white p-4 rounded-md shadow-md">
+      <div className="bg-white p-6 rounded-md shadow-md">
         <h2 className="text-xl mb-4 text-black">Add a New Class</h2>
         <form onSubmit={handleSubmit}>
           <input
@@ -51,10 +51,10 @@ export default function AddClassDialog({ isOpen, onRequestClose, onAddClass, cla
           />
           {errorMessage && <p className="text-red-500 mb-4">{errorMessage}</p>}
           <div className="flex justify-end">
-            <button type="button" onClick={onRequestClose} className="mr-4 bg-gray-200 px-4 py-2 rounded">
+            <button type="button" onClick={onRequestClose} className="mr-4 bg-[#DADADA] px-4 py-2 rounded hover:bg-[#cccccc]">
               Cancel
             </button>
-            <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded">
+            <button type="submit" className="bg-[#437557] text-white px-4 py-2 rounded hover:bg-[#417154]">
               Add
             </button>
           </div>

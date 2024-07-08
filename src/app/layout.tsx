@@ -2,7 +2,6 @@ import '~/styles/globals.css'; // Unified import path
 import { GeistSans } from 'geist/font/sans';
 import { TRPCReactProvider } from '~/trpc/react';
 import { ClerkProvider } from '@clerk/nextjs';
-import Header from './_components/Header';
 import AuthWrapper from './_components/AuthWrapper';
 
 export const metadata = {
