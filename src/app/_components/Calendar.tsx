@@ -1,21 +1,82 @@
-"use client";
-import { Dispatch, SetStateAction } from 'react';
+import React, { useState } from 'react';
+import { View, StyleSheet } from 'react-native';
+import { Calendar, CalendarList, Agenda } from 'react-native-calendars';
+import { LocaleConfig } from 'react-native-calendars';
 
-interface CalendarProps {
-  selectedDate: string | null;
-  setSelectedDate: Dispatch<SetStateAction<string | null>>;
-}
+LocaleConfig.locales['en'] = {
+  monthNames: [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ],
+  monthNamesShort: [
+    'Jan.',
+    'Feb.',
+    'Mar.',
+    'Apr.',
+    'May.',
+    'Jun.',
+    'Jul.',
+    'Aug.',
+    'Sep.',
+    'Oct.',
+    'Nov.',
+    'Dec.',
+  ],
+  dayNames: [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ],
+  dayNamesShort: ['Sun.', 'Mon.', 'Tue.', 'Wed.', 'Thu.', 'Fri.', 'Sat.'],
+  today: "Today",
+};
+LocaleConfig.defaultLocale = 'en';
 
-export default function Calendar({ selectedDate, setSelectedDate }: CalendarProps) {
+const calendar: React.FC = () => {
+  const [selected, setSelected] = useState<string>('');
+
+  const onDayPress = (day: any) => {
+    setSelected(day.dateString);
+  };
+
   return (
-    <div className="mb-4">
-      <h2 className="text-lg font-bold">Calendar</h2>
-      <input
-        type="date"
-        className="w-full border rounded py-1 px-2"
-        onChange={(e) => setSelectedDate(e.target.value)}
+    <View style={styles.container}>
+      <Calendar
+        onDayPress={onDayPress}
+        markedDates={{
+          [selected]: { selected: true, marked: true, selectedColor: 'blue' },
+        }}
+        theme={{
+          selectedDayBackgroundColor: 'blue',
+          todayTextColor: 'red',
+          arrowColor: 'blue',
+        }}
       />
-      <div className="mt-2">{selectedDate ? `Selected Date: ${selectedDate}` : "No date selected"}</div>
-    </div>
+    </View>
   );
-}
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    padding: 10,
+  },
+});
+
+export default calendar;
