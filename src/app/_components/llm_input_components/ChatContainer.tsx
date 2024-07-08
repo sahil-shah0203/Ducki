@@ -1,4 +1,7 @@
 import { ChatMessageType } from './ChatMessage';
+import React from 'react';
+import Markdown from './Markdown';
+import ReactMarkdown from 'react-markdown';
 
 interface ChatContainerProps {
   chatMessages: ChatMessageType[];
@@ -6,7 +9,6 @@ interface ChatContainerProps {
   loading: boolean;
   completedTyping: boolean;
   sessionId: string;
-  sanitizedHtml: (html: string) => { __html: string };
 }
 
 export default function ChatContainer({
@@ -15,21 +17,20 @@ export default function ChatContainer({
                                         loading,
                                         completedTyping,
                                         sessionId,
-                                        sanitizedHtml,
                                       }: ChatContainerProps) {
   return (
     <div id="chat-container" className="overflow-auto rounded p-4 flex space-y-2 flex-grow">
       {loading && (
-        <div className="p-2 rounded-lg my-2 max-w-sm text-sm bg-gray-300 text-white self-start animate-pulse">
+        <div className="p-2 rounded-lg my-2 max-w-lg text-sm bg-gray-300 text-white self-start animate-pulse">
           Loading...
         </div>
       )}
       {chatMessages.map((message, index) => (
-        <div key={index} className={`p-2 rounded-lg my-2 max-w-sm text-sm ${message.type ? 'bg-[#d3e4dd] text-lime-950 self-end' : message.text.includes('generation-stopped') ? '' : 'bg-green-100 text-stone-900 self-start'}`}>
+        <div key={index} className={`p-2 rounded-lg my-2 text-sm ${message.type ? 'bg-[#d3e4dd] max-w-2xl text-lime-950 self-end' : message.text.includes('generation-stopped') ? '' : 'bg-green-100 text-stone-900 self-start'}`}>
           {index === 0 && !message.type && message.session === sessionId && !completedTyping ? (
-            <span dangerouslySetInnerHTML={sanitizedHtml(displayResponse + (!completedTyping ? '<span class="cursor"></span>' : ''))}></span>
+            <Markdown>{displayResponse}</Markdown>
           ) : (
-            <span dangerouslySetInnerHTML={sanitizedHtml(message.text)}></span>
+            <Markdown>{message.text}</Markdown>
           )}
         </div>
       ))}

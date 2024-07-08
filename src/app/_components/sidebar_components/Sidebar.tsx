@@ -135,9 +135,9 @@ export default function Sidebar({ userId, handleClassSelect, toggleSidebar, isCo
             </button>
           </div>
           <nav>
-            <ul className="space-y-0">
+            <div className="space-y-0">
               {classes.map((classItem, index) => (
-                <li
+                <div
                   key={index}
                   className={`relative ${classItem.class_name === selectedClass?.class_name ? "bg-[#217853] rounded-lg" : ""}`}
                 >
@@ -181,9 +181,9 @@ export default function Sidebar({ userId, handleClassSelect, toggleSidebar, isCo
                       )}
                     </div>
                   </button>
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           </nav>
           <AddClassDialog
             isOpen={isDialogOpen}

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import DOMPurify from 'dompurify';
+// import DOMPurify from 'dompurify';
 import AWS from 'aws-sdk';
 import 'katex/dist/katex.min.css';
 import { ChatMessageType } from './ChatMessage';
@@ -104,7 +104,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
       FunctionName: 'prompt_model',
       Payload: JSON.stringify({
         prompt: inputText,
-        index: "test_index",
+        index: "test_index1",
         chatHistory: chatMessages.map(message => ({
           role: message.type ? 'user' : 'assistant',
           content: message.text,
@@ -122,7 +122,8 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
         const body = typeof response.body === 'string' ? JSON.parse(response.body) : response.body;
         if (body.status === 'success') {
           const model_response = body.model_reponse;
-          const llmMessage = formatText(model_response);
+          // const llmMessage = formatText(model_response);
+          const llmMessage = model_response;
           const llmTimestamp = getPreciseTimestamp();
           const llmResponseMessage: ChatMessageType = { type: false, text: llmMessage, session: sessionId.current, timestamp: llmTimestamp };
           setChatMessages(prevMessages => [...prevMessages, llmResponseMessage].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
@@ -173,10 +174,6 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     }
   };
 
-  const sanitizedHtml = (html: string) => {
-    return { __html: DOMPurify.sanitize(html) };
-  };
-
   return (
     <div className="flex flex-col h-screen">
       <ChatContainer
@@ -185,7 +182,6 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
         loading={loading}
         completedTyping={completedTyping}
         sessionId={sessionId.current}
-        sanitizedHtml={sanitizedHtml}
       />
       <InputField
         inputRef={inputRef}

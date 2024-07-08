@@ -56,7 +56,7 @@ export default function InputField({
       Key: file_name + ".pdf",
       Body: file,
       Metadata: {
-        index: "test_index",
+        index: "test_index1",
       },
     };
 
@@ -94,7 +94,7 @@ export default function InputField({
       FunctionName: LAMBDA_FUNCTION,
       Payload: JSON.stringify({
         document_name: file_name,
-        index: "test_index"
+        index: "test_index1"
       }),
     };
 
