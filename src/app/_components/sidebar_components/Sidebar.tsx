@@ -1,13 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import AddClassDialog from "./AddClassDialog";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
 import ProfileDropdown from "./ProfileDropdown";
 import { api } from "~/trpc/react";
 import { FaEllipsisV, FaPlus, FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import { SignOutButton } from '@clerk/nextjs';
 import DashboardButton from './DashboardButton';
 import CalendarButton from './CalendarButton';
 import ChatButton from './ChatButton';
