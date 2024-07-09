@@ -76,7 +76,7 @@ export default function InputField({
 
   };
 
-  const processFile = async (file_name: String) => {
+  const processFile = async (file_name: string) => {
     setProcessing(true);
     const LAMBDA_FUNCTION = "process_document";
     const REGION = "us-east-1";
