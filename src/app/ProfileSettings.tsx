@@ -1,15 +1,20 @@
 'use client';
 
 import { useUser } from '@clerk/nextjs';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 export default function ProfileSettings() {
   const { user } = useUser();
   const router = useRouter();
+  const pathname = usePathname();
 
   if (!user) {
     router.push('/'); // Redirect to home or login page if the user is not signed in
     return null;
+  }
+
+  if (pathname !== '/settings') {
+    return null; // Do not render if the current URL is not /settings
   }
 
   return (
