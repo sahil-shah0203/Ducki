@@ -120,14 +120,18 @@ export default function Sidebar({ userId, handleClassSelect, toggleSidebar, isCo
     history.pushState(null, '', `/${section}`);
   };
 
+  const handleLogoClick = () => {
+    handleNavigation("dashboard");
+  };
+
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading classes</div>;
 
   return (
     <aside className={`fixed left-0 top-0 h-full ${isCollapsed ? 'w-16' : 'w-64'} overflow-y-auto overflow-x-hidden p-4 text-white bg-transparent transition-width duration-300`}>
       <div className="absolute top-0 left-1 w-full p-4 flex items-center space-x-4" style={{ paddingLeft: isCollapsed ? '12px' : '' }}>
-        <img src="\duck.png" alt="Ducki" className="w-7 h-7 rounded-full" />
-        {!isCollapsed && <h1 className="text-2xl font-bold">Ducki</h1>}
+        <img src="\duck.png" alt="Ducki" className="w-7 h-7 rounded-full cursor-pointer" onClick={handleLogoClick} />
+        {!isCollapsed && <h1 className="text-2xl font-bold cursor-pointer" onClick={handleLogoClick}>Ducki</h1>}
       </div>
       {!isCollapsed && (
         <>
