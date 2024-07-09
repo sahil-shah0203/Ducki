@@ -1,47 +1,46 @@
 "use client";
-import { useUser } from "@clerk/nextjs";
-import Landing from "./landing";
-import Home from "./home";
-import Sidebar from "./_components/sidebar_components/Sidebar";
-
+import { useUser } from '@clerk/nextjs';
+import Landing from './landing';
+import Dashboard from './_components/sidebar_components/dashboard';
+import Sidebar from './_components/sidebar_components/Sidebar';
 import { api } from "~/trpc/react";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import LLMInput from "~/app/_components/llm_input_components/LLMInput";
-import Background from "./Background";
+import Background from './Background';
 import HomeBackground from "~/app/HomeBackground"; // Import the Background component
+import Calendar from './_components/sidebar_components/calendar';
+
+const getInitialSection = () => {
+  if (typeof window !== "undefined") {
+    const path = window.location.pathname.substring(1);
+    if (path === "") {
+      window.history.replaceState(null, '', '/dashboard');
+      return "dashboard";
+    }
+    return path;
+  }
+  return "dashboard";
+};
 
 export default function MainPage() {
-  const { user, isSignedIn, isLoaded } = useUser(); // Add isLoaded to determine when user data is fully loaded
-  const [selectedClass, setSelectedClass] = useState<{
-    class_id: number;
-    class_name: string;
-  } | null>(null);
+  const { user, isSignedIn, isLoaded } = useUser();
+  const [selectedClass, setSelectedClass] = useState<{ class_id: number, class_name: string } | null>(null);
   const [choices, setChoices] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [selectedSection, setSelectedSection] = useState<string>(getInitialSection());
 
-  const handleClassSelect = (
-    selectedClass: { class_id: number; class_name: string } | null,
-  ) => {
+  const handleClassSelect = (selectedClass: { class_id: number, class_name: string } | null) => {
     setSelectedClass(selectedClass);
+    setSelectedSection(""); // Clear the selected section
   };
 
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
 
-  useEffect(() => {
-    if (!isLoaded) {
-      return; // Don't render anything until the user data is fully loaded
-    }
-  }, [isLoaded]);
-
   if (!isLoaded) {
-    return (
-      <div className="loader-container">
-        <div className="loader"></div>
-      </div>
-    );
+    return <div>Loading...</div>; // Display a loading state while user data is being fetched
   }
 
   if (!isSignedIn) {
@@ -56,22 +55,14 @@ export default function MainPage() {
       return <div>Error: Unable to fetch user details</div>;
     }
 
-    const {
-      data: id,
-      error,
-      isLoading,
-    } = api.user.getUserByEmail.useQuery({
+    const { data: id, error, isLoading } = api.user.getUserByEmail.useQuery({
       email: user_email,
       firstName: first_name,
       lastName: last_name,
     });
 
     if (isLoading) {
-      return (
-        <div className="loader-container">
-          <div className="loader"></div>
-        </div>
-      );
+      return <div>Loading...</div>;
     }
 
     if (error) {
@@ -87,16 +78,19 @@ export default function MainPage() {
           handleClassSelect={handleClassSelect}
           toggleSidebar={toggleSidebar}
           isCollapsed={isSidebarCollapsed}
-          userImage={user_image} // Pass the user's image URL to Sidebar
+          userImage={user_image}
+          selectedSection={selectedSection}
+          setSelectedSection={setSelectedSection}
         />
-        <div
-          className={`flex-grow transition-all duration-300 ${isSidebarCollapsed ? "ml-10" : "ml-64"}`}
-        >
+        <div className={`flex-grow transition-all duration-300 ${isSidebarCollapsed ? 'ml-10' : 'ml-64'}`}>
           <Background />
           <HomeBackground isCollapsed={isSidebarCollapsed} />
-          {selectedClass ? (
+          {selectedSection === "dashboard" && <Dashboard />}
+          {selectedSection === "calendar" && <Calendar />}
+          {selectedSection === "chat" && <div>Chat Content</div>}
+          {selectedSection === "" && selectedClass && (
             <>
-              <div className="flex-grow overflow-auto p-4">
+              <div className="flex-grow p-4 overflow-auto">
                 {error && <p className="text-red-500">{error}</p>}
               </div>
               <div>
@@ -111,8 +105,6 @@ export default function MainPage() {
                 </div>
               </div>
             </>
-          ) : (
-            <Home />
           )}
         </div>
       </div>
