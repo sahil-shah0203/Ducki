@@ -40,8 +40,8 @@ export default function InputField({
     const REGION = "us-east-1"; // Replace with your region
 
     AWS.config.update({
-      accessKeyId: "",
-      secretAccessKey: "",
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     });
 
     const s3 = new AWS.S3({
@@ -82,8 +82,8 @@ export default function InputField({
     const REGION = "us-east-1";
 
     AWS.config.update({
-      accessKeyId: "",
-      secretAccessKey: "",
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     });
 
     const lambda = new AWS.Lambda({
