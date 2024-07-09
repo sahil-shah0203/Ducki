@@ -9,6 +9,7 @@ import LLMInput from "~/app/_components/llm_input_components/LLMInput";
 import Background from "./Background";
 import HomeBackground from "~/app/HomeBackground";
 import Calendar from "./_components/sidebar_components/calendar";
+import { usePathname } from 'next/navigation';
 
 const getInitialSection = () => {
   if (typeof window !== "undefined") {
@@ -23,6 +24,7 @@ const getInitialSection = () => {
 };
 
 export default function MainPage() {
+  const pathname = usePathname();
   const { user, isSignedIn, isLoaded } = useUser();
   const [selectedClass, setSelectedClass] = useState<{
     class_id: number;
@@ -114,9 +116,9 @@ export default function MainPage() {
         >
           <Background />
           <HomeBackground isCollapsed={isSidebarCollapsed} />
-          {selectedSection === "dashboard" && <Dashboard />}
-          {selectedSection === "calendar" && <Calendar />}
-          {selectedSection === "chat" && <div>Chat Content</div>}
+          {selectedSection === "dashboard" && pathname === '/dashboard' && <Dashboard />}
+          {selectedSection === "calendar" && pathname === '/calendar' && <Calendar />}
+          {selectedSection === "chat" && pathname === '/chat' && <div>Chat Content</div>}
           {selectedSection === "" && selectedClass && (
             <>
               <div className="flex-grow p-4 overflow-auto">
