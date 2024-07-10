@@ -98,7 +98,11 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
       region: 'us-east-1',
     });
 
-    const lambda = new AWS.Lambda();
+    const lambda = new AWS.Lambda({
+      region: 'us-east-1',
+      accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY,
+    });
 
     const params = {
       FunctionName: 'prompt_model',

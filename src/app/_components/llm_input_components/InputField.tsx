@@ -39,14 +39,16 @@ export default function InputField({
     const S3_BUCKET = "ducki-documents"; // Replace with your bucket name
     const REGION = "us-east-1"; // Replace with your region
 
-    AWS.config.update({
-      accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY,
-    });
+    // AWS.config.update({
+    //   accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
+    //   secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY,
+    // });
 
     const s3 = new AWS.S3({
       params: { Bucket: S3_BUCKET },
       region: REGION,
+      accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY,
     });
 
     const file_name = uuid()
@@ -88,6 +90,8 @@ export default function InputField({
 
     const lambda = new AWS.Lambda({
       region: REGION,
+      accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY,
     });
 
     const params = {
