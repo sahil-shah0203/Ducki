@@ -1,7 +1,7 @@
 import React, { useState, useRef, RefObject } from 'react';
 // import { api } from "~/trpc/react";
-import AWS from 'aws-sdk';
-import uuid from 'react-uuid'
+import AWS, { CostExplorer } from 'aws-sdk';
+import uuid from 'react-uuid';
 
 interface InputFieldProps {
   inputRef: RefObject<HTMLInputElement>;
@@ -40,8 +40,8 @@ export default function InputField({
     const REGION = "us-east-1"; // Replace with your region
 
     AWS.config.update({
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY,
     });
 
     const s3 = new AWS.S3({
@@ -82,8 +82,8 @@ export default function InputField({
     const REGION = "us-east-1";
 
     AWS.config.update({
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY,
     });
 
     const lambda = new AWS.Lambda({
