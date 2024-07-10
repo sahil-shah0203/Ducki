@@ -1,4 +1,7 @@
-import React, { RefObject } from 'react';
+import React, { useState, useRef, RefObject } from 'react';
+// import { api } from "~/trpc/react";
+import AWS, { CostExplorer } from 'aws-sdk';
+import uuid from 'react-uuid';
 
 interface InputFieldProps {
   inputRef: RefObject<HTMLInputElement>;
@@ -19,9 +22,140 @@ export default function InputField({
                                      handleSubmit,
                                      handleStopGeneration,
                                    }: InputFieldProps) {
+
+  // const uploadDocumentMutation = api.document.uploadDocument.useMutation();
+
+  const [uploading, setUploading] = useState(false)
+  const [processing, setProcessing] = useState(false)
+
+  const allowedTypes = [
+    'image/jpeg',
+    'image/png',
+    'application/pdf',
+  ];
+
+  const uploadFile = async (file: File) => {
+    setUploading(true)
+    const S3_BUCKET = "ducki-documents"; // Replace with your bucket name
+    const REGION = "us-east-1"; // Replace with your region
+
+    const s3 = new AWS.S3({
+      params: { Bucket: S3_BUCKET },
+      region: REGION,
+      accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY,
+    });
+
+    const file_name = uuid()
+
+    const params = {
+      Bucket: S3_BUCKET,
+      Key: file_name + ".pdf",
+      Body: file,
+      Metadata: {
+        index: "test_index1",
+      },
+    };
+
+    try {
+      const upload = await s3.putObject(params).promise();
+      console.log(upload);
+      setUploading(false)
+      alert("File uploaded successfully.");
+      return file_name;
+
+    } catch (error: any) {
+      console.error(error);
+      setUploading(false)
+      alert("Error uploading file: " + error.message); // Inform user about the error
+      return null;
+    }
+
+  };
+
+  const processFile = async (file_name: string) => {
+    setProcessing(true);
+    const LAMBDA_FUNCTION = "process_document";
+    const REGION = "us-east-1";
+
+    const lambda = new AWS.Lambda({
+      region: REGION,
+      accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY,
+    });
+
+    const params = {
+      FunctionName: LAMBDA_FUNCTION,
+      Payload: JSON.stringify({
+        document_name: file_name,
+        index: "test_index1"
+      }),
+    };
+
+    try {
+      const response = await lambda.invoke(params).promise();
+      console.log(response);
+      setProcessing(false);
+      alert("File processed successfully.");
+    } catch (error: any) {
+      console.error(error);
+      setProcessing(false);
+      alert("Error processing file: " + error.message); // Inform user about the error
+    }
+  };
+
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      if (file) {
+        try {
+          // Upload the file to the server
+          // uploadDocumentMutation.mutate({
+          //    file: file,
+          // });
+          if (!allowedTypes.includes(file.type)) {
+            alert('Invalid file type');
+            return;
+          }
+
+          const file_name = await uploadFile(file);
+          if (file_name != null) {
+            alert(`${file.name} has been uploaded`);
+            const process_return = await processFile(file_name);
+          }
+          else {
+            alert(`Failed to upload file`);
+          }
+        } catch (error) {
+          alert(`Failed to upload file`);
+        }
+      }
+    }
+  };
+
+
   return (
     <div className="w-full flex items-center bg-transparent p-12 border-12 mb-12">
-      <input
+      <div>
+        <input
+          type="file"
+          accept="application/pdf"
+          className="hidden"
+          id="pdf-upload"
+          onChange={handleFileChange}
+        />
+        <label
+          htmlFor="pdf-upload"
+          className="mx-2 ml-2 cursor-pointer rounded-2xl bg-blue-500 px-4 py-2 text-white"
+        >
+          +
+        </label>
+      </div>
+      {(uploading == processing) && <input
         ref={inputRef}
         type="text"
         className="border rounded py-1 px-2 flex-grow text-black text-sm mr-2"
@@ -31,7 +165,11 @@ export default function InputField({
         placeholder="Enter text for LLM"
         aria-label="Text input for LLM prompt"
         disabled={isGenerating}
-      />
+      />}
+      {(uploading != processing) && <div className="border rounded py-1 px-2 flex-grow text-black text-sm mr-2">
+        {uploading && <p>Uploading Document</p>}
+        {processing && <p>Processing Document</p>}
+      </div>}
       <button
         className="group relative inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-[#3a5e4d]"
         onClick={isGenerating ? handleStopGeneration : handleSubmit}

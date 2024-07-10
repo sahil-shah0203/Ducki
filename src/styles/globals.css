@@ -57,7 +57,7 @@ body {
 .cursor {
   display: inline-block;
   width: 1ch;
-  animation: flicker 0.5s infinite;
+  animation: flicker 0.01s infinite;
   margin-bottom: 4px;
 }
 
@@ -139,4 +139,14 @@ pre code {
 
 .transition-width {
   transition: width 0.3s ease-in-out;
+}
+
+ol {
+  list-style: decimal;
+  padding-left: 2rem;
+}
+
+ul {
+  list-style: disc;
+  padding-left: 2rem;
 }
