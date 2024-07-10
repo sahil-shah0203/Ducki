@@ -5,9 +5,10 @@ import { useRouter } from "next/navigation";
 
 type ProfileDropdownProps = {
   userImage: string | undefined;
+  userId: number | undefined
 };
 
-export default function ProfileDropdown({ userImage }: ProfileDropdownProps) {
+export default function ProfileDropdown({ userImage, userId }: ProfileDropdownProps) {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const profileDropdownRef = useRef<HTMLDivElement | null>(null);
 
@@ -30,8 +31,7 @@ export default function ProfileDropdown({ userImage }: ProfileDropdownProps) {
   }, [profileDropdownRef]);
 
   const handleProfileSettings = () => {
-    // Add navigation logic for profile settings here
-    router.push("/settings");
+    router.push(`/settings?userId=${userId}`);
   };
 
   const handleHomeNavigation = () => {
@@ -57,13 +57,13 @@ export default function ProfileDropdown({ userImage }: ProfileDropdownProps) {
           >
             My Profile
           </button>
-          <button
+          {/* <button
             onClick={handleProfileSettings}
             className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-200"
           >
             Settings
           </button>
-          {/* <button
+          <button
             onClick={handleHomeNavigation}
             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 w-full text-left"
           >

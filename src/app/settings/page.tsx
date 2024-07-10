@@ -1,20 +1,27 @@
-import dynamic from 'next/dynamic';
-import React from 'react';
-import MainPage from '../page';
+"use client"; // Add this at the top
 
-const Settings = dynamic(() => import('~/app/ProfileSettings'), {
-  ssr: false,
+import dynamic from "next/dynamic";
+import React from "react";
+import { useSearchParams } from "next/navigation";
+import MainPage from "../page";
+
+const Settings = dynamic(() => import("~/app/ProfileSettings"), {
+  ssr: true,
 });
 
-const ProfileSettings = () => {
+const ProfileSettingsPage = () => {
+  const searchParams = useSearchParams();
+  const userId = searchParams.get("userId");
+  const numericUserId = userId ? parseInt(userId, 10) : null;
+
   return (
     <div className="container">
       <MainPage />
       <div className="sidebar_category">
-        <Settings />
+        <Settings userId={numericUserId} />
       </div>
     </div>
   );
 };
 
-export default ProfileSettings;
+export default ProfileSettingsPage;

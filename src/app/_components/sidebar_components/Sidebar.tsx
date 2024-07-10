@@ -241,7 +241,7 @@ export default function Sidebar({ userId, handleClassSelect, toggleSidebar, isCo
         {isCollapsed ? <FaChevronRight/> : <FaChevronLeft/>}
       </button>
       {!isCollapsed && (
-        <ProfileDropdown userImage={userImage}/>
+        <ProfileDropdown userImage={userImage} userId={userId}/>
       )}
     </aside>
   );

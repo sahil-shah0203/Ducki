@@ -1,14 +1,15 @@
-
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
 export const userRouter = createTRPCRouter({
   getUserByEmail: publicProcedure
-    .input(z.object({
-      email: z.string().email(),
-      firstName: z.string(),
-      lastName: z.string()
-    }))
+    .input(
+      z.object({
+        email: z.string().email(),
+        firstName: z.string(),
+        lastName: z.string(),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const { email, firstName, lastName } = input;
 
@@ -26,5 +27,47 @@ export const userRouter = createTRPCRouter({
       });
 
       return { user_id: user.user_id };
+    }),
+
+  deleteUser: publicProcedure
+    .input(
+      z.object({
+        userId: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { userId } = input;
+
+      // Delete all related records first
+      await ctx.db.chatMessage.deleteMany({
+        where: {
+          chatHistory: {
+            user_id: userId,
+          },
+        },
+      });
+
+      await ctx.db.chatHistory.deleteMany({
+        where: { user_id: userId },
+      });
+
+      await ctx.db.note.deleteMany({
+        where: { user_id: userId },
+      });
+
+      await ctx.db.document.deleteMany({
+        where: { user_id: userId },
+      });
+
+      await ctx.db.class.deleteMany({
+        where: { user_id: userId },
+      });
+
+      // Delete the user
+      await ctx.db.user.delete({
+        where: { user_id: userId },
+      });
+
+      return { success: true };
     }),
 });
