@@ -47,8 +47,10 @@ export default function InputField({
     const s3 = new AWS.S3({
       params: { Bucket: S3_BUCKET },
       region: REGION,
-      accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY,
+      // accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
+      // secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY,
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     });
 
     const file_name = uuid()
@@ -90,8 +92,10 @@ export default function InputField({
 
     const lambda = new AWS.Lambda({
       region: REGION,
-      accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY,
+      // accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
+      // secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY,
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     });
 
     const params = {
