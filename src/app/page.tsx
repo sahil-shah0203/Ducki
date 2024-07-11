@@ -10,12 +10,16 @@ import LLMInput from "~/app/_components/llm_input_components/LLMInput";
 import Background from './Background';
 import HomeBackground from "~/app/HomeBackground"; // Import the Background component
 
+import { useRouter } from 'next/navigation';
+
 export default function MainPage() {
   const { user, isSignedIn } = useUser();
   const [selectedClass, setSelectedClass] = useState<{ class_id: number, class_name: string } | null>(null);
   const [choices, setChoices] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+  const router = useRouter();
 
   const handleClassSelect = (selectedClass: { class_id: number, class_name: string } | null) => {
     setSelectedClass(selectedClass);
@@ -26,7 +30,7 @@ export default function MainPage() {
   };
 
   if (!isSignedIn) {
-    return <Landing />;
+    router.push("/login");
   } else {
     const user_email = user?.emailAddresses[0]?.emailAddress;
     const first_name = user?.firstName;
