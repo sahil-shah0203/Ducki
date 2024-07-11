@@ -32,6 +32,12 @@ export default function Landing() {
   const [asteroids, setAsteroids] = useState<Asteroid[]>([]);
   const asteroidsRef = useRef<Asteroid[]>([]);
 
+  const [inputValue, setInputValue] = useState("");
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+  };
+
   useEffect(() => {
     if (isSignedIn) {
       router.push("/main");
@@ -61,7 +67,6 @@ export default function Landing() {
 
     return () => clearInterval(interval);
   }, []);
-
 
   useEffect(() => {
     const animationLoop = () => {
@@ -105,23 +110,32 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center">
+    <div className="flex min-h-screen flex-col items-center justify-center">
       <Background />
       <div className="mb-8 flex items-center">
         <h1 className="text-6xl font-bold text-white">ducki</h1>
       </div>
-      <div className="mx-auto max-w-md rounded-lg bg-white p-8 shadow-lg">
-        <div className="mb-6 flex justify-center">
-          <SignInButton>
-            <button className="rounded bg-blue-500 px-4 py-2 font-bold text-white transition-colors duration-300 hover:bg-blue-600">
-              Sign In
-            </button>
-          </SignInButton>
+      <input
+        type="text"
+        value={inputValue}
+        onChange={handleInputChange}
+        className="mb-4 w-64 rounded border px-2 py-1"
+        placeholder="Enter password for beta use..."
+      />
+      {inputValue.includes("mario") && (
+        <div className="mx-auto max-w-md rounded-lg bg-white p-8 shadow-lg">
+          <div className="mb-6 flex justify-center">
+            <SignInButton>
+              <button className="rounded bg-blue-500 px-4 py-2 font-bold text-white transition-colors duration-300 hover:bg-blue-600">
+                Sign In
+              </button>
+            </SignInButton>
+          </div>
+          <p className="text-center text-gray-600">
+            Welcome to ducki! Please sign in to access your account.
+          </p>
         </div>
-        <p className="text-center text-gray-600">
-          Welcome to ducki! Please sign in to access your account.
-        </p>
-      </div>
+      )}
       {renderAsteroids()}
     </div>
   );
