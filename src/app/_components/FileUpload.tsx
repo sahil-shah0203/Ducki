@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import AWS from 'aws-sdk';
 import uuid from 'react-uuid';
+import { superballs } from 'ldrs'
+import { leapfrog } from 'ldrs'
+
+leapfrog.register()
+superballs.register();
 
 interface FileUploadProps {
   onUploadSuccess: () => void;
@@ -151,8 +156,20 @@ export default function FileUpload({ onUploadSuccess, onError }: FileUploadProps
       </div>
       {(uploading || processing) ? (
         <div className="border rounded py-1 px-2 flex-grow text-black text-sm mr-2">
-          {uploading && <p>Uploading Document...</p>}
-          {processing && <p>Processing Document...</p>}
+          {uploading && <p>Uploading</p>}
+          {uploading &&
+          <l-superballs
+            size="30"
+            speed="1.3" 
+            color="green" 
+            ></l-superballs>}
+          {processing && <p>Processing</p>}
+          {processing &&
+          <l-leapfrog
+            size="30"
+            speed="2.5" 
+            color="green" 
+            ></l-leapfrog>}
         </div>
       ) : (
         <button
