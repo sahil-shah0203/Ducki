@@ -9,6 +9,7 @@ import Background from './Background';
 import HomeBackground from '~/app/HomeBackground';
 import FileUpload from './_components/FileUpload';
 import { api } from "~/trpc/react";
+import uuid from 'react-uuid';
 
 export default function MainPage() {
   const { user, isSignedIn } = useUser();
@@ -18,6 +19,7 @@ export default function MainPage() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [sessionStarted, setSessionStarted] = useState(false);
   const [filesUploaded, setFilesUploaded] = useState(false);
+  const [sessionId, setSessionId] = useState<string>("");
 
   const handleClassSelect = (selectedClass: { class_id: number, class_name: string } | null) => {
     setSelectedClass(selectedClass);
@@ -31,6 +33,9 @@ export default function MainPage() {
 
   const handleFileUploadSuccess = () => {
     setFilesUploaded(true);
+    // create session id using uuid
+    const newSessionId = uuid();
+    setSessionId(newSessionId);
   };
 
   const toggleSidebar = () => {
@@ -95,6 +100,7 @@ export default function MainPage() {
                     <FileUpload
                       onUploadSuccess={handleFileUploadSuccess}
                       onError={setError}
+                      setSessionId={setSessionId}
                     />
                   ) : (
                     <LLMInput
@@ -103,6 +109,7 @@ export default function MainPage() {
                       user_id={user_id}
                       selectedClassName={selectedClass?.class_name}
                       selectedClassID={selectedClass?.class_id}
+                      uniqueSessionId={sessionId}
                     />
                   )
                 )}

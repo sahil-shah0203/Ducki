@@ -11,6 +11,7 @@ interface InputFieldProps {
   handleKeyPress: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   handleSubmit: () => void;
   handleStopGeneration: () => void;
+  uniqueSessionId: string;
 }
 
 export default function InputField({
@@ -21,6 +22,7 @@ export default function InputField({
                                      handleKeyPress,
                                      handleSubmit,
                                      handleStopGeneration,
+                                     uniqueSessionId
                                    }: InputFieldProps) {
 
   // const uploadDocumentMutation = api.document.uploadDocument.useMutation();
@@ -53,7 +55,7 @@ export default function InputField({
       Key: file_name + ".pdf",
       Body: file,
       Metadata: {
-        index: "test_index1",
+        index: uniqueSessionId,
       },
     };
 
@@ -88,7 +90,7 @@ export default function InputField({
       FunctionName: LAMBDA_FUNCTION,
       Payload: JSON.stringify({
         document_name: file_name,
-        index: "test_index1"
+        index: uniqueSessionId
       }),
     };
 

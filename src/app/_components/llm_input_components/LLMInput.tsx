@@ -13,9 +13,10 @@ interface LLMInputProps {
   user_id: number | undefined;
   selectedClassName: string | null;
   selectedClassID: number | null;
+  uniqueSessionId: string;
 }
 
-export default function LLMInput({ onFetchResults, onError, user_id, selectedClassName, selectedClassID }: LLMInputProps) {
+export default function LLMInput({ onFetchResults, onError, user_id, selectedClassName, selectedClassID, uniqueSessionId }: LLMInputProps) {
   const [inputText, setInputText] = useState<string>("");
   const [chatMessages, setChatMessages] = useState<ChatMessageType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -102,7 +103,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
       FunctionName: 'prompt_model',
       Payload: JSON.stringify({
         prompt: inputText,
-        index: "test_index1",
+        index: uniqueSessionId,
         chatHistory: chatMessages.map(message => ({
           role: message.type ? 'user' : 'assistant',
           content: message.text,
@@ -189,6 +190,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
         handleKeyPress={handleKeyPress}
         handleSubmit={handleSubmit}
         handleStopGeneration={handleStopGeneration}
+        uniqueSessionId={uniqueSessionId}
       />
     </div>
   );

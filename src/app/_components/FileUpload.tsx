@@ -10,9 +10,10 @@ superballs.register();
 interface FileUploadProps {
   onUploadSuccess: () => void;
   onError: (error: string | null) => void;
+  setSessionId: (sessionId: string) => void;
 }
 
-export default function FileUpload({ onUploadSuccess, onError }: FileUploadProps) {
+export default function FileUpload({ onUploadSuccess, onError, setSessionId }: FileUploadProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -26,7 +27,7 @@ export default function FileUpload({ onUploadSuccess, onError }: FileUploadProps
     }
   };
 
-  const uploadFile = async (file: File) => {
+  const uploadFile = async (file: File, session_id: string) => {
     setUploading(true);
     const S3_BUCKET = 'ducki-documents';
     const REGION = 'us-east-1';
@@ -44,7 +45,7 @@ export default function FileUpload({ onUploadSuccess, onError }: FileUploadProps
       Key: file_name + ".pdf",
       Body: file,
       Metadata: {
-        index: "test_index1",
+        index: session_id,
       },
     };
 
@@ -67,7 +68,7 @@ export default function FileUpload({ onUploadSuccess, onError }: FileUploadProps
     }
   };
 
-  const processFile = async (file_name: string) => {
+  const processFile = async (file_name: string, session_id: string) => {
     setProcessing(true);
     const LAMBDA_FUNCTION = "process_document";
     const REGION = "us-east-1";
@@ -82,7 +83,7 @@ export default function FileUpload({ onUploadSuccess, onError }: FileUploadProps
       FunctionName: LAMBDA_FUNCTION,
       Payload: JSON.stringify({
         document_name: file_name,
-        index: "test_index1"
+        index: session_id
       }),
     };
 
@@ -107,14 +108,19 @@ export default function FileUpload({ onUploadSuccess, onError }: FileUploadProps
   const handleFileUpload = async () => {
     if (files.length > 0) {
       setSuccessMessage(null);
+
+      const session_id = uuid();
+      console.log("Session ID:", session_id);
+
       for (let file of files) {
         if (!allowedTypes.includes(file.type)) {
           onError("Invalid file type");
           return;
         }
-        const file_name = await uploadFile(file);
+        const file_name = await uploadFile(file, session_id);
         if (file_name != null) {
-          await processFile(file_name);
+          await processFile(file_name, session_id);
+          setSessionId(session_id)
         } else {
           onError("Failed to upload file");
         }
