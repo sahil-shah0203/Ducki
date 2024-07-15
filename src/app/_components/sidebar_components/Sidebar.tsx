@@ -16,6 +16,8 @@ import { SignOutButton } from "@clerk/nextjs";
 import DashboardButton from "~/app/_components/sidebar_components/DashboardButton";
 import CalendarButton from "~/app/_components/sidebar_components/CalendarButton";
 
+import { useRouter } from "next/navigation";
+
 type SidebarProps = {
   userId: number | undefined;
   handleClassSelect: (
@@ -38,6 +40,8 @@ export default function Sidebar({
   isCollapsed,
   userImage,
 }: SidebarProps) {
+  const router = useRouter();
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState<Record<string, boolean>>(
@@ -133,6 +137,10 @@ export default function Sidebar({
     return false;
   };
 
+  const dashboardNav = () => {
+    router.push("/dashboard");
+  };
+
   if (isLoading) {
     return (
       <div className="loader-container">
@@ -162,7 +170,7 @@ export default function Sidebar({
       {!isCollapsed && (
         <>
           <nav className="mt-16 space-y-4">
-            <DashboardButton />
+            <DashboardButton onClick={dashboardNav} />
             <CalendarButton />
           </nav>
           <div className="mb-4 mt-16 flex items-center justify-between">
