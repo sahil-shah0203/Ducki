@@ -13,6 +13,8 @@ import {
   FaChevronRight,
 } from "react-icons/fa";
 import { SignOutButton } from "@clerk/nextjs";
+import DashboardButton from "~/app/_components/sidebar_components/DashboardButton";
+import CalendarButton from "~/app/_components/sidebar_components/CalendarButton";
 
 type SidebarProps = {
   userId: number | undefined;
@@ -147,8 +149,11 @@ export default function Sidebar({
       </div>
       {!isCollapsed && (
         <>
+          <nav className="mt-16 space-y-4">
+            <DashboardButton />
+            <CalendarButton />
+          </nav>
           <div className="mb-4 mt-16 flex items-center justify-between">
-            <button>hiiieiiiiiiiiiiiii</button>
             <h1 className="text-2xl font-bold">Classes</h1>
             <button
               onClick={() => setIsDialogOpen(true)}
@@ -156,7 +161,7 @@ export default function Sidebar({
               aria-label="Add"
             >
               <span className="flex items-center group-active:[transform:translate3d(0,1px,0)]">
-                <FaPlus className="h-4 w-4" style={{ color: "#217853" }} />
+                <FaPlus className="h-4 w-4" style={{color: "#217853"}}/>
               </span>
             </button>
           </div>
@@ -184,7 +189,7 @@ export default function Sidebar({
                         }}
                         className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-gray-500 focus:outline-none"
                       >
-                        <FaEllipsisV />
+                        <FaEllipsisV/>
                       </button>
                       {isDropdownOpen[classItem.class_name] && (
                         <div
@@ -231,9 +236,9 @@ export default function Sidebar({
         onClick={toggleSidebar}
         className="absolute bottom-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-gray-500 focus:outline-none"
       >
-        {isCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
+        {isCollapsed ? <FaChevronRight/> : <FaChevronLeft/>}
       </button>
-      {!isCollapsed && <ProfileDropdown userImage={userImage} />}
+      {!isCollapsed && <ProfileDropdown userImage={userImage}/>}
     </aside>
   );
 }
