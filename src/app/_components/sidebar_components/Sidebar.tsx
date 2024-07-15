@@ -133,30 +133,37 @@ export default function Sidebar({
     return false;
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) {
+    return (
+      <div className="loader-container">
+        <div className="loader"></div>
+      </div>
+    );
+  }
   if (error) return <div>Error loading classes</div>;
 
   return (
     <aside
       className={`fixed left-0 top-0 h-full ${isCollapsed ? "w-16" : "w-64"} transition-width overflow-y-auto overflow-x-hidden bg-transparent p-4 text-white duration-300`}
     >
-      <div className="absolute top-0 left-1 w-full p-4 flex items-center space-x-4"
-           style={{paddingLeft: isCollapsed ? '12px' : ''}}>
-        <img src="public/duck.png" alt="Ducki" className="w-7 h-7 rounded-full cursor-pointer"/>
-        {!isCollapsed && <h1 className="text-2xl font-bold cursor-pointer" >Ducki</h1>}
-      </div>
       <div
-        className="absolute left-0 top-0 flex w-full items-center space-x-4 p-4"
-        style={{paddingLeft: isCollapsed ? "12px" : ""}}
+        className="absolute left-1 top-0 flex w-full items-center space-x-4 p-4"
+        style={{ paddingLeft: isCollapsed ? "12px" : "" }}
       >
-        <div className="h-8 w-8 rounded-full bg-gray-500"></div>
-        {!isCollapsed && <h1 className="text-2xl font-bold">Ducki</h1>}
+        <img
+          src="\duck.png"
+          alt="Ducki"
+          className="h-7 w-7 cursor-pointer rounded-full"
+        />
+        {!isCollapsed && (
+          <h1 className="cursor-pointer text-2xl font-bold">Ducki</h1>
+        )}
       </div>
       {!isCollapsed && (
         <>
           <nav className="mt-16 space-y-4">
-            <DashboardButton/>
-            <CalendarButton/>
+            <DashboardButton />
+            <CalendarButton />
           </nav>
           <div className="mb-4 mt-16 flex items-center justify-between">
             <h1 className="text-2xl font-bold">Classes</h1>
@@ -166,7 +173,7 @@ export default function Sidebar({
               aria-label="Add"
             >
               <span className="flex items-center group-active:[transform:translate3d(0,1px,0)]">
-                <FaPlus className="h-4 w-4" style={{color: "#217853"}}/>
+                <FaPlus className="h-4 w-4" style={{ color: "#217853" }} />
               </span>
             </button>
           </div>
@@ -194,7 +201,7 @@ export default function Sidebar({
                         }}
                         className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-gray-500 focus:outline-none"
                       >
-                        <FaEllipsisV/>
+                        <FaEllipsisV />
                       </button>
                       {isDropdownOpen[classItem.class_name] && (
                         <div
@@ -241,9 +248,9 @@ export default function Sidebar({
         onClick={toggleSidebar}
         className="absolute bottom-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-gray-500 focus:outline-none"
       >
-        {isCollapsed ? <FaChevronRight/> : <FaChevronLeft/>}
+        {isCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
       </button>
-      {!isCollapsed && <ProfileDropdown userImage={userImage}/>}
+      {!isCollapsed && <ProfileDropdown userImage={userImage} />}
     </aside>
   );
 }
