@@ -3,8 +3,8 @@ import { SignInButton, useUser } from "@clerk/nextjs";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import logo from "../../public/duck.png";
-import Background from "./Background";
+import logo from "../../../public/duck.png";
+import Background from "../Background";
 
 interface Asteroid {
   x: number;
@@ -40,7 +40,7 @@ export default function Landing() {
 
   useEffect(() => {
     if (isSignedIn) {
-      router.push("/main");
+      router.push("/");
     }
   }, [isSignedIn, router]);
 

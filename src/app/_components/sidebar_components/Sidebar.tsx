@@ -6,12 +6,21 @@ import AddClassDialog from "./AddClassDialog";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
 import ProfileDropdown from "./ProfileDropdown";
 import { api } from "~/trpc/react";
-import { FaEllipsisV, FaPlus, FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import { SignOutButton } from '@clerk/nextjs';
+import {
+  FaEllipsisV,
+  FaPlus,
+  FaChevronLeft,
+  FaChevronRight,
+} from "react-icons/fa";
+import { SignOutButton } from "@clerk/nextjs";
+import DashboardButton from "~/app/_components/sidebar_components/DashboardButton";
+import CalendarButton from "~/app/_components/sidebar_components/CalendarButton";
 
 type SidebarProps = {
   userId: number | undefined;
-  handleClassSelect: (selectedClass: { class_id: number; class_name: string } | null) => void;
+  handleClassSelect: (
+    selectedClass: { class_id: number; class_name: string } | null,
+  ) => void;
   toggleSidebar: () => void;
   isCollapsed: boolean;
   userImage: string | undefined;
@@ -22,17 +31,26 @@ type ClassItem = {
   class_name: string;
 };
 
-export default function Sidebar({ userId, handleClassSelect, toggleSidebar, isCollapsed, userImage }: SidebarProps) {
+export default function Sidebar({
+  userId,
+  handleClassSelect,
+  toggleSidebar,
+  isCollapsed,
+  userImage,
+}: SidebarProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [classes, setClasses] = useState<ClassItem[]>([]);
-  const [isDropdownOpen, setIsDropdownOpen] = useState<Record<string, boolean>>({});
+  const [isDropdownOpen, setIsDropdownOpen] = useState<Record<string, boolean>>(
+    {},
+  );
   const [classToDelete, setClassToDelete] = useState<ClassItem | null>(null);
   const [selectedClass, setSelectedClass] = useState<ClassItem | null>(null);
 
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const { mutateAsync: addClassMutation } = api.class.addClass.useMutation();
-  const { mutateAsync: removeClassMutation } = api.class.removeClass.useMutation();
+  const { mutateAsync: removeClassMutation } =
+    api.class.removeClass.useMutation();
 
   const { data, error, isLoading } = api.class.getClassesByUserId.useQuery(
     { user_id: userId! },
@@ -82,7 +100,11 @@ export default function Sidebar({ userId, handleClassSelect, toggleSidebar, isCo
           class_id: classToDelete?.class_id,
         });
         console.log("Deleted class:", deleteClass);
-        setClasses(classes.filter((classItem) => classItem.class_id !== classToDelete?.class_id));
+        setClasses(
+          classes.filter(
+            (classItem) => classItem.class_id !== classToDelete?.class_id,
+          ),
+        );
       } catch (error) {
         console.error("Error deleting class:", error);
       }
@@ -111,26 +133,47 @@ export default function Sidebar({ userId, handleClassSelect, toggleSidebar, isCo
     return false;
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) {
+    return (
+      <div className="loader-container">
+        <div className="loader"></div>
+      </div>
+    );
+  }
   if (error) return <div>Error loading classes</div>;
 
   return (
-    <aside className={`fixed left-0 top-0 h-full ${isCollapsed ? 'w-16' : 'w-64'} overflow-y-auto overflow-x-hidden p-4 text-white bg-transparent transition-width duration-300`}>
-      <div className="absolute top-0 left-0 w-full p-4 flex items-center space-x-4" style={{ paddingLeft: isCollapsed ? '12px' : '' }}>
-        <div className="w-8 h-8 bg-gray-500 rounded-full"></div>
-        {!isCollapsed && <h1 className="text-2xl font-bold">Ducki</h1>}
+    <aside
+      className={`fixed left-0 top-0 h-full ${isCollapsed ? "w-16" : "w-64"} transition-width overflow-y-auto overflow-x-hidden bg-transparent p-4 text-white duration-300`}
+    >
+      <div
+        className="absolute left-1 top-0 flex w-full items-center space-x-4 p-4"
+        style={{ paddingLeft: isCollapsed ? "12px" : "" }}
+      >
+        <img
+          src="\duck.png"
+          alt="Ducki"
+          className="h-7 w-7 cursor-pointer rounded-full"
+        />
+        {!isCollapsed && (
+          <h1 className="cursor-pointer text-2xl font-bold">Ducki</h1>
+        )}
       </div>
       {!isCollapsed && (
         <>
-          <div className="mt-16 mb-4 flex items-center justify-between">
+          <nav className="mt-16 space-y-4">
+            <DashboardButton />
+            <CalendarButton />
+          </nav>
+          <div className="mb-4 mt-16 flex items-center justify-between">
             <h1 className="text-2xl font-bold">Classes</h1>
             <button
               onClick={() => setIsDialogOpen(true)}
-              className="group flex h-10 w-10 select-none items-center justify-center rounded-lg border border-zinc-100 bg-white leading-8 text-zinc-950 shadow-[0_-1px_0_0px_#d4d4d8_inset,0_0_0_1px_#f4f4f5_inset,0_0.5px_0_1.5px_#fff_inset] hover:bg-zinc-50 hover:via-zinc-900 hover:to-zinc-800 active:shadow-[-1px_0px_1px_0px_#e4e4e7_inset,1px_0px_1px_0px_#e4e4e7_inset,0px_0.125rem_1px_0px_#d4d4d8_inset] focus:outline-none"
+              className="group flex h-10 w-10 select-none items-center justify-center rounded-lg border border-zinc-100 bg-white leading-8 text-zinc-950 shadow-[0_-1px_0_0px_#d4d4d8_inset,0_0_0_1px_#f4f4f5_inset,0_0.5px_0_1.5px_#fff_inset] hover:bg-zinc-50 hover:via-zinc-900 hover:to-zinc-800 focus:outline-none active:shadow-[-1px_0px_1px_0px_#e4e4e7_inset,1px_0px_1px_0px_#e4e4e7_inset,0px_0.125rem_1px_0px_#d4d4d8_inset]"
               aria-label="Add"
             >
               <span className="flex items-center group-active:[transform:translate3d(0,1px,0)]">
-                <FaPlus className="h-4 w-4" style={{ color: '#217853' }} />
+                <FaPlus className="h-4 w-4" style={{ color: "#217853" }} />
               </span>
             </button>
           </div>
@@ -139,20 +182,21 @@ export default function Sidebar({ userId, handleClassSelect, toggleSidebar, isCo
               {classes.map((classItem, index) => (
                 <div
                   key={index}
-                  className={`relative ${classItem.class_name === selectedClass?.class_name ? "bg-[#217853] rounded-lg" : ""}`}
+                  className={`relative ${classItem.class_name === selectedClass?.class_name ? "rounded-lg bg-[#217853]" : ""}`}
                 >
                   <button
                     onClick={() => handleClassClick(classItem)}
-                    className="flex w-full items-center justify-between bg-transparent p-1 pl-3 text-left hover:bg-[#217853] rounded-lg"
+                    className="flex w-full items-center justify-between rounded-lg bg-transparent p-1 pl-3 text-left hover:bg-[#217853]"
                   >
-                    {isCollapsed ? '' : classItem.class_name}
+                    {isCollapsed ? "" : classItem.class_name}
                     <div className="relative">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           setIsDropdownOpen((prevState) => ({
                             ...prevState,
-                            [classItem.class_name]: !prevState[classItem.class_name],
+                            [classItem.class_name]:
+                              !prevState[classItem.class_name],
                           }));
                         }}
                         className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-gray-500 focus:outline-none"
@@ -206,9 +250,7 @@ export default function Sidebar({ userId, handleClassSelect, toggleSidebar, isCo
       >
         {isCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
       </button>
-      {!isCollapsed && (
-        <ProfileDropdown userImage={userImage} />
-      )}
+      {!isCollapsed && <ProfileDropdown userImage={userImage} />}
     </aside>
   );
 }
