@@ -140,9 +140,14 @@ export default function Sidebar({
     <aside
       className={`fixed left-0 top-0 h-full ${isCollapsed ? "w-16" : "w-64"} transition-width overflow-y-auto overflow-x-hidden bg-transparent p-4 text-white duration-300`}
     >
+      <div className="absolute top-0 left-1 w-full p-4 flex items-center space-x-4"
+           style={{paddingLeft: isCollapsed ? '12px' : ''}}>
+        <img src="public/duck.png" alt="Ducki" className="w-7 h-7 rounded-full cursor-pointer"/>
+        {!isCollapsed && <h1 className="text-2xl font-bold cursor-pointer" >Ducki</h1>}
+      </div>
       <div
         className="absolute left-0 top-0 flex w-full items-center space-x-4 p-4"
-        style={{ paddingLeft: isCollapsed ? "12px" : "" }}
+        style={{paddingLeft: isCollapsed ? "12px" : ""}}
       >
         <div className="h-8 w-8 rounded-full bg-gray-500"></div>
         {!isCollapsed && <h1 className="text-2xl font-bold">Ducki</h1>}
@@ -150,8 +155,8 @@ export default function Sidebar({
       {!isCollapsed && (
         <>
           <nav className="mt-16 space-y-4">
-            <DashboardButton />
-            <CalendarButton />
+            <DashboardButton/>
+            <CalendarButton/>
           </nav>
           <div className="mb-4 mt-16 flex items-center justify-between">
             <h1 className="text-2xl font-bold">Classes</h1>
