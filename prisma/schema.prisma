@@ -13,39 +13,20 @@ model User {
   first_name    String?
   last_name     String?
   email         String        @unique
-  notes         Note[]
-  documents     Document[]
   chatHistories ChatHistory[]
   classes       Class[]
-}
-
-model Note {
-  note_id  Int    @id @default(autoincrement())
-  name     String
-  content  String
-  user     User   @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
-  user_id  Int
-  class    Class  @relation(fields: [class_id], references: [class_id], onDelete: Cascade)
-  class_id Int
-}
-
-model Document {
-  document_id Int    @id @default(autoincrement())
-  name        String
-  content     String
-  user        User   @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
-  user_id     Int
-  class       Class  @relation(fields: [class_id], references: [class_id], onDelete: Cascade)
-  class_id    Int
+  sessions      Session[]
 }
 
 model ChatHistory {
   chat_id      Int           @id @default(autoincrement())
   timestamp    DateTime      @default(now())
-  user         User          @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  user         User          @relation(fields: [user_id], references: [user_id])
   user_id      Int
-  class        Class         @relation(fields: [class_id], references: [class_id], onDelete: Cascade)
+  class        Class         @relation(fields: [class_id], references: [class_id])
   class_id     Int
+  session      Session?      @relation(fields: [session_id], references: [session_id])
+  session_id   Int?
   chatMessages ChatMessage[]
 }
 
@@ -53,7 +34,7 @@ model ChatMessage {
   message_id  Int         @id @default(autoincrement())
   content     String      @db.Text
   sentByUser  Boolean
-  chatHistory ChatHistory @relation(fields: [chat_id], references: [chat_id], onDelete: Cascade)
+  chatHistory ChatHistory @relation(fields: [chat_id], references: [chat_id])
   chat_id     Int
   timestamp   DateTime    @default(now())
 }
@@ -61,18 +42,17 @@ model ChatMessage {
 model Class {
   class_id      Int           @id @default(autoincrement())
   class_name    String
-  user          User          @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  user          User          @relation(fields: [user_id], references: [user_id])
   user_id       Int
-  notes         Note[]
-  documents     Document[]
   chatHistories ChatHistory[]
+  sessions      Session[]
 }
 
-model Post {
-  id        Int      @id @default(autoincrement())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([name])
+model Session {
+  session_id    Int           @id @default(autoincrement())
+  user          User          @relation(fields: [user_id], references: [user_id])
+  user_id       Int
+  class         Class         @relation(fields: [class_id], references: [class_id])
+  class_id      Int
+  chatHistories ChatHistory[]
 }
