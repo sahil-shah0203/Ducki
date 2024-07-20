@@ -141,11 +141,13 @@ export default function Sidebar({ userId, handleClassSelect, toggleSidebar, isCo
                   key={index}
                   className={`relative ${classItem.class_name === selectedClass?.class_name ? "bg-[#217853] rounded-lg" : ""}`}
                 >
-                  <button
-                    onClick={() => handleClassClick(classItem)}
-                    className="flex w-full items-center justify-between bg-transparent p-1 pl-3 text-left hover:bg-[#217853] rounded-lg"
-                  >
-                    {isCollapsed ? '' : classItem.class_name}
+                  <div className="flex w-full items-center justify-between p-1 pl-3">
+                    <button
+                      onClick={() => handleClassClick(classItem)}
+                      className="w-full bg-transparent text-left hover:bg-[#217853] rounded-lg"
+                    >
+                      {classItem.class_name}
+                    </button>
                     <div className="relative">
                       <button
                         onClick={(e) => {
@@ -180,7 +182,7 @@ export default function Sidebar({ userId, handleClassSelect, toggleSidebar, isCo
                         </div>
                       )}
                     </div>
-                  </button>
+                  </div>
                 </div>
               ))}
             </div>

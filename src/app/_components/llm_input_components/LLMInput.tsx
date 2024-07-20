@@ -1,6 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-// import DOMPurify from 'dompurify';
-import AWS from 'aws-sdk';
 import 'katex/dist/katex.min.css';
 import { ChatMessageType } from './ChatMessage';
 import { formatText } from './formatText';
@@ -26,13 +24,20 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
   const abortController = useRef(new AbortController());
   const inputRef = useRef<HTMLInputElement>(null);
   const sessionId = useRef(Date.now().toString());
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    const chatContainer = document.getElementById('chat-container');
-    if (chatContainer) {
-      chatContainer.scrollTop = chatContainer.scrollHeight;
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (hydrated) {
+      const chatContainer = document.getElementById('chat-container');
+      if (chatContainer) {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
     }
-  }, [chatMessages]);
+  }, [chatMessages, hydrated]);
 
   useEffect(() => {
     const fetchChatHistory = async () => {
@@ -45,7 +50,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
           const chatMessages: ChatMessageType[] = storedChatMessages.map(message => ({
             type: message.sentByUser,
             text: message.content,
-            session: sessionId.current,
+            session: uniqueSessionId,
             timestamp: new Date(message.timestamp),
           }));
           setChatMessages(chatMessages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
@@ -59,7 +64,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
   }, [user_id, selectedClassID]);
 
   useEffect(() => {
-    if (!completedTyping && chatMessages.length > 0 && chatMessages[0]?.type === false) {
+    if (hydrated && !completedTyping && chatMessages.length > 0 && chatMessages[0]?.type === false) {
       let i = 0;
       const stringResponse = chatMessages[0].text;
       const intervalId = setInterval(() => {
@@ -73,7 +78,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
       }, 20);
       return () => clearInterval(intervalId);
     }
-  }, [chatMessages, completedTyping]);
+  }, [chatMessages, completedTyping, hydrated]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputText(e.target.value);
@@ -93,50 +98,48 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     setLoading(true);
     abortController.current = new AbortController();
 
-    const lambda = new AWS.Lambda({
-      region: 'us-east-1',
-      accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY,
-    });
-
-    const params = {
-      FunctionName: 'prompt_model',
-      Payload: JSON.stringify({
-        prompt: inputText,
-        index: uniqueSessionId,
-        chatHistory: chatMessages.map(message => ({
-          role: message.type ? 'user' : 'assistant',
-          content: message.text,
-        })).reverse(),
-      }),
-    };
+    let chatHistory = chatMessages.map(message => ({
+      role: message.type ? 'user' : 'assistant',
+      content: message.text,
+    }));
 
     try {
-      const result = await lambda.invoke(params).promise();
-      const response = JSON.parse(result.Payload as string);
+      const response = await fetch('/api/llm', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chatHistory: chatHistory,
+          prompt: inputText,
+          session: uniqueSessionId,
+        }),
+        signal: abortController.current.signal,
+      });
 
-      console.log("Lambda response:", response);
+      if (!response.body) throw new Error('No response body');
 
-      if (response.statusCode === 200 && response.body) {
-        const body = typeof response.body === 'string' ? JSON.parse(response.body) : response.body;
-        if (body.status === 'success') {
-          const model_response = body.model_reponse;
-          // const llmMessage = formatText(model_response);
-          const llmMessage = model_response;
-          const llmTimestamp = getPreciseTimestamp();
-          const llmResponseMessage: ChatMessageType = { type: false, text: llmMessage, session: sessionId.current, timestamp: llmTimestamp };
-          setChatMessages(prevMessages => [...prevMessages, llmResponseMessage].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
-          setCompletedTyping(false);
-          setIsGenerating(false);
-          storeChatHistory(llmResponseMessage, false);
-        } else {
-          throw new Error('Lambda response status not successful');
-        }
-      } else {
-        throw new Error('Invalid Lambda response');
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let receivedText = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        receivedText += decoder.decode(value, { stream: true });
+        setDisplayResponse(receivedText);
       }
+
+      const model_response = receivedText;
+      const llmTimestamp = getPreciseTimestamp();
+      const llmResponseMessage: ChatMessageType = { type: false, text: model_response, session: sessionId.current, timestamp: llmTimestamp };
+      setChatMessages(prevMessages => [...prevMessages, llmResponseMessage].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
+      setCompletedTyping(false);
+      setIsGenerating(false);
+      storeChatHistory(llmResponseMessage, false);
+
     } catch (err) {
-      console.error("Error invoking Lambda function:", err);
+      console.error("Error fetching response:", err);
       onError("Failed to fetch response from the server.");
       setIsGenerating(false);
     } finally {
@@ -144,18 +147,16 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsGenerating(true);
     onError(null);
     const userTimestamp = getPreciseTimestamp();
     const userMessage: ChatMessageType = { type: true, text: inputText, session: sessionId.current, timestamp: userTimestamp };
-    console.log("User message:", userMessage);
     setChatMessages(prevMessages => [...prevMessages, userMessage].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
     setInputText('');
     storeChatHistory(userMessage, true);
-    setTimeout(() => {
-      fetchAndStoreChatHistory(inputText, userMessage);
-    }, 1000);
+    fetchAndStoreChatHistory(inputText, userMessage);
   };
 
   const handleStopGeneration = () => {
@@ -169,9 +170,14 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && inputText !== '') {
-      handleSubmit();
+      handleSubmit(e);
     }
   };
+
+  if (!hydrated) {
+    // Render a loading state or placeholder while waiting for client-side render
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="flex flex-col h-screen">

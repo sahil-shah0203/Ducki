@@ -1,4 +1,4 @@
-"use client";
+"use client"; // Ensure this component is client-side rendered
 import { useUser } from '@clerk/nextjs';
 import Landing from './landing';
 import Home from './home';
@@ -10,6 +10,7 @@ import HomeBackground from '~/app/HomeBackground';
 import FileUpload from './_components/FileUpload';
 import { api } from "~/trpc/react";
 import uuid from 'react-uuid';
+import SessionCards from '~/app/_components/SessionCards';
 
 export default function MainPage() {
   const { user, isSignedIn } = useUser();
@@ -20,6 +21,11 @@ export default function MainPage() {
   const [sessionStarted, setSessionStarted] = useState(false);
   const [filesUploaded, setFilesUploaded] = useState(false);
   const [sessionId, setSessionId] = useState<string>("");
+  const [sessions, setSessions] = useState<{ id: string; title: string; date: string }[]>([
+    { id: "session1", title: "Session 1", date: "2024-07-01" },
+    { id: "session2", title: "Session 2", date: "2024-07-02" },
+    { id: "session3", title: "Session 3", date: "2024-07-03" }
+  ]);
 
   const handleClassSelect = (selectedClass: { class_id: number, class_name: string } | null) => {
     setSelectedClass(selectedClass);
@@ -33,9 +39,14 @@ export default function MainPage() {
 
   const handleFileUploadSuccess = () => {
     setFilesUploaded(true);
-    // create session id using uuid
     const newSessionId = uuid();
     setSessionId(newSessionId);
+    const newSession = {
+      id: newSessionId,
+      title: `Session for ${selectedClass?.class_name}`,
+      date: new Date().toLocaleDateString(),
+    };
+    setSessions([...sessions, newSession]);
   };
 
   const toggleSidebar = () => {
@@ -89,19 +100,25 @@ export default function MainPage() {
               </div>
               <div className="p-4">
                 {!sessionStarted ? (
-                  <button
-                    onClick={handleStartSession}
-                    className="bg-blue-500 text-white px-4 py-2 rounded"
-                  >
-                    Start Session
-                  </button>
+                  <>
+                    <button
+                      onClick={handleStartSession}
+                      className="bg-blue-500 text-white px-4 py-2 rounded"
+                    >
+                      Start Session
+                    </button>
+                    <SessionCards sessions={sessions} />
+                  </>
                 ) : (
                   !filesUploaded ? (
-                    <FileUpload
-                      onUploadSuccess={handleFileUploadSuccess}
-                      onError={setError}
-                      setSessionId={setSessionId}
-                    />
+                    <>
+                      <FileUpload
+                        onUploadSuccess={handleFileUploadSuccess}
+                        onError={setError}
+                        setSessionId={setSessionId}
+                      />
+                      <SessionCards sessions={sessions} />
+                    </>
                   ) : (
                     <LLMInput
                       onFetchResults={setChoices}

@@ -1,5 +1,4 @@
 import React, { useState, useRef, RefObject } from 'react';
-// import { api } from "~/trpc/react";
 import AWS, { CostExplorer } from 'aws-sdk';
 import uuid from 'react-uuid';
 
@@ -9,7 +8,7 @@ interface InputFieldProps {
   isGenerating: boolean;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleKeyPress: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-  handleSubmit: () => void;
+  handleSubmit: (e: React.FormEvent) => void;
   handleStopGeneration: () => void;
   uniqueSessionId: string;
 }
@@ -24,8 +23,6 @@ export default function InputField({
                                      handleStopGeneration,
                                      uniqueSessionId
                                    }: InputFieldProps) {
-
-  // const uploadDocumentMutation = api.document.uploadDocument.useMutation();
 
   const [uploading, setUploading] = useState(false)
   const [processing, setProcessing] = useState(false)
@@ -115,10 +112,6 @@ export default function InputField({
       const file = files[0];
       if (file) {
         try {
-          // Upload the file to the server
-          // uploadDocumentMutation.mutate({
-          //    file: file,
-          // });
           if (!allowedTypes.includes(file.type)) {
             alert('Invalid file type');
             return;
@@ -174,7 +167,7 @@ export default function InputField({
       </div>}
       <button
         className="group relative inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-[#3a5e4d]"
-        onClick={isGenerating ? handleStopGeneration : handleSubmit}
+        onClick={isGenerating ? handleStopGeneration : (e) => handleSubmit(e)}
         aria-label={isGenerating ? "Stop Generation" : "Submit prompt to LLM"}
       >
         <div className="transition duration-300 group-hover:rotate-[360deg]">
