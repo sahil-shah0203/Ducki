@@ -1,4 +1,4 @@
-"use client"; // Ensure this component is client-side rendered
+"use client";
 import { useUser } from '@clerk/nextjs';
 import Landing from './landing';
 import Home from './home';
@@ -21,32 +21,36 @@ export default function MainPage() {
   const [sessionStarted, setSessionStarted] = useState(false);
   const [filesUploaded, setFilesUploaded] = useState(false);
   const [sessionId, setSessionId] = useState<string>("");
-  const [sessions, setSessions] = useState<{ id: string; title: string; date: string }[]>([
-    { id: "session1", title: "Session 1", date: "2024-07-01" },
-    { id: "session2", title: "Session 2", date: "2024-07-02" },
-    { id: "session3", title: "Session 3", date: "2024-07-03" }
-  ]);
+
+  const { mutateAsync: addSession } = api.session.addSession.useMutation();
 
   const handleClassSelect = (selectedClass: { class_id: number, class_name: string } | null) => {
+    console.log('Selected class:', selectedClass);
     setSelectedClass(selectedClass);
     setSessionStarted(false);
     setFilesUploaded(false);
   };
 
-  const handleStartSession = () => {
-    setSessionStarted(true);
+  const handleStartSession = async (user_id: number) => {
+    if (selectedClass && user_id) {
+      console.log('User ID from database:', user_id);
+
+      try {
+        const newSession = await addSession({
+          user_id,  // Use the numeric user_id from the database
+          class_id: selectedClass.class_id,
+        });
+        setSessionId(newSession.session_id.toString());
+        setSessionStarted(true);
+      } catch (error) {
+        console.error('Failed to start session', error);
+        setError('Failed to start session');
+      }
+    }
   };
 
   const handleFileUploadSuccess = () => {
     setFilesUploaded(true);
-    const newSessionId = uuid();
-    setSessionId(newSessionId);
-    const newSession = {
-      id: newSessionId,
-      title: `Session for ${selectedClass?.class_name}`,
-      date: new Date().toLocaleDateString(),
-    };
-    setSessions([...sessions, newSession]);
   };
 
   const toggleSidebar = () => {
@@ -65,7 +69,7 @@ export default function MainPage() {
       return <div>Error: Unable to fetch user details</div>;
     }
 
-    const { data: id, error, isLoading } = api.user.getUserByEmail.useQuery({
+    const { data: userData, error, isLoading } = api.user.getUserByEmail.useQuery({
       email: user_email,
       firstName: first_name,
       lastName: last_name,
@@ -79,7 +83,7 @@ export default function MainPage() {
       return <div>Error: {error.message}</div>;
     }
 
-    const user_id = id?.user_id;
+    const user_id = userData?.user_id;
 
     return (
       <div className="relative flex h-screen" style={{ zIndex: 0 }}>
@@ -102,12 +106,12 @@ export default function MainPage() {
                 {!sessionStarted ? (
                   <>
                     <button
-                      onClick={handleStartSession}
+                      onClick={() => handleStartSession(user_id!)}
                       className="bg-blue-500 text-white px-4 py-2 rounded"
                     >
                       Start Session
                     </button>
-                    <SessionCards sessions={sessions} />
+                    <SessionCards classId={selectedClass.class_id} />
                   </>
                 ) : (
                   !filesUploaded ? (
@@ -115,9 +119,9 @@ export default function MainPage() {
                       <FileUpload
                         onUploadSuccess={handleFileUploadSuccess}
                         onError={setError}
-                        setSessionId={setSessionId}
+                        setSessionId={setSessionId}  // Pass setSessionId here
                       />
-                      <SessionCards sessions={sessions} />
+                      <SessionCards classId={selectedClass.class_id} />
                     </>
                   ) : (
                     <LLMInput

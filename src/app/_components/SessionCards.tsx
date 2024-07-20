@@ -1,6 +1,11 @@
-"use client";
-import React from 'react';
-// import { useRouter } from 'next/router';
+import React, { useEffect, useState } from 'react';
+import { api } from '~/trpc/react';
+
+interface Session {
+  id: string;
+  title: string;
+  date: string;
+}
 
 interface SessionCardProps {
   sessionId: string;
@@ -9,11 +14,8 @@ interface SessionCardProps {
 }
 
 const SessionCard: React.FC<SessionCardProps> = ({ sessionId, title, date }) => {
-  // const router = useRouter();
-
   const handleClick = () => {
-    // router.push(`/session/${sessionId}`); // Update this route based on your routing logic
-    alert("This works! Please add a route here soon -Sahil");
+    alert(`Session ID: ${sessionId}\nTitle: ${title}\nDate: ${date}`);
   };
 
   return (
@@ -29,13 +31,34 @@ const SessionCard: React.FC<SessionCardProps> = ({ sessionId, title, date }) => 
 };
 
 interface SessionCardsProps {
-  sessions: { id: string; title: string; date: string }[];
+  classId: number;
 }
 
-const SessionCards: React.FC<SessionCardsProps> = ({ sessions }) => {
+const SessionCards: React.FC<SessionCardsProps> = ({ classId }) => {
+  const [sessions, setSessions] = useState<Session[]>([]);
+
+  const { data, error, isLoading } = api.session.getSessionsByClassId.useQuery(
+    { class_id: classId },
+    {
+      enabled: !!classId,
+    }
+  );
+
+  useEffect(() => {
+    if (data) {
+      console.log('Fetched sessions:', data); // Add this line
+      setSessions(data);
+    } else if (error) {
+      console.error('Error fetching sessions:', error); // Add this line
+    }
+  }, [data, error]);
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error loading sessions: {error.message}</div>;
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 overflow-auto">
-      {sessions.map((session) => (
+      {sessions.map((session: Session) => (
         <SessionCard
           key={session.id}
           sessionId={session.id}

@@ -110,6 +110,7 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId }: F
       setSuccessMessage(null);
 
       const session_id = uuid();
+      setSessionId(session_id);
       console.log("Session ID:", session_id);
 
       for (let file of files) {
@@ -120,7 +121,6 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId }: F
         const file_name = await uploadFile(file, session_id);
         if (file_name != null) {
           await processFile(file_name, session_id);
-          setSessionId(session_id)
         } else {
           onError("Failed to upload file");
         }
