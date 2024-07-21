@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
+import { api } from "~/trpc/react";
 import 'katex/dist/katex.min.css';
 import { ChatMessageType } from './ChatMessage';
-import { formatText } from './formatText';
 import ChatContainer from './ChatContainer';
 import InputField from './InputField';
 
@@ -23,8 +23,11 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const abortController = useRef(new AbortController());
   const inputRef = useRef<HTMLInputElement>(null);
-  const sessionId = useRef(Date.now().toString());
+  const sessionId = useRef(uniqueSessionId);
   const [hydrated, setHydrated] = useState(false);
+
+  const chatHistoryQuery = api.session.getChatHistoryBySessionId.useQuery({ session_id: uniqueSessionId });
+  const storeChatMessageMutation = api.session.storeChatMessage.useMutation();
 
   useEffect(() => {
     setHydrated(true);
@@ -40,28 +43,20 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
   }, [chatMessages, hydrated]);
 
   useEffect(() => {
-    const fetchChatHistory = async () => {
-      if (user_id && selectedClassID) {
-        try {
-          const storedChatMessages = [
-            { content: "Hello", sentByUser: true, timestamp: new Date() },
-            { content: "Hi there!", sentByUser: false, timestamp: new Date() }
-          ];
-          const chatMessages: ChatMessageType[] = storedChatMessages.map(message => ({
-            type: message.sentByUser,
-            text: message.content,
-            session: uniqueSessionId,
-            timestamp: new Date(message.timestamp),
-          }));
-          setChatMessages(chatMessages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
-        } catch (error) {
-          console.error("Error fetching chat history:", error);
-        }
-      }
-    };
-
-    fetchChatHistory();
-  }, [user_id, selectedClassID]);
+    if (chatHistoryQuery.isSuccess) {
+      const storedChatMessages = chatHistoryQuery.data;
+      const chatMessages: ChatMessageType[] = storedChatMessages.map((message: any) => ({
+        type: message.sentByUser,
+        text: message.content,
+        session: uniqueSessionId,
+        timestamp: new Date(message.timestamp),
+      }));
+      setChatMessages(chatMessages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
+    } else if (chatHistoryQuery.isError) {
+      console.error("Error fetching chat history:", chatHistoryQuery.error);
+      onError("Failed to fetch chat history.");
+    }
+  }, [chatHistoryQuery.isSuccess, chatHistoryQuery.isError, uniqueSessionId, onError]);
 
   useEffect(() => {
     if (hydrated && !completedTyping && chatMessages.length > 0 && chatMessages[0]?.type === false) {
@@ -90,8 +85,18 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     return new Date(timeOrigin + now);
   };
 
-  const storeChatHistory = (message: ChatMessageType, isUserMessage: boolean) => {
-    // Store chat history logic here
+  const storeChatHistory = async (message: ChatMessageType, isUserMessage: boolean) => {
+    try {
+      await storeChatMessageMutation.mutate({
+        content: message.text,
+        sentByUser: isUserMessage,
+        timestamp: message.timestamp.toISOString(),
+        sessionId: message.session,
+      });
+    } catch (error) {
+      console.error("Error storing chat history:", error);
+      onError("Failed to store chat history.");
+    }
   };
 
   const fetchAndStoreChatHistory = async (inputText: string, userMessage: ChatMessageType) => {
@@ -136,7 +141,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
       setChatMessages(prevMessages => [...prevMessages, llmResponseMessage].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
       setCompletedTyping(false);
       setIsGenerating(false);
-      storeChatHistory(llmResponseMessage, false);
+      await storeChatHistory(llmResponseMessage, false);
 
     } catch (err) {
       console.error("Error fetching response:", err);
@@ -155,7 +160,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     const userMessage: ChatMessageType = { type: true, text: inputText, session: sessionId.current, timestamp: userTimestamp };
     setChatMessages(prevMessages => [...prevMessages, userMessage].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
     setInputText('');
-    storeChatHistory(userMessage, true);
+    await storeChatHistory(userMessage, true);
     fetchAndStoreChatHistory(inputText, userMessage);
   };
 
@@ -175,7 +180,6 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
   };
 
   if (!hydrated) {
-    // Render a loading state or placeholder while waiting for client-side render
     return <div>Loading...</div>;
   }
 

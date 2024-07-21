@@ -57,6 +57,12 @@ export default function MainPage() {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
 
+  const handleSessionSelect = (sessionId: string) => {
+    setSessionId(sessionId);
+    setSessionStarted(true);
+    setFilesUploaded(true);
+  };
+
   if (!isSignedIn) {
     return <Landing />;
   } else {
@@ -111,7 +117,7 @@ export default function MainPage() {
                     >
                       Start Session
                     </button>
-                    <SessionCards classId={selectedClass.class_id} />
+                    <SessionCards classId={selectedClass.class_id} onSessionSelect={handleSessionSelect} />
                   </>
                 ) : (
                   !filesUploaded ? (
@@ -121,7 +127,7 @@ export default function MainPage() {
                         onError={setError}
                         setSessionId={setSessionId}  // Pass setSessionId here
                       />
-                      <SessionCards classId={selectedClass.class_id} />
+                      <SessionCards classId={selectedClass.class_id} onSessionSelect={handleSessionSelect} />
                     </>
                   ) : (
                     <LLMInput

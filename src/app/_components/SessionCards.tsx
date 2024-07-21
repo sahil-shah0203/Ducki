@@ -11,11 +11,12 @@ interface SessionCardProps {
   sessionId: string;
   title: string;
   date: string;
+  onClick: (sessionId: string) => void;
 }
 
-const SessionCard: React.FC<SessionCardProps> = ({ sessionId, title, date }) => {
+const SessionCard: React.FC<SessionCardProps> = ({ sessionId, title, date, onClick }) => {
   const handleClick = () => {
-    alert(`Session ID: ${sessionId}\nTitle: ${title}\nDate: ${date}`);
+    onClick(sessionId);
   };
 
   return (
@@ -32,9 +33,10 @@ const SessionCard: React.FC<SessionCardProps> = ({ sessionId, title, date }) => 
 
 interface SessionCardsProps {
   classId: number;
+  onSessionSelect: (sessionId: string) => void;
 }
 
-const SessionCards: React.FC<SessionCardsProps> = ({ classId }) => {
+const SessionCards: React.FC<SessionCardsProps> = ({ classId, onSessionSelect }) => {
   const [sessions, setSessions] = useState<Session[]>([]);
 
   const { data, error, isLoading } = api.session.getSessionsByClassId.useQuery(
@@ -46,10 +48,10 @@ const SessionCards: React.FC<SessionCardsProps> = ({ classId }) => {
 
   useEffect(() => {
     if (data) {
-      console.log('Fetched sessions:', data); // Add this line
+      console.log('Fetched sessions:', data);
       setSessions(data);
     } else if (error) {
-      console.error('Error fetching sessions:', error); // Add this line
+      console.error('Error fetching sessions:', error);
     }
   }, [data, error]);
 
@@ -64,6 +66,7 @@ const SessionCards: React.FC<SessionCardsProps> = ({ classId }) => {
           sessionId={session.id}
           title={session.title}
           date={session.date}
+          onClick={onSessionSelect}
         />
       ))}
     </div>
