@@ -3,6 +3,7 @@ import AWS from 'aws-sdk';
 import uuid from 'react-uuid';
 import { superballs } from 'ldrs'
 import { leapfrog } from 'ldrs'
+import { api } from "~/trpc/react";
 
 leapfrog.register()
 superballs.register();
@@ -11,13 +12,16 @@ interface FileUploadProps {
   onUploadSuccess: () => void;
   onError: (error: string | null) => void;
   setSessionId: (sessionId: string) => void;
+  user_id: number;
+  class_id: number;
 }
 
-export default function FileUpload({ onUploadSuccess, onError, setSessionId }: FileUploadProps) {
+export default function FileUpload({ onUploadSuccess, onError, setSessionId, user_id, class_id }: FileUploadProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const { mutateAsync: addSession } = api.session.addSession.useMutation();
 
   const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
 
@@ -92,6 +96,7 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId }: F
       console.log(response);
       setProcessing(false);
       setSuccessMessage("File processed successfully.");
+      setSessionId(session_id);
       onUploadSuccess();
     } catch (error) {
       console.error(error);
@@ -121,6 +126,15 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId }: F
         const file_name = await uploadFile(file, session_id);
         if (file_name != null) {
           await processFile(file_name, session_id);
+          try {
+            const newSession = await addSession({
+              user_id,  // Use the numeric user_id from the database
+              class_id: class_id,
+              session_id: session_id,
+            });
+          } catch (error) {
+            console.error('Failed to start session', error);
+          }
         } else {
           onError("Failed to upload file");
         }

@@ -23,7 +23,7 @@ model ChatHistory {
   class        Class         @relation(fields: [class_id], references: [class_id])
   class_id     Int
   session      Session?      @relation(fields: [session_id], references: [session_id])
-  session_id   Int?
+  session_id   String?
   chatMessages ChatMessage[]
 }
 model ChatMessage {
@@ -43,7 +43,7 @@ model Class {
   sessions      Session[]
 }
 model Session {
-  session_id    Int           @id @default(autoincrement())
+  session_id    String           @id
   user          User          @relation(fields: [user_id], references: [user_id])
   user_id       Int
   class         Class         @relation(fields: [class_id], references: [class_id])

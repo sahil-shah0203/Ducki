@@ -34,18 +34,7 @@ export default function MainPage() {
   const handleStartSession = async (user_id: number) => {
     if (selectedClass && user_id) {
       console.log('User ID from database:', user_id);
-
-      try {
-        const newSession = await addSession({
-          user_id,  // Use the numeric user_id from the database
-          class_id: selectedClass.class_id,
-        });
-        setSessionId(newSession.session_id.toString());
-        setSessionStarted(true);
-      } catch (error) {
-        console.error('Failed to start session', error);
-        setError('Failed to start session');
-      }
+      setSessionStarted(true);
     }
   };
 
@@ -125,7 +114,9 @@ export default function MainPage() {
                       <FileUpload
                         onUploadSuccess={handleFileUploadSuccess}
                         onError={setError}
-                        setSessionId={setSessionId}  // Pass setSessionId here
+                        setSessionId={setSessionId}
+                        user_id={user_id!}
+                        class_id={selectedClass.class_id}
                       />
                       <SessionCards classId={selectedClass.class_id} onSessionSelect={handleSessionSelect} />
                     </>

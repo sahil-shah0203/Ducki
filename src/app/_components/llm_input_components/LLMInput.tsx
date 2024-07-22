@@ -23,10 +23,17 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const abortController = useRef(new AbortController());
   const inputRef = useRef<HTMLInputElement>(null);
-  const sessionId = useRef(uniqueSessionId);
   const [hydrated, setHydrated] = useState(false);
 
-  const chatHistoryQuery = api.session.getChatHistoryBySessionId.useQuery({ session_id: uniqueSessionId });
+  let chatHistoryQuery = api.session.getChatHistoryBySessionId.useQuery({ session_id: uniqueSessionId });
+
+  useEffect(() => {
+    const fetchChatHistory = async () => {
+      await chatHistoryQuery.refetch();
+    };
+    fetchChatHistory();
+  }, [uniqueSessionId]);
+
   const storeChatMessageMutation = api.session.storeChatMessage.useMutation();
 
   useEffect(() => {
@@ -137,7 +144,8 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
 
       const model_response = receivedText;
       const llmTimestamp = getPreciseTimestamp();
-      const llmResponseMessage: ChatMessageType = { type: false, text: model_response, session: sessionId.current, timestamp: llmTimestamp };
+      const llmResponseMessage: ChatMessageType = { type: false, text: model_response, session: uniqueSessionId, timestamp: llmTimestamp };
+      console.log("storing message with sessionID:", uniqueSessionId);
       setChatMessages(prevMessages => [...prevMessages, llmResponseMessage].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
       setCompletedTyping(false);
       setIsGenerating(false);
@@ -157,7 +165,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     setIsGenerating(true);
     onError(null);
     const userTimestamp = getPreciseTimestamp();
-    const userMessage: ChatMessageType = { type: true, text: inputText, session: sessionId.current, timestamp: userTimestamp };
+    const userMessage: ChatMessageType = { type: true, text: inputText, session: uniqueSessionId, timestamp: userTimestamp };
     setChatMessages(prevMessages => [...prevMessages, userMessage].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
     setInputText('');
     await storeChatHistory(userMessage, true);
@@ -168,7 +176,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     abortController.current.abort();
     setDisplayResponse('<span class="generation-stopped">Response generation stopped</span>');
     const stopTimestamp = getPreciseTimestamp();
-    setChatMessages(prevMessages => [...prevMessages, { type: false, text: '<span class="generation-stopped">Response generation stopped</span>', session: sessionId.current, timestamp: stopTimestamp }].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
+    setChatMessages(prevMessages => [...prevMessages, { type: false, text: '<span class="generation-stopped">Response generation stopped</span>', session: uniqueSessionId, timestamp: stopTimestamp }].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
     setIsGenerating(false);
     setCompletedTyping(true);
   };
@@ -190,7 +198,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
         displayResponse={displayResponse}
         loading={loading}
         completedTyping={completedTyping}
-        sessionId={sessionId.current}
+        sessionId={uniqueSessionId}
       />
       <InputField
         inputRef={inputRef}

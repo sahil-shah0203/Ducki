@@ -14,8 +14,8 @@ export const sessionRouter = createTRPCRouter({
           class: true,
         },
       });
-      return sessions.map((session: { session_id: number; class: { class_name: string }; createdAt: Date }) => ({
-        id: session.session_id.toString(),
+      return sessions.map((session: { session_id: string; class: { class_name: string }; createdAt: Date }) => ({
+        id: session.session_id,
         title: session.class.class_name,
         date: session.createdAt.toISOString(),
       }));
@@ -24,10 +24,12 @@ export const sessionRouter = createTRPCRouter({
     .input(z.object({
       user_id: z.number(),
       class_id: z.number(),
+      session_id: z.string(),
     }))
     .mutation(async ({ input }) => {
       const newSession = await db.session.create({
         data: {
+          session_id: input.session_id,
           user_id: input.user_id,
           class_id: input.class_id,
           createdAt: new Date(),
@@ -40,7 +42,7 @@ export const sessionRouter = createTRPCRouter({
     .query(async ({ input }) => {
       const chatHistory = await db.chatHistory.findMany({
         where: {
-          session_id: parseInt(input.session_id),
+          session_id: input.session_id,
         },
         include: {
           chatMessages: true,
@@ -68,7 +70,7 @@ export const sessionRouter = createTRPCRouter({
       // Find the associated ChatHistory for the session
       let chatHistory = await db.chatHistory.findFirst({
         where: {
-          session_id: parseInt(input.sessionId),
+          session_id: input.sessionId,
         },
       });
 
@@ -76,7 +78,7 @@ export const sessionRouter = createTRPCRouter({
       if (!chatHistory) {
         chatHistory = await db.chatHistory.create({
           data: {
-            session_id: parseInt(input.sessionId),
+            session_id: input.sessionId,
             timestamp: new Date(input.timestamp),
             user_id: 1, // Replace with the actual user ID
             class_id: 1, // Replace with the actual class ID
