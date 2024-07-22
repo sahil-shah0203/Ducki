@@ -21,12 +21,22 @@ const SessionCard: React.FC<SessionCardProps> = ({ sessionId, title, date, onCli
 
   return (
     <div
-      className="bg-white rounded-lg shadow-md p-4 cursor-pointer hover:shadow-lg transition-shadow duration-200"
+      className="bg-[#e2e9e5] rounded-lg shadow-md p-4 mt-20 cursor-pointer hover:shadow-lg transition-shadow duration-200 relative"
+      style={{ width: '270px', height: '300px' }}
       onClick={handleClick}
     >
-      <div className="h-48 bg-gray-200 rounded-md mb-4"></div>
-      <div className="text-lg font-semibold">{title}</div>
-      <div className="text-gray-600">{date}</div>
+      <div className="bg-white rounded-lg mx-auto" style={{ width: '85%', height: '100%' }}></div>
+      <div className="absolute bottom-0 left-0 right-0">
+        <div className="bg-white border border-gray-300 rounded-t-none rounded-b-lg p-2 flex justify-between items-center" style={{ borderTopLeftRadius: '0', borderTopRightRadius: '0'}}>
+          <div>
+            <div className="text-lg font-semibold">{title}</div>
+            <div className="text-gray-600">{date}</div>
+          </div>
+          <div className="text-gray-400">
+            {/* Optional icon can be placed here */}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
@@ -64,7 +74,7 @@ const SessionCards: React.FC<SessionCardsProps> = ({ classId, onSessionSelect })
         <SessionCard
           key={session.id}
           sessionId={session.id}
-          title={session.title}
+          title={session.title} // This should display the session title
           date={session.date}
           onClick={onSessionSelect}
         />

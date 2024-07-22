@@ -21,6 +21,7 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
   const [uploading, setUploading] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [sessionTitle, setSessionTitle] = useState<string>('');
   const { mutateAsync: addSession } = api.session.addSession.useMutation();
 
   const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
@@ -131,6 +132,7 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
               user_id,  // Use the numeric user_id from the database
               class_id: class_id,
               session_id: session_id,
+              session_title: sessionTitle, // Pass the session title
             });
           } catch (error) {
             console.error('Failed to start session', error);
@@ -193,15 +195,16 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
         </div>
       ) : (
         <>
+          <input
+            type="text"
+            value={sessionTitle}
+            onChange={(e) => setSessionTitle(e.target.value)}
+            placeholder="Enter session title"
+            className="border rounded py-2 px-3 mb-4"
+          />
           <button
             onClick={handleFileUpload}
             className="bg-green-500 text-white px-4 py-2 rounded"
-          >
-            Start Session
-          </button>
-          <button
-          onClick={handleFileUpload}
-          className="bg-green-500 text-white px-4 py-2 rounded"
           >
             Start Session
           </button>

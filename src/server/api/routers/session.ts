@@ -14,10 +14,17 @@ export const sessionRouter = createTRPCRouter({
           class: true,
         },
       });
-      return sessions.map((session: { session_id: string; class: { class_name: string }; createdAt: Date }) => ({
+
+      // Function to format date in mm/dd/yyyy
+      const formatDate = (date: Date) => {
+        const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+        return new Intl.DateTimeFormat('en-US', options).format(date);
+      };
+
+      return sessions.map((session: { session_id: string; session_title: string; createdAt: Date }) => ({
         id: session.session_id,
-        title: session.class.class_name,
-        date: session.createdAt.toISOString(),
+        title: session.session_title,
+        date: formatDate(session.createdAt), // Format the date
       }));
     }),
   addSession: publicProcedure
@@ -25,6 +32,7 @@ export const sessionRouter = createTRPCRouter({
       user_id: z.number(),
       class_id: z.number(),
       session_id: z.string(),
+      session_title: z.string(), // Include session_title in the input schema
     }))
     .mutation(async ({ input }) => {
       const newSession = await db.session.create({
@@ -32,6 +40,7 @@ export const sessionRouter = createTRPCRouter({
           session_id: input.session_id,
           user_id: input.user_id,
           class_id: input.class_id,
+          session_title: input.session_title, // Include session_title in the data
           createdAt: new Date(),
         },
       });

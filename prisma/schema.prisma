@@ -50,6 +50,7 @@ model Session {
   class_id      Int
   chatHistories ChatHistory[]
   createdAt     DateTime      @default(now())
+  session_title String
 }
 
 model Post {
