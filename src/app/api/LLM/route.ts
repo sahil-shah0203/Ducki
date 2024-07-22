@@ -63,7 +63,7 @@ export async function POST(request: Request) {
     console.log("Chat history:", chatHistory);
     console.log("Custom prompt:", customPrompt);
 
-    let messages = [customPrompt, ...chatHistory].reverse();
+    const messages = [customPrompt, ...chatHistory].reverse();
 
     console.log("Messages:", messages);
 
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
       async start(controller) {
         const decoder = new TextDecoder();
         for await (const chunk of response) {
-          controller.enqueue(chunk.choices[0]?.delta?.content || "");
+          controller.enqueue(chunk.choices[0]?.delta?.content ?? "");
         }
         controller.close();
       }

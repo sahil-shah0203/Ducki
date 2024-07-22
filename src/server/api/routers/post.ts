@@ -13,7 +13,7 @@ export const postRouter = createTRPCRouter({
   create: publicProcedure
     .input(z.object({
       name: z.string().min(1),
-      content: z.string().min(1) // Added content field here
+      content: z.string().min(1), // Added content field here
     }))
     .mutation(async ({ ctx, input }) => {
       // simulate a slow db call
@@ -22,6 +22,7 @@ export const postRouter = createTRPCRouter({
       return ctx.db.post.create({
         data: {
           name: input.name,
+          content: input.content, // Added content to the data
           updatedAt: new Date(),
         },
       });

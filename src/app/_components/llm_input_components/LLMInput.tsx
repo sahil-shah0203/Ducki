@@ -25,11 +25,12 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
   const inputRef = useRef<HTMLInputElement>(null);
   const [hydrated, setHydrated] = useState(false);
 
-  let chatHistoryQuery = api.session.getChatHistoryBySessionId.useQuery({ session_id: uniqueSessionId });
+  const chatHistoryQuery = api.session.getChatHistoryBySessionId.useQuery({ session_id: uniqueSessionId });
 
   useEffect(() => {
     const fetchChatHistory = async () => {
-      await chatHistoryQuery.refetch();
+      // Removed the unnecessary await
+      chatHistoryQuery.refetch();
     };
     fetchChatHistory();
   }, [uniqueSessionId]);
@@ -94,7 +95,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
 
   const storeChatHistory = async (message: ChatMessageType, isUserMessage: boolean) => {
     try {
-      await storeChatMessageMutation.mutate({
+      await storeChatMessageMutation.mutateAsync({
         content: message.text,
         sentByUser: isUserMessage,
         timestamp: message.timestamp.toISOString(),
@@ -106,11 +107,11 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     }
   };
 
-  const fetchAndStoreChatHistory = async (inputText: string, userMessage: ChatMessageType) => {
+  const fetchAndStoreChatHistory = async (inputText: string) => {
     setLoading(true);
     abortController.current = new AbortController();
 
-    let chatHistory = chatMessages.map(message => ({
+    const chatHistory = chatMessages.map(message => ({
       role: message.type ? 'user' : 'assistant',
       content: message.text,
     }));
@@ -169,7 +170,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     setChatMessages(prevMessages => [...prevMessages, userMessage].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
     setInputText('');
     await storeChatHistory(userMessage, true);
-    fetchAndStoreChatHistory(inputText, userMessage);
+    fetchAndStoreChatHistory(inputText);
   };
 
   const handleStopGeneration = () => {

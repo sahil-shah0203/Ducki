@@ -118,7 +118,7 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
       setSessionId(session_id);
       console.log("Session ID:", session_id);
 
-      for (let file of files) {
+      for (const file of files) {
         if (!allowedTypes.includes(file.type)) {
           onError("Invalid file type");
           return;

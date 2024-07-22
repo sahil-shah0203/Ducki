@@ -51,3 +51,11 @@ model Session {
   chatHistories ChatHistory[]
   createdAt     DateTime      @default(now())
 }
+
+model Post {
+  post_id      Int      @id @default(autoincrement())
+  name         String
+  content      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
