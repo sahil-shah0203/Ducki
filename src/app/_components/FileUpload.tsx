@@ -192,12 +192,20 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
             ></l-leapfrog>}
         </div>
       ) : (
-        <button
+        <>
+          <button
+            onClick={handleFileUpload}
+            className="bg-green-500 text-white px-4 py-2 rounded"
+          >
+            Start Session
+          </button>
+          <button
           onClick={handleFileUpload}
           className="bg-green-500 text-white px-4 py-2 rounded"
-        >
-          Start Session
-        </button>
+          >
+            Start Session
+          </button>
+        </>
       )}
       {successMessage && <p className="text-green-500 mt-4">{successMessage}</p>}
     </div>
