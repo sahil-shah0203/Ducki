@@ -1,7 +1,7 @@
-import { ChatMessageType } from './ChatMessage';
-import React from 'react';
-import Markdown from './Markdown';
-import ReactMarkdown from 'react-markdown';
+import { ChatMessageType } from "./ChatMessage";
+import React from "react";
+import Markdown from "./Markdown";
+import ReactMarkdown from "react-markdown";
 
 interface ChatContainerProps {
   chatMessages: ChatMessageType[];
@@ -12,22 +12,31 @@ interface ChatContainerProps {
 }
 
 export default function ChatContainer({
-                                        chatMessages,
-                                        displayResponse,
-                                        loading,
-                                        completedTyping,
-                                        sessionId,
-                                      }: ChatContainerProps) {
+  chatMessages,
+  displayResponse,
+  loading,
+  completedTyping,
+  sessionId,
+}: ChatContainerProps) {
   return (
-    <div id="chat-container" className="overflow-auto rounded p-4 flex space-y-2 flex-grow">
+    <div
+      id="chat-container"
+      className="flex flex-grow space-y-2 overflow-auto rounded p-4"
+    >
       {loading && (
-        <div className="p-2 rounded-lg my-2 max-w-lg text-sm bg-gray-300 text-white self-start animate-pulse">
+        <div className="my-2 max-w-lg animate-pulse self-start rounded-lg bg-gray-300 p-2 text-sm text-white">
           Loading...
         </div>
       )}
       {chatMessages.map((message, index) => (
-        <div key={index} className={`p-2 rounded-lg my-2 text-sm ${message.type ? 'bg-[#d3e4dd] max-w-2xl text-lime-950 self-end' : message.text.includes('generation-stopped') ? '' : 'bg-green-100 text-stone-900 self-start'}`}>
-          {index === 0 && !message.type && message.session === sessionId && !completedTyping ? (
+        <div
+          key={index}
+          className={`my-2 rounded-lg p-2 text-sm ${message.type ? "max-w-2xl self-end bg-[#d3e4dd] text-lime-950" : message.text.includes("generation-stopped") ? "" : "self-start bg-green-100 text-stone-900"}`}
+        >
+          {index === 0 &&
+          !message.type &&
+          message.session === sessionId &&
+          !completedTyping ? (
             <Markdown>{displayResponse}</Markdown>
           ) : (
             <Markdown>{message.text}</Markdown>

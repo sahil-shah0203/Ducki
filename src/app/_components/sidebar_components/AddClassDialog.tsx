@@ -7,7 +7,12 @@ type AddClassDialogProps = {
   classes: { class_id: number; class_name: string }[];
 };
 
-export default function AddClassDialog({ isOpen, onRequestClose, onAddClass, classes }: AddClassDialogProps) {
+export default function AddClassDialog({
+  isOpen,
+  onRequestClose,
+  onAddClass,
+  classes,
+}: AddClassDialogProps) {
   const [newClass, setNewClass] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -21,7 +26,10 @@ export default function AddClassDialog({ isOpen, onRequestClose, onAddClass, cla
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const classExists = classes.some((classItem) => classItem.class_name.toLowerCase() === newClass.trim().toLowerCase());
+    const classExists = classes.some(
+      (classItem) =>
+        classItem.class_name.toLowerCase() === newClass.trim().toLowerCase(),
+    );
 
     if (classExists) {
       setErrorMessage("Class name already exists.");
@@ -37,24 +45,33 @@ export default function AddClassDialog({ isOpen, onRequestClose, onAddClass, cla
   };
 
   return (
-    <div className={`fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 ${isOpen ? "" : "hidden"}`}>
-      <div className="bg-white p-4 rounded-md shadow-md">
-        <h2 className="text-xl mb-4 text-black">Add a New Class</h2>
+    <div
+      className={`fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 ${isOpen ? "" : "hidden"}`}
+    >
+      <div className="rounded-md bg-white p-6 shadow-md">
+        <h2 className="mb-4 text-xl text-black">Add a New Class</h2>
         <form onSubmit={handleSubmit}>
           <input
             type="text"
             value={newClass}
             onChange={(e) => setNewClass(e.target.value)}
-            className="border p-2 rounded w-full mb-4 text-black"
+            className="mb-4 w-full rounded border p-2 text-black"
             placeholder="Class name"
             required
           />
-          {errorMessage && <p className="text-red-500 mb-4">{errorMessage}</p>}
+          {errorMessage && <p className="mb-4 text-red-500">{errorMessage}</p>}
           <div className="flex justify-end">
-            <button type="button" onClick={onRequestClose} className="mr-4 bg-gray-200 px-4 py-2 rounded">
+            <button
+              type="button"
+              onClick={onRequestClose}
+              className="mr-4 rounded border-2 border-[#437557] bg-white px-4 py-2 text-[#437557] hover:bg-[#d3d3d3]"
+            >
               Cancel
             </button>
-            <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded">
+            <button
+              type="submit"
+              className="rounded bg-[#437557] px-4 py-2 text-white hover:bg-[#417154]"
+            >
               Add
             </button>
           </div>

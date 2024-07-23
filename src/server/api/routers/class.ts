@@ -60,18 +60,6 @@ export const classRouter = createTRPCRouter({
         },
       });
 
-      await ctx.db.note.deleteMany({
-        where: {
-          class_id: input.class_id,
-        },
-      });
-
-      await ctx.db.document.deleteMany({
-        where: {
-          class_id: input.class_id,
-        },
-      });
-
       await ctx.db.class.delete({
         where: {
           class_id: input.class_id,
