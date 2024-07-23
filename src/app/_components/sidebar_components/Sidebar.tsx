@@ -141,6 +141,10 @@ export default function Sidebar({
     router.push("/dashboard");
   };
 
+  const homeNav = () => {
+    router.push("/");
+  };
+
   if (isLoading) {
     return (
       <div className="loader-container">
@@ -158,9 +162,16 @@ export default function Sidebar({
         className="absolute left-1 top-0 flex w-full items-center space-x-4 p-4"
         style={{ paddingLeft: isCollapsed ? "12px" : "" }}
       >
-        <img src="\duck.png" alt="Ducki" className="h-7 w-7 rounded-full" />
+        <img
+          onClick={homeNav}
+          src="\duck.png"
+          alt="Ducki"
+          className="h-7 w-7 cursor-pointer rounded-full"
+        />
         {!isCollapsed && (
-          <h1 className="cursor-pointer text-2xl font-bold">Ducki</h1>
+          <h1 onClick={homeNav} className="cursor-pointer text-2xl font-bold">
+            Ducki
+          </h1>
         )}
       </div>
       {!isCollapsed && (
