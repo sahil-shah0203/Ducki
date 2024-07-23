@@ -265,7 +265,9 @@ export default function Sidebar({
       >
         {isCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
       </button>
-      {!isCollapsed && <ProfileDropdown userImage={userImage} />}
+      {!isCollapsed && (
+        <ProfileDropdown userImage={userImage} userId={userId} />
+      )}
     </aside>
   );
 }
