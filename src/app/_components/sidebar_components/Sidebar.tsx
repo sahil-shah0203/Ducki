@@ -96,6 +96,10 @@ export default function Sidebar({
     setSelectedClass(classItem);
   };
 
+  const resetSelectedClass = () => {
+    setSelectedClass(null);
+  };
+
   const handleRemoveClass = async () => {
     if (userId && classToDelete) {
       try {
@@ -137,10 +141,6 @@ export default function Sidebar({
     return false;
   };
 
-  const dashboardNav = () => {
-    router.push("/dashboard");
-  };
-
   if (isLoading) {
     return (
       <div className="loader-container">
@@ -158,16 +158,34 @@ export default function Sidebar({
         className="absolute left-1 top-0 flex w-full items-center space-x-4 p-4"
         style={{ paddingLeft: isCollapsed ? "12px" : "" }}
       >
-        <img src="\duck.png" alt="Ducki" className="h-7 w-7 rounded-full" />
+        <Link href="/">
+          <img
+            onClick={resetSelectedClass}
+            src="\duck.png"
+            alt="Ducki"
+            className="h-7 w-7 cursor-pointer rounded-full"
+          />
+        </Link>
         {!isCollapsed && (
-          <h1 className="cursor-pointer text-2xl font-bold">Ducki</h1>
+          <Link href="/">
+            <h1
+              onClick={resetSelectedClass}
+              className="cursor-pointer text-2xl font-bold"
+            >
+              ducki
+            </h1>
+          </Link>
         )}
       </div>
       {!isCollapsed && (
         <>
           <nav className="mt-16 space-y-4">
-            <DashboardButton onClick={dashboardNav} />
-            <CalendarButton />
+            <Link href="/dashboard">
+              <DashboardButton onClick={resetSelectedClass} />
+            </Link>
+            <Link href="/dashboard">
+              <CalendarButton onClick={resetSelectedClass} />
+            </Link>
           </nav>
           <div className="mb-4 mt-16 flex items-center justify-between">
             <h1 className="text-2xl font-bold">Sections</h1>
@@ -265,7 +283,9 @@ export default function Sidebar({
       >
         {isCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
       </button>
-      {!isCollapsed && <ProfileDropdown userImage={userImage} />}
+      {!isCollapsed && (
+        <ProfileDropdown userImage={userImage} userId={userId} />
+      )}
     </aside>
   );
 }

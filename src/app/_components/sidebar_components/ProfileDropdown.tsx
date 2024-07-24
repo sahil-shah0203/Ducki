@@ -2,15 +2,19 @@ import { useState, useRef, useEffect } from "react";
 import { SignOutButton } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 
+import Link from "next/link";
+
 type ProfileDropdownProps = {
   userImage: string | undefined;
+  userId: number | undefined;
 };
 
-export default function ProfileDropdown({ userImage }: ProfileDropdownProps) {
+export default function ProfileDropdown({
+  userImage,
+  userId,
+}: ProfileDropdownProps) {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const profileDropdownRef = useRef<HTMLDivElement | null>(null);
-
-  const router = useRouter();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -28,15 +32,6 @@ export default function ProfileDropdown({ userImage }: ProfileDropdownProps) {
     };
   }, [profileDropdownRef]);
 
-  const handleProfileSettings = () => {
-    // Add navigation logic for profile settings here
-    router.push("/profile");
-  };
-
-  const handleHomeNavigation = () => {
-    // Add navigation logic for home page here
-  };
-
   return (
     <div className="absolute bottom-4 left-4 flex items-center">
       <img
@@ -50,24 +45,11 @@ export default function ProfileDropdown({ userImage }: ProfileDropdownProps) {
           ref={profileDropdownRef}
           className="absolute bottom-12 left-0 z-20 w-48 overflow-hidden rounded-md bg-white shadow-xl"
         >
-          <button
-            onClick={handleProfileSettings}
-            className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-200"
-          >
-            My Profile
-          </button>
-          {/* <button
-            onClick={handleProfileSettings}
-            className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-200"
-          >
-            Settings
-          </button>
-          <button
-            onClick={handleHomeNavigation}
-            className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-200"
-          >
-            Home
-          </button> */}
+          <Link href={`/profile?userId=${userId}`} passHref>
+            <button className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-200">
+              Profile Settings
+            </button>
+          </Link>
           <SignOutButton>
             <button className="block w-full px-4 py-2 text-left text-sm text-red-700 hover:bg-gray-200">
               Sign Out

@@ -1,27 +1,22 @@
 "use client";
-
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import MainPage from "~/app/page";
 
-export default function ProfileSettings() {
+export default function DashboardPage() {
   const { user } = useUser();
   const router = useRouter();
 
   if (!user) {
-    router.push("/"); // Redirect to home or login page if the user is not signed in
-    return null;
+    router.push("/");
   }
 
-  const home = () => {
-    router.push("/");
-  };
-
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="mb-4 text-3xl font-bold">Dashboard</h1>
-      <div className="rounded bg-white p-4 shadow-md">
+    <div className="container">
+      <MainPage />
+      <div className="sidebar_category">
+        <h1>Welcome to Ducki</h1>
       </div>
-      <button onClick={home}>Home</button>
     </div>
   );
 }
