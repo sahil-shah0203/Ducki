@@ -1,10 +1,6 @@
-// 'use client';
-
 import { FaThLarge } from "react-icons/fa";
 
-
 const DashboardButton = () => {
-
   return (
       <div
         className={`flex cursor-pointer items-center rounded-lg p-4 text-lg text-white transition-colors duration-300`}

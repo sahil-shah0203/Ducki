@@ -173,7 +173,7 @@ export default function Sidebar({
             <Link href="/dashboard">
               <DashboardButton />
             </Link>
-            <Link href="/dashboard">
+            <Link href="/calendar">
               <CalendarButton />
             </Link>
           </nav>
@@ -196,58 +196,60 @@ export default function Sidebar({
                   key={index}
                   className={`relative ${classItem.class_name === selectedClass?.class_name ? "rounded-lg bg-[#217853]" : ""}`}
                 >
-                  <button
-                    onClick={() => handleClassClick(classItem)}
-                    className="flex w-full items-center justify-between rounded-lg bg-transparent p-1 pl-3 text-left hover:bg-[#217853]"
-                  >
-                    {isCollapsed ? "" : classItem.class_name}
-                    <div className="relative">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setIsDropdownOpen((prevState) => ({
-                            ...prevState,
-                            [classItem.class_name]:
-                              !prevState[classItem.class_name],
-                          }));
-                        }}
-                        className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-transparent focus:outline-none"
-                      >
-                        <FaEllipsisV />
-                      </button>
-                      {isDropdownOpen[classItem.class_name] && (
-                        <div
-                          ref={(ref) => {
-                            dropdownRefs.current[classItem.class_name] = ref;
+                  <Link href="/">
+                    <button
+                      onClick={() => handleClassClick(classItem)}
+                      className="flex w-full items-center justify-between rounded-lg bg-transparent p-1 pl-3 text-left hover:bg-[#217853]"
+                    >
+                      {isCollapsed ? "" : classItem.class_name}
+                      <div className="relative">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsDropdownOpen((prevState) => ({
+                              ...prevState,
+                              [classItem.class_name]:
+                                !prevState[classItem.class_name],
+                            }));
                           }}
-                          className="absolute right-0 z-10 mt-2 w-48 rounded-md bg-white shadow-xl"
+                          className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-transparent focus:outline-none"
                         >
-                          <a
-                            href="#"
-                            onClick={(e) => {
-                              {
-                                /*enter function to show all uploaded files from s3 (another api :| )*/
-                              }
+                          <FaEllipsisV />
+                        </button>
+                        {isDropdownOpen[classItem.class_name] && (
+                          <div
+                            ref={(ref) => {
+                              dropdownRefs.current[classItem.class_name] = ref;
                             }}
-                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-400 hover:text-white"
+                            className="absolute right-0 z-10 mt-2 w-48 rounded-md bg-white shadow-xl"
                           >
-                            See Files
-                          </a>
-                          <a
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setClassToDelete(classItem);
-                              setIsDropdownOpen({});
-                            }}
-                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-500 hover:text-white"
-                          >
-                            Delete Class
-                          </a>
-                        </div>
-                      )}
-                    </div>
-                  </button>
+                            <a
+                              href="#"
+                              onClick={(e) => {
+                                {
+                                  /*enter function to show all uploaded files from s3 (another api :| )*/
+                                }
+                              }}
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-400 hover:text-white"
+                            >
+                              See Files
+                            </a>
+                            <a
+                              href="#"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setClassToDelete(classItem);
+                                setIsDropdownOpen({});
+                              }}
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-500 hover:text-white"
+                            >
+                              Delete Class
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </button>
+                  </Link>
                 </div>
               ))}
             </div>

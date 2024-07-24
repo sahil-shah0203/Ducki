@@ -169,6 +169,7 @@ ul {
   -webkit-mask-composite: source-out;
   mask-composite: subtract;
   animation: l3 1s infinite linear;
+  z-index: 10;
 }
 @keyframes l3 {
   to {
@@ -185,6 +186,7 @@ ul {
   position: fixed;
   top: 0;
   left: 0;
+  z-index: 10;
 }
 
 .container {
