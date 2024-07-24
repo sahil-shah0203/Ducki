@@ -9,31 +9,23 @@ export async function POST(request: Request) {
       apiKey: process.env.OPENAI_API_KEY,
     });
 
-    // Takes in user input
     const params = await request.json();
-
-    const prompt = params.prompt;
-    const session = params.session;
+    const { prompt, session, chatHistory } = params;
 
     console.log("Session:", session);
 
-    // pass prompt into aws lambda function
-    console.log("Calling Lambda for context");
     const lambda = new AWS.Lambda({
       region: "us-east-1",
       accessKeyId: process.env.AWS_ACCESS_KEY_ID,
       secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    }); 
+    });
 
     let context;
-
     const lambda_params = {
       FunctionName: 'prompt_model',
-      Payload: JSON.stringify({
-        prompt: prompt,
-        index: session
-      }),
+      Payload: JSON.stringify({ prompt, index: session }),
     };
+
     try {
       const result = await lambda.invoke(lambda_params).promise();
       const response = JSON.parse(result.Payload as string);
@@ -54,20 +46,14 @@ export async function POST(request: Request) {
 
     console.log("Context is:", context);
 
-    const chatHistory = params.chatHistory;
     const customPrompt = {
       role: "user",
-      content: "Context: \n" + context + "\n\n" + "Prompt: \n" + prompt,
+      content: `Context: \n${context}\n\nPrompt: \n${prompt}`,
     };
-
-    console.log("Chat history:", chatHistory);
-    console.log("Custom prompt:", customPrompt);
 
     const messages = [customPrompt, ...chatHistory].reverse();
 
-    console.log("Messages:", messages);
-
-    const response = await openai.chat.completions.create({
+    const openAIResponse = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [
         {
@@ -81,24 +67,15 @@ export async function POST(request: Request) {
       top_p: 1,
       frequency_penalty: 0,
       presence_penalty: 0,
-      stream: true,
     });
 
-    const stream = new ReadableStream({
-      async start(controller) {
-        const decoder = new TextDecoder();
-        for await (const chunk of response) {
-          controller.enqueue(chunk.choices[0]?.delta?.content ?? "");
-        }
-        controller.close();
-      }
-    });
+    const responseContent = openAIResponse.choices?.[0]?.message?.content;
 
-    return new Response(stream, {
-      headers: {
-        'Content-Type': 'text/plain',
-      }
-    });
+    if (!responseContent) {
+      throw new Error("No response content");
+    }
+
+    return NextResponse.json({ response: responseContent });
   } catch (error) {
     console.error("Error in API route:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

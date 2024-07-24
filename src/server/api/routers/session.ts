@@ -17,7 +17,7 @@ export const sessionRouter = createTRPCRouter({
 
       // Function to format date in mm/dd/yyyy
       const formatDate = (date: Date) => {
-        const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+        const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: '2-digit', day: '2-digit' };
         return new Intl.DateTimeFormat('en-US', options).format(date);
       };
 

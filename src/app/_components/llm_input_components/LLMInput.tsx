@@ -136,12 +136,15 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
       const decoder = new TextDecoder();
       let receivedText = '';
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        receivedText += decoder.decode(value, { stream: true });
-        setDisplayResponse(receivedText);
-      }
+      for (let done = false; !done;) {
+        const { done: isDone, value } = await reader.read();
+        if (isDone) {
+          done = true;
+        } else {
+          receivedText += decoder.decode(value, { stream: true });
+          setDisplayResponse(receivedText);
+        }}
+        
 
       const model_response = receivedText;
       const llmTimestamp = getPreciseTimestamp();

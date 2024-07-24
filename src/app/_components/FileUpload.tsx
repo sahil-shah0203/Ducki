@@ -1,12 +1,8 @@
 import React, { useState } from 'react';
-import AWS from 'aws-sdk';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
 import uuid from 'react-uuid';
-import { superballs } from 'ldrs'
-import { leapfrog } from 'ldrs'
 import { api } from "~/trpc/react";
-
-leapfrog.register()
-superballs.register();
 
 interface FileUploadProps {
   onUploadSuccess: () => void;
@@ -37,17 +33,19 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
     const S3_BUCKET = 'ducki-documents';
     const REGION = 'us-east-1';
 
-    const s3 = new AWS.S3({
+    const s3Client = new S3Client({
       region: REGION,
-      accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY,
+      credentials: {
+        accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY!,
+      },
     });
 
     const file_name = uuid();
 
     const params = {
       Bucket: S3_BUCKET,
-      Key: file_name + ".pdf",
+      Key: `${file_name}.pdf`,
       Body: file,
       Metadata: {
         index: session_id,
@@ -55,8 +53,7 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
     };
 
     try {
-      const upload = await s3.putObject(params).promise();
-      console.log(upload);
+      await s3Client.send(new PutObjectCommand(params));
       setUploading(false);
       return file_name;
     } catch (error) {
@@ -78,23 +75,24 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
     const LAMBDA_FUNCTION = "process_document";
     const REGION = "us-east-1";
 
-    const lambda = new AWS.Lambda({
+    const lambdaClient = new LambdaClient({
       region: REGION,
-      accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY,
+      credentials: {
+        accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY!,
+      },
     });
 
     const params = {
       FunctionName: LAMBDA_FUNCTION,
       Payload: JSON.stringify({
         document_name: file_name,
-        index: session_id
+        index: session_id,
       }),
     };
 
     try {
-      const response = await lambda.invoke(params).promise();
-      console.log(response);
+      await lambdaClient.send(new InvokeCommand(params));
       setProcessing(false);
       setSuccessMessage("File processed successfully.");
       setSessionId(session_id);
@@ -129,10 +127,10 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
           await processFile(file_name, session_id);
           try {
             const newSession = await addSession({
-              user_id,  // Use the numeric user_id from the database
+              user_id,
               class_id: class_id,
               session_id: session_id,
-              session_title: sessionTitle, // Pass the session title
+              session_title: sessionTitle,
             });
           } catch (error) {
             console.error('Failed to start session', error);
@@ -179,19 +177,7 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
       {(uploading || processing) ? (
         <div className="border rounded py-1 px-2 flex-grow text-black text-sm mr-2">
           {uploading && <p>Uploading</p>}
-          {uploading &&
-          <l-superballs
-            size="30"
-            speed="1.3" 
-            color="green" 
-            ></l-superballs>}
           {processing && <p>Processing</p>}
-          {processing &&
-          <l-leapfrog
-            size="30"
-            speed="2.5" 
-            color="green" 
-            ></l-leapfrog>}
         </div>
       ) : (
         <>
