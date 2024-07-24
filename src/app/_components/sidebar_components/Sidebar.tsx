@@ -96,6 +96,10 @@ export default function Sidebar({
     setSelectedClass(classItem);
   };
 
+  const resetSelectedClass = () => {
+    setSelectedClass(null);
+  };
+
   const handleRemoveClass = async () => {
     if (userId && classToDelete) {
       try {
@@ -156,6 +160,7 @@ export default function Sidebar({
       >
         <Link href="/">
           <img
+            onClick={resetSelectedClass}
             src="\duck.png"
             alt="Ducki"
             className="h-7 w-7 cursor-pointer rounded-full"
@@ -163,7 +168,12 @@ export default function Sidebar({
         </Link>
         {!isCollapsed && (
           <Link href="/">
-            <h1 className="cursor-pointer text-2xl font-bold">Ducki</h1>
+            <h1
+              onClick={resetSelectedClass}
+              className="cursor-pointer text-2xl font-bold"
+            >
+              ducki
+            </h1>
           </Link>
         )}
       </div>
@@ -171,10 +181,10 @@ export default function Sidebar({
         <>
           <nav className="mt-16 space-y-4">
             <Link href="/dashboard">
-              <DashboardButton />
+              <DashboardButton onClick={resetSelectedClass} />
             </Link>
             <Link href="/dashboard">
-              <CalendarButton />
+              <CalendarButton onClick={resetSelectedClass} />
             </Link>
           </nav>
           <div className="mb-4 mt-16 flex items-center justify-between">

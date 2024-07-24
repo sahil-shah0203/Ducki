@@ -1,19 +1,15 @@
-'use client';
+"use client";
+import { FaCalendar } from "react-icons/fa";
 
-import { useRouter } from 'next/navigation';
-import { FaCalendar } from 'react-icons/fa';
-
-type DashboardButtonProps = {
-  isSelected: boolean;
+type CalendarButtonProps = {
   onClick: () => void;
 };
 
-const CalendarButton = () => {
-  const router = useRouter();
-
+const CalendarButton: React.FC<CalendarButtonProps> = ({ onClick }) => {
   return (
     <div
-      className={`flex items-center p-4 text-white text-lg rounded-lg cursor-pointer transition-colors duration-300 `}
+      onClick={onClick} // Attach the onClick handler
+      className="flex cursor-pointer items-center rounded-lg p-4 text-lg text-white transition-colors duration-300"
     >
       <div className="flex items-center">
         <FaCalendar className="mr-2" size={24} />
@@ -21,6 +17,6 @@ const CalendarButton = () => {
       </div>
     </div>
   );
-}
+};
 
 export default CalendarButton;

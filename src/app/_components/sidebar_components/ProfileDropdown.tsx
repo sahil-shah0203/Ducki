@@ -16,8 +16,6 @@ export default function ProfileDropdown({
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const profileDropdownRef = useRef<HTMLDivElement | null>(null);
 
-  const router = useRouter();
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
