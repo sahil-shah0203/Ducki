@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { SignOutButton } from "@clerk/nextjs";
-
 import { useRouter } from "next/navigation";
+
+import Link from "next/link";
 
 type ProfileDropdownProps = {
   userImage: string | undefined;
@@ -33,10 +34,6 @@ export default function ProfileDropdown({
     };
   }, [profileDropdownRef]);
 
-  const handleProfileSettings = () => {
-    router.push(`/profile?userId=${userId}`);
-  };
-
   return (
     <div className="absolute bottom-4 left-4 flex items-center">
       <img
@@ -50,12 +47,11 @@ export default function ProfileDropdown({
           ref={profileDropdownRef}
           className="absolute bottom-12 left-0 z-20 w-48 overflow-hidden rounded-md bg-white shadow-xl"
         >
-          <button
-            onClick={handleProfileSettings}
-            className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-200"
-          >
-            My Profile
-          </button>
+          <Link href={`/profile?userId=${userId}`} passHref>
+            <button className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-200">
+              Profile Settings
+            </button>
+          </Link>
           <SignOutButton>
             <button className="block w-full px-4 py-2 text-left text-sm text-red-700 hover:bg-gray-200">
               Sign Out

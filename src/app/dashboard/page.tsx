@@ -9,7 +9,6 @@ export default function DashboardPage() {
 
   if (!user) {
     router.push("/");
-    return null;
   }
 
   return (
