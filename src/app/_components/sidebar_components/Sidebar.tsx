@@ -12,7 +12,6 @@ import {
   FaChevronLeft,
   FaChevronRight,
 } from "react-icons/fa";
-import { SignOutButton } from "@clerk/nextjs";
 import DashboardButton from "~/app/_components/sidebar_components/DashboardButton";
 import CalendarButton from "~/app/_components/sidebar_components/CalendarButton";
 
@@ -26,6 +25,11 @@ type SidebarProps = {
   toggleSidebar: () => void;
   isCollapsed: boolean;
   userImage: string | undefined;
+  onFetchResults: (choices: any[]) => void;
+  onError: (error: string | null) => void;
+  user_id: number | undefined;
+  selectedClassName: string | undefined;
+  selectedClassID: number | undefined;
 };
 
 type ClassItem = {
@@ -39,9 +43,12 @@ export default function Sidebar({
   toggleSidebar,
   isCollapsed,
   userImage,
+  onFetchResults,
+  onError,
+  user_id,
+  selectedClassName,
+  selectedClassID,
 }: SidebarProps) {
-  const router = useRouter();
-
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState<Record<string, boolean>>(
@@ -62,6 +69,8 @@ export default function Sidebar({
       enabled: !!userId,
     },
   );
+
+  const router = useRouter();
 
   useEffect(() => {
     if (data) {
@@ -92,8 +101,11 @@ export default function Sidebar({
   }, [dropdownRefs]);
 
   const handleClassClick = (classItem: ClassItem) => {
+    console.log("yo");
     handleClassSelect(classItem);
     setSelectedClass(classItem);
+    const url = `/classes/${classItem.class_id}?user=${user_id}&className=${classItem.class_name}&classID=${classItem.class_id}`;
+    router.push(url);
   };
 
   const resetSelectedClass = () => {
@@ -206,7 +218,7 @@ export default function Sidebar({
                   key={index}
                   className={`relative ${classItem.class_name === selectedClass?.class_name ? "rounded-lg bg-[#217853]" : ""}`}
                 >
-                  <button
+                  <a
                     onClick={() => handleClassClick(classItem)}
                     className="flex w-full items-center justify-between rounded-lg bg-transparent p-1 pl-3 text-left hover:bg-[#217853]"
                   >
@@ -235,9 +247,8 @@ export default function Sidebar({
                           <a
                             href="#"
                             onClick={(e) => {
-                              {
-                                /*enter function to show all uploaded files from s3 (another api :| )*/
-                              }
+                              e.preventDefault();
+                              // Function to show all uploaded files from S3 (another API)
                             }}
                             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-400 hover:text-white"
                           >
@@ -257,7 +268,7 @@ export default function Sidebar({
                         </div>
                       )}
                     </div>
-                  </button>
+                  </a>
                 </div>
               ))}
             </div>

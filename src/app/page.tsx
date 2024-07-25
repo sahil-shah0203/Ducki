@@ -39,7 +39,7 @@ export default function MainPage() {
     const user_email = user?.emailAddresses[0]?.emailAddress;
     const first_name = user?.firstName;
     const last_name = user?.lastName;
-    const user_image = user?.imageUrl; // Get the user's image URL
+    const user_image = user?.imageUrl;
 
     if (!user_email || !first_name || !last_name) {
       return <div>Error: Unable to fetch user details</div>;
@@ -76,33 +76,19 @@ export default function MainPage() {
           handleClassSelect={handleClassSelect}
           toggleSidebar={toggleSidebar}
           isCollapsed={isSidebarCollapsed}
-          userImage={user_image} // Pass the user's image URL to Sidebar
+          userImage={user_image}
+          onFetchResults={setChoices}
+          onError={setError}
+          user_id={user_id}
+          selectedClassName={selectedClass?.class_name}
+          selectedClassID={selectedClass?.class_id}
         />
         <div
           className={`flex-grow transition-all duration-300 ${isSidebarCollapsed ? "ml-10" : "ml-64"}`}
         >
           <Background />
           <HomeBackground isCollapsed={isSidebarCollapsed} />
-          {selectedClass ? (
-            <>
-              <div className="flex-grow overflow-auto p-4">
-                {error && <p className="text-red-500">{error}</p>}
-              </div>
-              <div>
-                <div className="llm-input">
-                  <LLMInput
-                    onFetchResults={setChoices}
-                    onError={setError}
-                    user_id={user_id}
-                    selectedClassName={selectedClass?.class_name}
-                    selectedClassID={selectedClass?.class_id}
-                  />
-                </div>
-              </div>
-            </>
-          ) : (
-            <Home />
-          )}
+          <Home />
         </div>
       </div>
     );
