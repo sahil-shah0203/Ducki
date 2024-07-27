@@ -68,7 +68,7 @@ export async function POST(request: Request) {
           to you as context. Your main goal is to get the student to teach the content to you
           in their own words, this will help them learn better as they explain it to you. If
           any information is incorrect, please correct them in a very polite and jovial manner.
-          Try to nudge the student in the right direction without giving the answer upimmediately, if it is a simple mistake.
+          Try to nudge the student in the right direction without giving the answer up immediately, if it is a simple mistake.
           If you are unsure about any information, tell the student you do not know the answer.
           Please make sure that this tutoring session only takes around 10 minutes, once
           you think the student knows the information pretty well, and there is not much
@@ -87,6 +87,7 @@ export async function POST(request: Request) {
       presence_penalty: 0,
     });
 
+    
     const result = response.choices?.[0]?.message?.content;
     if (!result) {
       throw new Error('No valid response choices available');
