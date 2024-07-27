@@ -1,35 +1,38 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import AWS from 'aws-sdk';
+import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
 
 export async function POST(request: Request) {
-  console.log("POST CALLED");
   try {
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
 
     const params = await request.json();
-    const { prompt, session, chatHistory } = params;
+    const prompt = params.prompt;
+    const session = params.session;
 
-    console.log("Session:", session);
-
-    const lambda = new AWS.Lambda({
+    const lambda = new LambdaClient({
       region: "us-east-1",
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+      },
     });
 
     let context;
-    const lambda_params = {
+    const lambdaParams = {
       FunctionName: 'prompt_model',
-      Payload: JSON.stringify({ prompt, index: session }),
+      Payload: JSON.stringify({
+        prompt: prompt,
+        index: session
+      }),
     };
 
     try {
-      const result = await lambda.invoke(lambda_params).promise();
-      const response = JSON.parse(result.Payload as string);
-      console.log("Lambda response:", response);
+      const command = new InvokeCommand(lambdaParams);
+      const result = await lambda.send(command);
+      const response = JSON.parse(new TextDecoder("utf-8").decode(result.Payload));
       if (response.statusCode === 200 && response.body) {
         const body = typeof response.body === 'string' ? JSON.parse(response.body) : response.body;
         if (body.status === 'success') {
@@ -44,22 +47,36 @@ export async function POST(request: Request) {
       context = "";
     }
 
-    console.log("Context is:", context);
-
+    const chatHistory = params.chatHistory;
     const customPrompt = {
       role: "user",
-      content: `Context: \n${context}\n\nPrompt: \n${prompt}`,
+      content: "Context: \n" + context + "\n\n" + "Prompt: \n" + prompt,
     };
 
     const messages = [customPrompt, ...chatHistory].reverse();
 
-    const openAIResponse = await openai.chat.completions.create({
+    const response = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [
         {
           role: "system",
-          content: "You are Ducki AI, a helpful learning assistant for college students. Pretend that you are a professor guiding an eager student through their studies. Your responses should mimic the discussion that takes place during office hours for college classes. Please be short, succinct, and informative in your responses. Be sure to encourage further discussion from the user, and provide helpful resources when necessary.",
-        },
+          content: 
+          `
+          You are Ducki AI, a personal tutor for a student. Currently, you are in a 10-minute,
+          quick review session with them. You are to speak to the student unprompted and provide
+          guidance by asking questions about the course material. This material will be provided
+          to you as context. Your main goal is to get the student to teach the content to you
+          in their own words, this will help them learn better as they explain it to you. If
+          any information is incorrect, please correct them in a very polite and jovial manner.
+          If you are unsure about any information, tell the student you do not know the answer.
+          Please make sure that this tutoring session only takes around 10 minutes, once
+          you think the student knows the information pretty well, and there is not much
+          left to correct them on, please conclude by saying “Wow you seem to know your
+          course material well! Your session is now complete. I will schedule some more
+          sessions so you don’t forget what we went over today, and you may feel free
+          to ask any more questions or exit the page. Thank you!”
+          `,
+           },
         ...messages,
       ],
       temperature: 0,
@@ -69,13 +86,12 @@ export async function POST(request: Request) {
       presence_penalty: 0,
     });
 
-    const responseContent = openAIResponse.choices?.[0]?.message?.content;
-
-    if (!responseContent) {
-      throw new Error("No response content");
+    const result = response.choices?.[0]?.message?.content;
+    if (!result) {
+      throw new Error('No valid response choices available');
     }
 
-    return NextResponse.json({ response: responseContent });
+    return NextResponse.json({ result });
   } catch (error) {
     console.error("Error in API route:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

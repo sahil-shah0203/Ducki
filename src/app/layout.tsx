@@ -4,6 +4,7 @@ import { TRPCReactProvider } from '~/trpc/react';
 import { ClerkProvider } from '@clerk/nextjs';
 import Header from './_components/Header';
 import AuthWrapper from './_components/AuthWrapper';
+import { ReactNode } from 'react';
 
 export const metadata = {
   title: "ducki",
@@ -14,11 +15,11 @@ export const metadata = {
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`${GeistSans.variable}`}>
+      <html lang="en" className={GeistSans.variable}>
         <body className="min-h-screen w-full flex flex-col">
           <TRPCReactProvider>
             <div className="flex flex-1 flex-col w-full">

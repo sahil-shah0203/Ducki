@@ -28,7 +28,6 @@ export const classRouter = createTRPCRouter({
       return { class_id: newClass.class_id, class_name: newClass.class_name };
     }),
 
-  // Will try to optimize this when we migrate to mongo
   removeClass: publicProcedure
     .input(z.object({
       user_id: z.number(),
@@ -46,6 +45,7 @@ export const classRouter = createTRPCRouter({
         throw new Error("Class not found or not owned by user");
       }
 
+      // Delete related chat messages
       await ctx.db.chatMessage.deleteMany({
         where: {
           chatHistory: {
@@ -54,12 +54,21 @@ export const classRouter = createTRPCRouter({
         },
       });
 
+      // Delete related chat histories
       await ctx.db.chatHistory.deleteMany({
         where: {
           class_id: input.class_id,
         },
       });
 
+      // Delete related sessions
+      await ctx.db.session.deleteMany({
+        where: {
+          class_id: input.class_id,
+        },
+      });
+
+      // Delete the class
       await ctx.db.class.delete({
         where: {
           class_id: input.class_id,

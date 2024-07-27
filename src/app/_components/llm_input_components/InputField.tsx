@@ -135,7 +135,8 @@ export default function InputField({
 
   return (
     <div className="w-full flex items-center bg-transparent p-12 border-12 mb-12">
-      <div>
+      {/*below is the old + button next to LLM Input for uploading documents, it still functions for future testing*/}
+      {/* <div>
         <input
           type="file"
           accept="application/pdf"
@@ -149,7 +150,7 @@ export default function InputField({
         >
           +
         </label>
-      </div>
+      </div> */}
       {(uploading == processing) && <input
         ref={inputRef}
         type="text"
@@ -157,7 +158,7 @@ export default function InputField({
         value={inputText}
         onChange={handleInputChange}
         onKeyPress={handleKeyPress}
-        placeholder="Enter text for LLM"
+        placeholder="Enter your prompt here..."
         aria-label="Text input for LLM prompt"
         disabled={isGenerating}
       />}

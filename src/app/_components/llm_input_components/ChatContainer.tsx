@@ -1,7 +1,7 @@
 import { ChatMessageType } from './ChatMessage';
 import React from 'react';
 import Markdown from './Markdown';
-import ReactMarkdown from 'react-markdown';
+import CursorSVG from './CursorSVG';
 
 interface ChatContainerProps {
   chatMessages: ChatMessageType[];
@@ -12,12 +12,12 @@ interface ChatContainerProps {
 }
 
 export default function ChatContainer({
-                                        chatMessages,
-                                        displayResponse,
-                                        loading,
-                                        completedTyping,
-                                        sessionId,
-                                      }: ChatContainerProps) {
+  chatMessages,
+  displayResponse,
+  loading,
+  completedTyping,
+  sessionId,
+}: ChatContainerProps) {
   return (
     <div id="chat-container" className="overflow-auto rounded p-4 flex space-y-2 flex-grow">
       {loading && (
@@ -28,7 +28,10 @@ export default function ChatContainer({
       {chatMessages.map((message, index) => (
         <div key={index} className={`p-2 rounded-lg my-2 text-sm ${message.type ? 'bg-[#d3e4dd] max-w-2xl text-lime-950 self-end' : message.text.includes('generation-stopped') ? '' : 'bg-green-100 text-stone-900 self-start'}`}>
           {index === 0 && !message.type && message.session === sessionId && !completedTyping ? (
-            <Markdown>{displayResponse}</Markdown>
+            <span>
+              <Markdown>{displayResponse}</Markdown>
+              {!completedTyping && <CursorSVG />}
+            </span>
           ) : (
             <Markdown>{message.text}</Markdown>
           )}

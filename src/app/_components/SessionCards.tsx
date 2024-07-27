@@ -21,8 +21,8 @@ const SessionCard: React.FC<SessionCardProps> = ({ sessionId, title, date, onCli
 
   return (
     <div
-      className="bg-[#e2e9e5] rounded-lg shadow-md p-4 mt-20 cursor-pointer hover:shadow-lg transition-shadow duration-200 relative"
-      style={{ width: '270px', height: '300px' }}
+      className="bg-[#e2e9e5] rounded-lg shadow-md p-4 mt-10 cursor-pointer hover:shadow-lg transition-shadow duration-200 relative"
+      style={{ width: '230px', height: '280px' }}
       onClick={handleClick}
     >
       <div className="bg-white rounded-lg mx-auto" style={{ width: '85%', height: '100%' }}></div>
@@ -69,7 +69,7 @@ const SessionCards: React.FC<SessionCardsProps> = ({ classId, onSessionSelect })
   if (error) return <div>Error loading sessions: {error.message}</div>;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 overflow-auto">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 overflow-auto">
       {sessions.map((session: Session) => (
         <SessionCard
           key={session.id}

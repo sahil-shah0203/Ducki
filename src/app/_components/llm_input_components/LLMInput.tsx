@@ -21,7 +21,6 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
   const [displayResponse, setDisplayResponse] = useState<string>("");
   const [completedTyping, setCompletedTyping] = useState<boolean>(true);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const abortController = useRef(new AbortController());
   const inputRef = useRef<HTMLInputElement>(null);
   const [hydrated, setHydrated] = useState(false);
 
@@ -29,7 +28,6 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
 
   useEffect(() => {
     const fetchChatHistory = async () => {
-      // Removed the unnecessary await
       chatHistoryQuery.refetch();
     };
     fetchChatHistory();
@@ -109,7 +107,6 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
 
   const fetchAndStoreChatHistory = async (inputText: string) => {
     setLoading(true);
-    abortController.current = new AbortController();
 
     const chatHistory = chatMessages.map(message => ({
       role: message.type ? 'user' : 'assistant',
@@ -117,7 +114,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     }));
 
     try {
-      const response = await fetch('/api/llm', {
+      const response = await fetch('/api/LLM', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -127,29 +124,14 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
           prompt: inputText,
           session: uniqueSessionId,
         }),
-        signal: abortController.current.signal,
       });
 
-      if (!response.body) throw new Error('No response body');
+      const data = await response.json();
+      if (!data.result) throw new Error('No response body');
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let receivedText = '';
-
-      for (let done = false; !done;) {
-        const { done: isDone, value } = await reader.read();
-        if (isDone) {
-          done = true;
-        } else {
-          receivedText += decoder.decode(value, { stream: true });
-          setDisplayResponse(receivedText);
-        }}
-        
-
-      const model_response = receivedText;
+      const model_response = data.result;
       const llmTimestamp = getPreciseTimestamp();
       const llmResponseMessage: ChatMessageType = { type: false, text: model_response, session: uniqueSessionId, timestamp: llmTimestamp };
-      console.log("storing message with sessionID:", uniqueSessionId);
       setChatMessages(prevMessages => [...prevMessages, llmResponseMessage].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
       setCompletedTyping(false);
       setIsGenerating(false);
@@ -177,7 +159,6 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
   };
 
   const handleStopGeneration = () => {
-    abortController.current.abort();
     setDisplayResponse('<span class="generation-stopped">Response generation stopped</span>');
     const stopTimestamp = getPreciseTimestamp();
     setChatMessages(prevMessages => [...prevMessages, { type: false, text: '<span class="generation-stopped">Response generation stopped</span>', session: uniqueSessionId, timestamp: stopTimestamp }].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());

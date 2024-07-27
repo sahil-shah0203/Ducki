@@ -102,10 +102,17 @@ export default function MainPage() {
                   <>
                     <button
                       onClick={() => handleStartSession(user_id!)}
-                      className="bg-blue-500 text-white px-4 py-2 rounded"
+                      className="bg-[#FFF0CB] py-4 px-2 rounded-xl shadow-md w-full border-2 border-dashed border-[#FFE072] flex items-center justify-center space-x-3"
                     >
-                      Start Session
+                      <div className="bg-[#325B46] rounded-full p-2 flex items-center justify-center">
+                        <img src="/Group 10.png" alt="Paperclip Icon" className="w-4 h-4" />
+                      </div>
+                      <div className="flex flex-col items-start py-4">
+                        <span className="font-bold">Start Session</span>
+                        <span className="text-gray-500">Click to add lecture files, presentations, or notes to begin</span>
+                      </div>
                     </button>
+
                     <SessionCards classId={selectedClass.class_id} onSessionSelect={handleSessionSelect} />
                   </>
                 ) : (

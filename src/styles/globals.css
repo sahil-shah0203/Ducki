@@ -57,7 +57,7 @@ body {
 .cursor {
   display: inline-block;
   width: 1ch;
-  animation: flicker 0.01s infinite;
+  animation: flicker 0.5s infinite;
   margin-bottom: 4px;
 }
 
