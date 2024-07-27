@@ -25,6 +25,7 @@ export default function ChatContainer({
           Loading...
         </div>
       )}
+      
       {chatMessages.map((message, index) => (
         <div key={index} className={`p-2 rounded-lg my-2 text-sm ${message.type ? 'bg-[#d3e4dd] max-w-2xl text-lime-950 self-end' : message.text.includes('generation-stopped') ? '' : 'bg-green-100 text-stone-900 self-start'}`}>
           {index === 0 && !message.type && message.session === sessionId && !completedTyping ? (
