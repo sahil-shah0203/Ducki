@@ -1,13 +1,11 @@
 generator client {
   provider = "prisma-client-js"
 }
-
 datasource db {
   provider     = "mysql"
   url          = env("DATABASE_URL")
   relationMode = "prisma"
 }
-
 model User {
   user_id       Int           @id @default(autoincrement())
   first_name    String?
@@ -17,7 +15,6 @@ model User {
   classes       Class[]
   sessions      Session[]
 }
-
 model ChatHistory {
   chat_id      Int           @id @default(autoincrement())
   timestamp    DateTime      @default(now())
@@ -26,10 +23,9 @@ model ChatHistory {
   class        Class         @relation(fields: [class_id], references: [class_id])
   class_id     Int
   session      Session?      @relation(fields: [session_id], references: [session_id])
-  session_id   Int?
+  session_id   String?
   chatMessages ChatMessage[]
 }
-
 model ChatMessage {
   message_id  Int         @id @default(autoincrement())
   content     String      @db.Text
@@ -38,7 +34,6 @@ model ChatMessage {
   chat_id     Int
   timestamp   DateTime    @default(now())
 }
-
 model Class {
   class_id      Int           @id @default(autoincrement())
   class_name    String
@@ -47,12 +42,13 @@ model Class {
   chatHistories ChatHistory[]
   sessions      Session[]
 }
-
 model Session {
-  session_id    Int           @id @default(autoincrement())
+  session_id    String           @id
   user          User          @relation(fields: [user_id], references: [user_id])
   user_id       Int
   class         Class         @relation(fields: [class_id], references: [class_id])
   class_id      Int
   chatHistories ChatHistory[]
+  createdAt     DateTime      @default(now())
+  session_title String
 }

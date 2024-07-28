@@ -206,11 +206,13 @@ export default function Sidebar({
                   key={index}
                   className={`relative ${classItem.class_name === selectedClass?.class_name ? "rounded-lg bg-[#217853]" : ""}`}
                 >
-                  <button
-                    onClick={() => handleClassClick(classItem)}
-                    className="flex w-full items-center justify-between rounded-lg bg-transparent p-1 pl-3 text-left hover:bg-[#217853]"
-                  >
-                    {isCollapsed ? "" : classItem.class_name}
+                  <div className="flex w-full items-center justify-between p-1 pl-3">
+                    <button
+                      onClick={() => handleClassClick(classItem)}
+                      className="flex w-full items-center justify-between rounded-lg bg-transparent p-1 pl-3 text-left hover:bg-[#217853]"
+                    >
+                      {classItem.class_name}
+                    </button>
                     <div className="relative">
                       <button
                         onClick={(e) => {
@@ -257,7 +259,7 @@ export default function Sidebar({
                         </div>
                       )}
                     </div>
-                  </button>
+                  </div>
                 </div>
               ))}
             </div>
