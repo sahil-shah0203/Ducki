@@ -183,7 +183,7 @@ export default function Sidebar({
             <Link href="/dashboard">
               <DashboardButton onClick={resetSelectedClass} />
             </Link>
-            <Link href="/dashboard">
+            <Link href="/calendar">
               <CalendarButton onClick={resetSelectedClass} />
             </Link>
           </nav>
