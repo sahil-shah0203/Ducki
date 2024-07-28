@@ -61,8 +61,6 @@ export const classRouter = createTRPCRouter({
         },
       });
 
-<<<<<<< HEAD
-=======
       // Delete related sessions
       await ctx.db.session.deleteMany({
         where: {
@@ -71,7 +69,6 @@ export const classRouter = createTRPCRouter({
       });
 
       // Delete the class
->>>>>>> sshah/sessions
       await ctx.db.class.delete({
         where: {
           class_id: input.class_id,
