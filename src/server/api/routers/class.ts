@@ -75,6 +75,7 @@ export const classRouter = createTRPCRouter({
         },
       });
 
+      
       return { success: true };
     }),
 });
