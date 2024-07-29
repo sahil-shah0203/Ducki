@@ -183,7 +183,7 @@ export default function Sidebar({
             <Link href="/dashboard">
               <DashboardButton onClick={resetSelectedClass} />
             </Link>
-            <Link href="/calendar">
+            <Link href={{ pathname: '/calendar', query: { userId } }}>
               <CalendarButton onClick={resetSelectedClass} />
             </Link>
           </nav>

@@ -9,6 +9,7 @@ import MainPage from '~/app/page';
 import AddEventDialog from '~/app/calendar/AddEventDialog';
 import EventDetailsDialog from '~/app/calendar/EventDetailsDialog';
 import { api } from "~/trpc/react";
+import { useRouter } from 'next/router';
 
 const localizer = momentLocalizer(moment);
 
@@ -20,23 +21,19 @@ type Event = {
   description: string | null;
 };
 
-type CalendarPageProps = {
-  user_id: number;
-};
-
-const CalendarPage: React.FC<CalendarPageProps> = ({ user_id }) => {
+const CalendarPage: React.FC = () => {
   const pathname = usePathname();
   const [events, setEvents] = useState<Event[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-
+  const router = useRouter();
+  const { userId } = router.query;
   const { data, isLoading, error } = api.events.getEventsByUserId.useQuery({ user_id: userId });
-
   useEffect(() => {
     if (data) {
       setEvents(data.map(event => ({
-        user_id: user_id,
+        user_id: userId,
         title: event.title,
         start: new Date(event.start),
         end: new Date(event.end),
