@@ -9,6 +9,7 @@ import MainPage from '~/app/page';
 import AddEventDialog from '~/app/calendar/AddEventDialog';
 import EventDetailsDialog from '~/app/calendar/EventDetailsDialog';
 import { api } from "~/trpc/react";
+import CustomToolbar from '~/app/calendar/CustomToolbar';
 
 const localizer = momentLocalizer(moment);
 
@@ -99,6 +100,7 @@ const CalendarPage: React.FC = () => {
             }
           })}
           components={{
+            toolbar: CustomToolbar,
             event: ({ event }) => (
               <span>
                 <strong>{event.title}</strong>
@@ -120,7 +122,7 @@ const CalendarPage: React.FC = () => {
         isOpen={isDetailsDialogOpen}
         onRequestClose={() => setIsDetailsDialogOpen(false)}
         event={selectedEvent}
-        onDeleteEvent={handleDeleteEvent} // Pass the delete handler
+        onDeleteEvent={handleDeleteEvent}
       />
     </div>
   );
