@@ -10,7 +10,6 @@ import FileUpload from './_components/FileUpload';
 import { api } from "~/trpc/react";
 import uuid from 'react-uuid';
 import SessionCards from '~/app/_components/SessionCards';
-
 import { useRouter } from "next/navigation";
 
 export default function MainPage() {
@@ -91,6 +90,12 @@ export default function MainPage() {
 
     const user_id = userData?.user_id;
 
+    const handleCalendarNavigation = () => {
+      if (user_id) {
+        router.push(`/calendar?userId=${user_id}`);
+      }
+    };
+
     return (
       <div className="relative flex h-screen" style={{ zIndex: 0 }}>
         <Sidebar
@@ -156,6 +161,7 @@ export default function MainPage() {
           ) : (
             <Home />
           )}
+          <button onClick={handleCalendarNavigation} className="bg-blue-500 text-white p-2 rounded">Go to Calendar</button>
         </div>
       </div>
     );

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { api } from "~/trpc/react";
 
 type Event = {
   title: string;
@@ -28,6 +29,22 @@ const AddEventDialog = ({
   const [description, setDescription] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const addEventMutation = api.events.addEvent.useMutation({
+    onSuccess: (newEvent) => {
+      onAddEvent({
+        title: newEvent.title,
+        start: new Date(newEvent.start),
+        end: new Date(newEvent.end),
+        place: place.trim(),
+        description: description.trim(),
+      });
+      onRequestClose();
+    },
+    onError: (error) => {
+      setErrorMessage(error.message);
+    },
+  });
+
   useEffect(() => {
     if (isOpen) {
       // Reset state when the dialog is opened
@@ -45,13 +62,18 @@ const AddEventDialog = ({
     const startDateTime = new Date(start);
     const endDateTime = new Date(end);
 
-    if (events.some(event => event.title.toLowerCase() === title.trim().toLowerCase())) {
+    if (events.some((event) => event.title.toLowerCase() === title.trim().toLowerCase())) {
       setErrorMessage("Event name already exists.");
     } else if (startDateTime >= endDateTime) {
       setErrorMessage("End time must be after start time.");
     } else {
-      onAddEvent({ title: title.trim(), start: startDateTime, end: endDateTime, place: place.trim(), description: description.trim() });
-      onRequestClose();
+      addEventMutation.mutate({
+        user_id: 1,
+        title: title.trim(),
+        description: description.trim(),
+        start: startDateTime.toISOString(),
+        end: endDateTime.toISOString(),
+      });
     }
   };
 
