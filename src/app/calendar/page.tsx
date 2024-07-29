@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -9,39 +9,42 @@ import MainPage from '~/app/page';
 import AddEventDialog from '~/app/calendar/AddEventDialog';
 import EventDetailsDialog from '~/app/calendar/EventDetailsDialog';
 import { api } from "~/trpc/react";
-import { useRouter } from 'next/router';
 
 const localizer = momentLocalizer(moment);
 
 type Event = {
+  event_id: number;
   title: string;
+  description: string | null;
   start: Date;
   end: Date;
-  place: string;
-  description: string | null;
+  user_id: number;
+  place: string | null;
 };
 
 const CalendarPage: React.FC = () => {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [events, setEvents] = useState<Event[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const router = useRouter();
-  const { userId } = router.query;
+  const userId = Number(searchParams.get('user_id'));
   const { data, isLoading, error } = api.events.getEventsByUserId.useQuery({ user_id: userId });
+
   useEffect(() => {
     if (data) {
       setEvents(data.map(event => ({
-        user_id: userId,
+        event_id: event.event_id,
         title: event.title,
+        description: event.description,
         start: new Date(event.start),
         end: new Date(event.end),
+        user_id: userId,
         place: event.place,
-        description: event.description,
       })));
     }
-  }, [data]);
+  }, [data, userId]);
 
   if (pathname !== '/calendar') {
     return null;
@@ -58,6 +61,10 @@ const CalendarPage: React.FC = () => {
 
   const handleAddEvent = (event: Event) => {
     setEvents([...events, event]);
+  };
+
+  const handleDeleteEvent = (event_id: number) => {
+    setEvents(events.filter(event => event.event_id !== event_id));
   };
 
   if (isLoading) {
@@ -107,11 +114,13 @@ const CalendarPage: React.FC = () => {
         onRequestClose={() => setIsAddDialogOpen(false)}
         onAddEvent={handleAddEvent}
         events={events}
+        user_id={userId}
       />
       <EventDetailsDialog
         isOpen={isDetailsDialogOpen}
         onRequestClose={() => setIsDetailsDialogOpen(false)}
         event={selectedEvent}
+        onDeleteEvent={handleDeleteEvent} // Pass the delete handler
       />
     </div>
   );

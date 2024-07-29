@@ -198,3 +198,7 @@ ul {
   overflow: hidden;
   padding-left: 10px;
 }
+
+.rbc-today {
+  background-color: #d3e4dd !important;
+}

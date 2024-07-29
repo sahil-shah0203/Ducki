@@ -68,4 +68,5 @@ model Event {
   end         DateTime
   user        User     @relation(fields: [user_id], references: [user_id])
   user_id     Int
+  place       String?
 }
