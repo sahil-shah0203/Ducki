@@ -1,21 +1,46 @@
 import React from "react";
+import { api } from "~/trpc/react";
 
 type Event = {
+  event_id: number;
   title: string;
+  description: string | null;
   start: Date;
   end: Date;
-  place: string;
-  description: string;
+  user_id: number;
+  place: string | null;
 };
 
 type EventDetailsDialogProps = {
   isOpen: boolean;
   onRequestClose: () => void;
   event: Event | null;
+  onDeleteEvent: (event_id: number) => void;
 };
 
-const EventDetailsDialog = ({ isOpen, onRequestClose, event }: EventDetailsDialogProps) => {
+const EventDetailsDialog = ({ isOpen, onRequestClose, event, onDeleteEvent }: EventDetailsDialogProps) => {
+  const deleteEventMutation = api.events.removeEvent.useMutation({
+    onSuccess: () => {
+      if (event) {
+        onDeleteEvent(event.event_id);
+      }
+      onRequestClose();
+    },
+    onError: (error) => {
+      alert(`Error deleting event: ${error.message}`);
+    },
+  });
+
   if (!event) return null;
+
+  const handleDelete = () => {
+    if (event) {
+      deleteEventMutation.mutate({
+        user_id: event.user_id,
+        event_id: event.event_id,
+      });
+    }
+  };
 
   return (
     <div
@@ -29,7 +54,14 @@ const EventDetailsDialog = ({ isOpen, onRequestClose, event }: EventDetailsDialo
         <p><strong>Start:</strong> {event.start.toString()}</p>
         <p><strong>End:</strong> {event.end.toString()}</p>
         <p><strong>Description:</strong> {event.description}</p>
-        <div className="flex justify-end mt-4">
+        <div className="flex justify-between mt-4">
+          <button
+            type="button"
+            onClick={handleDelete}
+            className="rounded bg-red-500 px-4 py-2 text-white hover:bg-red-700"
+          >
+            Delete
+          </button>
           <button
             type="button"
             onClick={onRequestClose}

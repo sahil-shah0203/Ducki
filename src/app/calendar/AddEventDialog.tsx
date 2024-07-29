@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
+import { api } from "~/trpc/react";
 
 type Event = {
+  event_id: number;
   title: string;
+  description: string | null;
   start: Date;
   end: Date;
-  place: string;
-  description: string;
+  user_id: number;
+  place: string | null;
 };
 
 type AddEventDialogProps = {
@@ -13,6 +16,7 @@ type AddEventDialogProps = {
   onRequestClose: () => void;
   onAddEvent: (event: Event) => void;
   events: Event[];
+  user_id: number;
 };
 
 const AddEventDialog = ({
@@ -20,6 +24,7 @@ const AddEventDialog = ({
                           onRequestClose,
                           onAddEvent,
                           events,
+                          user_id,
                         }: AddEventDialogProps) => {
   const [title, setTitle] = useState("");
   const [place, setPlace] = useState("");
@@ -27,6 +32,26 @@ const AddEventDialog = ({
   const [end, setEnd] = useState("");
   const [description, setDescription] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const addEventMutation = api.events.addEvent.useMutation({
+    onSuccess: (newEvent) => {
+      const maxEventId = events.length > 0 ? Math.max(...events.map(event => event.event_id)) : 0;
+      const newEventId = maxEventId + 1;
+      onAddEvent({
+        event_id: newEventId,
+        user_id: user_id,
+        title: newEvent.title,
+        start: new Date(newEvent.start),
+        end: new Date(newEvent.end),
+        place: place.trim(),
+        description: description.trim(),
+      });
+      onRequestClose();
+    },
+    onError: (error) => {
+      setErrorMessage(error.message);
+    },
+  });
 
   useEffect(() => {
     if (isOpen) {
@@ -44,14 +69,20 @@ const AddEventDialog = ({
     e.preventDefault();
     const startDateTime = new Date(start);
     const endDateTime = new Date(end);
-
-    if (events.some(event => event.title.toLowerCase() === title.trim().toLowerCase())) {
-      setErrorMessage("Event name already exists.");
-    } else if (startDateTime >= endDateTime) {
+    if (startDateTime >= endDateTime) {
       setErrorMessage("End time must be after start time.");
     } else {
-      onAddEvent({ title: title.trim(), start: startDateTime, end: endDateTime, place: place.trim(), description: description.trim() });
-      onRequestClose();
+      const maxEventId = events.length > 0 ? Math.max(...events.map(event => event.event_id)) : 0;
+      const newEventId = maxEventId + 1;
+      addEventMutation.mutate({
+        event_id: newEventId,
+        user_id: user_id,
+        title: title.trim(),
+        description: description.trim(),
+        start: startDateTime.toISOString(),
+        end: endDateTime.toISOString(),
+        place: place.trim(),
+      });
     }
   };
 

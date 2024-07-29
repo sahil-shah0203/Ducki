@@ -8,7 +8,6 @@ import Background from './Background';
 import HomeBackground from '~/app/HomeBackground';
 import FileUpload from './_components/FileUpload';
 import { api } from "~/trpc/react";
-import uuid from 'react-uuid';
 import SessionCards from '~/app/_components/SessionCards';
 
 import { useRouter } from "next/navigation";
