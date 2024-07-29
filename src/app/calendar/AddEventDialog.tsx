@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from "react";
 
+type Event = {
+  title: string;
+  start: Date;
+  end: Date;
+  place: string;
+  description: string;
+};
+
 type AddEventDialogProps = {
   isOpen: boolean;
   onRequestClose: () => void;
-  onAddEvent: (event: { title: string; start: Date; end: Date; place: string }) => void;
-  events: { title: string; start: Date; end: Date; place: string }[];
+  onAddEvent: (event: Event) => void;
+  events: Event[];
 };
 
 const AddEventDialog = ({
@@ -17,6 +25,7 @@ const AddEventDialog = ({
   const [place, setPlace] = useState("");
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
+  const [description, setDescription] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -26,6 +35,7 @@ const AddEventDialog = ({
       setPlace("");
       setStart("");
       setEnd("");
+      setDescription("");
       setErrorMessage(null);
     }
   }, [isOpen]);
@@ -40,7 +50,7 @@ const AddEventDialog = ({
     } else if (startDateTime >= endDateTime) {
       setErrorMessage("End time must be after start time.");
     } else {
-      onAddEvent({ title: title.trim(), start: startDateTime, end: endDateTime, place: place.trim() });
+      onAddEvent({ title: title.trim(), start: startDateTime, end: endDateTime, place: place.trim(), description: description.trim() });
       onRequestClose();
     }
   };
@@ -81,6 +91,13 @@ const AddEventDialog = ({
             value={end}
             onChange={(e) => setEnd(e.target.value)}
             className="mb-4 w-full rounded border p-2 text-black"
+            required
+          />
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="mb-4 w-full rounded border p-2 text-black"
+            placeholder="Event description"
             required
           />
           {errorMessage && <p className="mb-4 text-red-500">{errorMessage}</p>}

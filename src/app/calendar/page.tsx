@@ -6,24 +6,40 @@ import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import MainPage from '~/app/page';
-import AddEventDialog from '~/app/calendar/addEventDialog';  // Import the new component
+import AddEventDialog from '~/app/calendar/AddEventDialog';
+import EventDetailsDialog from '~/app/calendar/EventDetailsDialog';
 
 const localizer = momentLocalizer(moment);
 
+type Event = {
+  title: string;
+  start: Date;
+  end: Date;
+  place: string;
+  description: string;
+};
+
 const CalendarPage: React.FC = () => {
   const pathname = usePathname();
-  const [events, setEvents] = useState([]);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   if (pathname !== '/calendar') {
     return null;
   }
 
   const handleSelectSlot = () => {
-    setIsDialogOpen(true);
+    setIsAddDialogOpen(true);
   };
 
-  const handleAddEvent = (event) => {
+  const handleSelectEvent = (event: Event) => {
+    setSelectedEvent(event);
+    setIsDetailsDialogOpen(true);
+  };
+
+  const handleAddEvent = (event: Event) => {
     setEvents([...events, event]);
   };
 
@@ -38,6 +54,7 @@ const CalendarPage: React.FC = () => {
           endAccessor="end"
           selectable
           onSelectSlot={handleSelectSlot}
+          onSelectEvent={handleSelectEvent}
           style={{ height: '90%', width: '100%' }}
           eventPropGetter={(event) => ({
             style: {
@@ -61,10 +78,15 @@ const CalendarPage: React.FC = () => {
         />
       </div>
       <AddEventDialog
-        isOpen={isDialogOpen}
-        onRequestClose={() => setIsDialogOpen(false)}
+        isOpen={isAddDialogOpen}
+        onRequestClose={() => setIsAddDialogOpen(false)}
         onAddEvent={handleAddEvent}
         events={events}
+      />
+      <EventDetailsDialog
+        isOpen={isDetailsDialogOpen}
+        onRequestClose={() => setIsDetailsDialogOpen(false)}
+        event={selectedEvent}
       />
     </div>
   );
