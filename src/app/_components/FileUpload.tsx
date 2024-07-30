@@ -19,6 +19,7 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [sessionTitle, setSessionTitle] = useState<string>('');
   const { mutateAsync: addSession } = api.session.addSession.useMutation();
+  const { mutateAsync: addDocument } = api.documents.addDocument.useMutation(); // Correct usage
 
   const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
 
@@ -42,10 +43,12 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
     });
 
     const file_name = uuid();
+    const file_extension = file.name.split('.').pop();
+    const file_key = `${file_name}.${file_extension}`;
 
     const params = {
       Bucket: S3_BUCKET,
-      Key: `${file_name}.pdf`,
+      Key: file_key,
       Body: file,
       Metadata: {
         index: session_id,
@@ -55,7 +58,7 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
     try {
       await s3Client.send(new PutObjectCommand(params));
       setUploading(false);
-      return file_name;
+      return { file_name, file_key };
     } catch (error) {
       console.error(error);
       setUploading(false);
@@ -70,7 +73,7 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
     }
   };
 
-  const processFile = async (file_name: string, session_id: string) => {
+  const processFile = async (file_key: string, session_id: string) => {
     setProcessing(true);
     const LAMBDA_FUNCTION = "process_document";
     const REGION = "us-east-1";
@@ -86,7 +89,7 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
     const params = {
       FunctionName: LAMBDA_FUNCTION,
       Payload: JSON.stringify({
-        document_name: file_name,
+        document_name: file_key,
         index: session_id,
       }),
     };
@@ -122,9 +125,12 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
           onError("Invalid file type");
           return;
         }
-        const file_name = await uploadFile(file, session_id);
-        if (file_name != null) {
-          await processFile(file_name, session_id);
+        const result = await uploadFile(file, session_id);
+        if (result != null) {
+          const { file_name, file_key } = result;
+          const S3_BUCKET = 'ducki-documents';
+          const REGION = 'us-east-1';
+          await processFile(file_key, session_id);
           try {
             const newSession = await addSession({
               user_id,
@@ -132,6 +138,18 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
               session_id: session_id,
               session_title: sessionTitle,
             });
+
+            // Add the document to the Prisma database
+            const documentUrl = `https://${S3_BUCKET}.s3.${REGION}.amazonaws.com/${file_key}`;
+            await addDocument({
+              document_id: file_name,
+              url: documentUrl,
+              name: file.name,
+              userId: user_id,
+              classId: class_id,
+              sessionId: session_id,
+            });
+
           } catch (error) {
             console.error('Failed to start session', error);
           }

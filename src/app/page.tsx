@@ -2,6 +2,7 @@
 import { useUser } from '@clerk/nextjs';
 import Home from './home';
 import Sidebar from './_components/sidebar_components/Sidebar';
+import Popup from './_components/Popup';
 import React, { useState } from 'react';
 import LLMInput from '~/app/_components/llm_input_components/LLMInput';
 import Background from './Background';
@@ -9,7 +10,6 @@ import HomeBackground from '~/app/HomeBackground';
 import FileUpload from './_components/FileUpload';
 import { api } from "~/trpc/react";
 import SessionCards from '~/app/_components/SessionCards';
-
 import { useRouter } from "next/navigation";
 
 export default function MainPage() {
@@ -21,6 +21,7 @@ export default function MainPage() {
   const [choices, setChoices] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isPopupCollapsed, setIsPopupCollapsed] = useState(false);
   const [sessionStarted, setSessionStarted] = useState(false);
   const [filesUploaded, setFilesUploaded] = useState(false);
   const [sessionId, setSessionId] = useState<string>("");
@@ -50,6 +51,10 @@ export default function MainPage() {
 
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
+  };
+
+  const togglePopup = () => {
+    setIsPopupCollapsed(!isPopupCollapsed);
   };
 
   const handleSessionSelect = (sessionId: string) => {
@@ -93,7 +98,7 @@ export default function MainPage() {
     return (
       <div className="relative flex h-screen" style={{ zIndex: 0 }}>
         <Sidebar
-          userId={user_id}
+          userId={user_id}  // Convert user_id to string
           handleClassSelect={handleClassSelect}
           toggleSidebar={toggleSidebar}
           isCollapsed={isSidebarCollapsed}
@@ -156,6 +161,12 @@ export default function MainPage() {
             <Home />
           )}
         </div>
+        <Popup
+          userId={user_id?.toString() || ''}  // Convert user_id to string
+          classId={selectedClass?.class_id || 0} // Provide a default value for classId
+          toggleSidebar={togglePopup}
+          isCollapsed={isPopupCollapsed}
+        />
       </div>
     );
   }
