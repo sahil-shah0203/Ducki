@@ -101,7 +101,6 @@ export default function Sidebar({
   }, [dropdownRefs]);
 
   const handleClassClick = (classItem: ClassItem) => {
-    console.log("yo");
     handleClassSelect(classItem);
     setSelectedClass(classItem);
     const url = `/classes/${classItem.class_id}?user=${user_id}&className=${classItem.class_name}&classID=${classItem.class_id}`;
