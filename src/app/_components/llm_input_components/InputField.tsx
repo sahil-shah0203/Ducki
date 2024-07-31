@@ -1,7 +1,6 @@
-import React, { useState, useRef, RefObject } from "react";
-// import { api } from "~/trpc/react";
-import AWS, { CostExplorer } from "aws-sdk";
-import uuid from "react-uuid";
+import React, { useState, useRef, RefObject } from 'react';
+import AWS, { CostExplorer } from 'aws-sdk';
+import uuid from 'react-uuid';
 
 interface InputFieldProps {
   inputRef: RefObject<HTMLInputElement>;
@@ -9,23 +8,24 @@ interface InputFieldProps {
   isGenerating: boolean;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleKeyPress: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-  handleSubmit: () => void;
+  handleSubmit: (e: React.FormEvent) => void;
   handleStopGeneration: () => void;
+  uniqueSessionId: string;
 }
 
 export default function InputField({
-  inputRef,
-  inputText,
-  isGenerating,
-  handleInputChange,
-  handleKeyPress,
-  handleSubmit,
-  handleStopGeneration,
-}: InputFieldProps) {
-  // const uploadDocumentMutation = api.document.uploadDocument.useMutation();
+                                     inputRef,
+                                     inputText,
+                                     isGenerating,
+                                     handleInputChange,
+                                     handleKeyPress,
+                                     handleSubmit,
+                                     handleStopGeneration,
+                                     uniqueSessionId
+                                   }: InputFieldProps) {
 
-  const [uploading, setUploading] = useState(false);
-  const [processing, setProcessing] = useState(false);
+  const [uploading, setUploading] = useState(false)
+  const [processing, setProcessing] = useState(false)
 
   const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
 
@@ -48,7 +48,7 @@ export default function InputField({
       Key: file_name + ".pdf",
       Body: file,
       Metadata: {
-        index: "test_index1",
+        index: uniqueSessionId,
       },
     };
 
@@ -81,7 +81,7 @@ export default function InputField({
       FunctionName: LAMBDA_FUNCTION,
       Payload: JSON.stringify({
         document_name: file_name,
-        index: "test_index1",
+        index: uniqueSessionId
       }),
     };
 
@@ -105,10 +105,6 @@ export default function InputField({
       const file = files[0];
       if (file) {
         try {
-          // Upload the file to the server
-          // uploadDocumentMutation.mutate({
-          //    file: file,
-          // });
           if (!allowedTypes.includes(file.type)) {
             alert("Invalid file type");
             return;
@@ -129,29 +125,41 @@ export default function InputField({
   };
 
   return (
-    <div className="border-12 mb-12 flex w-full items-center bg-transparent p-12">
-      {uploading == processing && (
+    <div className="w-full flex items-center bg-transparent p-12 border-12 mb-12">
+      {/*below is the old + button next to LLM Input for uploading documents, it still functions for future testing*/}
+      {/* <div>
         <input
-          ref={inputRef}
-          type="text"
-          className="mr-2 flex-grow rounded border px-2 py-1 text-sm text-black"
-          value={inputText}
-          onChange={handleInputChange}
-          onKeyPress={handleKeyPress}
-          placeholder="Enter text for LLM"
-          aria-label="Text input for LLM prompt"
-          disabled={isGenerating}
+          type="file"
+          accept="application/pdf"
+          className="hidden"
+          id="pdf-upload"
+          onChange={handleFileChange}
         />
-      )}
-      {uploading != processing && (
-        <div className="mr-2 flex-grow rounded border px-2 py-1 text-sm text-black">
-          {uploading && <p>Uploading Document</p>}
-          {processing && <p>Processing Document</p>}
-        </div>
-      )}
+        <label
+          htmlFor="pdf-upload"
+          className="mx-2 ml-2 cursor-pointer rounded-2xl bg-blue-500 px-4 py-2 text-white"
+        >
+          +
+        </label>
+      </div> */}
+      {(uploading == processing) && <input
+        ref={inputRef}
+        type="text"
+        className="border rounded py-1 px-2 flex-grow text-black text-sm mr-2"
+        value={inputText}
+        onChange={handleInputChange}
+        onKeyPress={handleKeyPress}
+        placeholder="Enter your prompt here..."
+        aria-label="Text input for LLM prompt"
+        disabled={isGenerating}
+      />}
+      {(uploading != processing) && <div className="border rounded py-1 px-2 flex-grow text-black text-sm mr-2">
+        {uploading && <p>Uploading Document</p>}
+        {processing && <p>Processing Document</p>}
+      </div>}
       <button
         className="group relative inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-[#3a5e4d]"
-        onClick={isGenerating ? handleStopGeneration : handleSubmit}
+        onClick={isGenerating ? handleStopGeneration : (e) => handleSubmit(e)}
         aria-label={isGenerating ? "Stop Generation" : "Submit prompt to LLM"}
       >
         <div className="transition duration-300 group-hover:rotate-[360deg]">
