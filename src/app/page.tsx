@@ -152,6 +152,7 @@ export default function MainPage() {
                       selectedClassName={selectedClass?.class_name}
                       selectedClassID={selectedClass?.class_id}
                       uniqueSessionId={sessionId}
+                      firstName={first_name}
                     />
                   )
                 )}
@@ -162,8 +163,8 @@ export default function MainPage() {
           )}
         </div>
         <Popup
-          userId={user_id?.toString() || ''}  // Convert user_id to string
-          classId={selectedClass?.class_id || 0} // Provide a default value for classId
+          userId={user_id?.toString() ?? ''}  // Convert user_id to string
+          classId={selectedClass?.class_id ?? 0} // Provide a default value for classId
           toggleSidebar={togglePopup}
           isCollapsed={isPopupCollapsed}
         />

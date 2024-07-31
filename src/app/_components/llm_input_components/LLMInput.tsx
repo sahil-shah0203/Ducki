@@ -12,9 +12,10 @@ interface LLMInputProps {
   selectedClassName: string | null;
   selectedClassID: number | null;
   uniqueSessionId: string;
+  firstName: string;
 }
 
-export default function LLMInput({ onFetchResults, onError, user_id, selectedClassName, selectedClassID, uniqueSessionId }: LLMInputProps) {
+export default function LLMInput({ onFetchResults, onError, user_id, selectedClassName, selectedClassID, uniqueSessionId, firstName }: LLMInputProps) {
   const [inputText, setInputText] = useState<string>("");
   const [chatMessages, setChatMessages] = useState<ChatMessageType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -23,6 +24,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [initialMessageSent, setInitialMessageSent] = useState<boolean>(false); // Track initial message
 
   const chatHistoryQuery = api.session.getChatHistoryBySessionId.useQuery({ session_id: uniqueSessionId });
 
@@ -81,6 +83,14 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     }
   }, [chatMessages, completedTyping, hydrated]);
 
+  useEffect(() => {
+    if (!initialMessageSent) {
+      const initialMessage = `hey ducki, my name is ${firstName}, and I'm ready to start my session about class: ${selectedClassName}.`;
+      setInitialMessageSent(true);
+      fetchAndStoreChatHistory(initialMessage, false);
+    }
+  }, [initialMessageSent, firstName, selectedClassName]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputText(e.target.value);
   };
@@ -105,7 +115,7 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     }
   };
 
-  const fetchAndStoreChatHistory = async (inputText: string) => {
+  const fetchAndStoreChatHistory = async (inputText: string, storeInitialMessage = true) => {
     setLoading(true);
 
     const chatHistory = chatMessages.map(message => ({
@@ -135,7 +145,9 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
       setChatMessages(prevMessages => [...prevMessages, llmResponseMessage].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
       setCompletedTyping(false);
       setIsGenerating(false);
-      await storeChatHistory(llmResponseMessage, false);
+      if (storeInitialMessage) {
+        await storeChatHistory(llmResponseMessage, false);
+      }
 
     } catch (err) {
       console.error("Error fetching response:", err);
@@ -148,14 +160,16 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsGenerating(true);
     onError(null);
+
     const userTimestamp = getPreciseTimestamp();
     const userMessage: ChatMessageType = { type: true, text: inputText, session: uniqueSessionId, timestamp: userTimestamp };
     setChatMessages(prevMessages => [...prevMessages, userMessage].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
     setInputText('');
     await storeChatHistory(userMessage, true);
     fetchAndStoreChatHistory(inputText);
+
+    setIsGenerating(true);
   };
 
   const handleStopGeneration = () => {

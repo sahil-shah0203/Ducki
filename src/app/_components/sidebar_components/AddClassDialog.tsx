@@ -47,6 +47,7 @@ export default function AddClassDialog({
   return (
     <div
       className={`fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 ${isOpen ? "" : "hidden"}`}
+      style={{ zIndex: 9999 }}
     >
       <div className="rounded-md bg-white p-6 shadow-md">
         <h2 className="mb-4 text-xl text-black">Add a New Class</h2>
