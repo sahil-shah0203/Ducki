@@ -91,7 +91,7 @@ const SessionCards: React.FC<SessionCardsProps> = ({
     <div className="grid grid-cols-1 overflow-auto md:grid-cols-2 lg:grid-cols-4">
       {sessions.map((session: Session) => (
         <Link
-          href={`/classes/${selectedClassID}/sessions/${session.id}?user=${user_id}&className=${selectedClassName}&classID=${selectedClassID}`}
+          href={`/classes/${selectedClassID}/sessions/${session.id}?user=${user_id}&className=${selectedClassName}&classID=${selectedClassID}&sessionID=${session.id}`}
           key={session.id}
         >
           <SessionCard

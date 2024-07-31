@@ -3,6 +3,7 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
 import uuid from 'react-uuid';
 import { api } from "~/trpc/react";
+import {useRouter} from 'next/navigation';
 
 interface FileUploadProps {
   onUploadSuccess: () => void;
@@ -10,9 +11,10 @@ interface FileUploadProps {
   setSessionId: (sessionId: string) => void;
   user_id: number;
   class_id: number;
+  selectedClassName: string | null;
 }
 
-export default function FileUpload({ onUploadSuccess, onError, setSessionId, user_id, class_id }: FileUploadProps) {
+export default function FileUpload({ onUploadSuccess, onError, setSessionId, user_id, class_id, selectedClassName }: FileUploadProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -21,6 +23,8 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
   const { mutateAsync: addSession } = api.session.addSession.useMutation();
 
   const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+
+  const router = useRouter();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -139,9 +143,14 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
           onError("Failed to upload file");
         }
       }
+
+      const url = `/classes/${class_id}/sessions/${session_id}?user=${user_id}&className=${selectedClassName}&classID=${class_id}&sessionID=${session_id}`;
+      router.push(url)
     } else {
       onError("No files selected.");
     }
+
+    
   };
 
   return (

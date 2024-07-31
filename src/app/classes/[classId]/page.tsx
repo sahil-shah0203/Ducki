@@ -31,10 +31,6 @@ export default function ClassPage() {
   const user_id_number = Number(user_id);
   const selectedClassID_number = Number(selectedClassID);
 
-  const url = `/classes/${selectedClassID}/sessions/123?user=${user_id}&className=${selectedClassName}&classID=${selectedClassID}`;
-
-  const { mutateAsync: addSession } = api.session.addSession.useMutation();
-
   const handleSessionSelect = (sessionId: string) => {
     setSessionId(sessionId);
     setSessionStarted(true);
@@ -45,7 +41,6 @@ export default function ClassPage() {
     <div className="container">
       <MainPage />
       <div className="sidebar_category">
-        <Link href={url}>SESSIONS</Link>
         {!sessionStarted ? (
           <button
             onClick={() => setSessionStarted(true)}
@@ -72,6 +67,7 @@ export default function ClassPage() {
             setSessionId={setSessionId}
             user_id={user_id_number}
             class_id={selectedClassID_number}
+            selectedClassName={selectedClassName}
           />
         )}
         <SessionCards

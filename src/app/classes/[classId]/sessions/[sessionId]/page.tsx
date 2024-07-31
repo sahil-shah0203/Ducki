@@ -12,6 +12,11 @@ export default function SessionPage() {
   const user_id = searchParams.get("user");
   const selectedClassName = searchParams.get("className");
   const selectedClassID = searchParams.get("classID");
+  const session_id = searchParams.get("sessionID")
+
+  if(!session_id){
+    throw new Error("Session ID is needed")
+  }
 
   const user_id_number = Number(user_id);
   const selectedClassID_number = Number(selectedClassID);
@@ -32,6 +37,7 @@ export default function SessionPage() {
           user_id={user_id_number}
           selectedClassName={selectedClassName}
           selectedClassID={selectedClassID_number}
+          uniqueSessionId={session_id}
         />
       </div>
     </div>

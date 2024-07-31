@@ -130,21 +130,6 @@ export default function InputField({
 
   return (
     <div className="border-12 mb-12 flex w-full items-center bg-transparent p-12">
-      <div>
-        <input
-          type="file"
-          accept="application/pdf"
-          className="hidden"
-          id="pdf-upload"
-          onChange={handleFileChange}
-        />
-        <label
-          htmlFor="pdf-upload"
-          className="mx-2 ml-2 cursor-pointer rounded-2xl bg-blue-500 px-4 py-2 text-white"
-        >
-          +
-        </label>
-      </div>
       {uploading == processing && (
         <input
           ref={inputRef}
