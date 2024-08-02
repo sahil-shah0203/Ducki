@@ -125,7 +125,7 @@ export default function InputField({
   };
 
   return (
-    <div className="w-full flex items-center bg-transparent p-12 border-12 mb-12">
+    <div className="w-full flex items-center bg-transparent p-14 border-12 mb-14">
       {/*below is the old + button next to LLM Input for uploading documents, it still functions for future testing*/}
       {/* <div>
         <input
