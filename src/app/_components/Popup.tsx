@@ -1,7 +1,11 @@
-"use client";
-
 import React, { useState, useEffect } from "react";
-import { FaEllipsisV, FaPlus, FaChevronLeft, FaChevronRight, FaTimes } from "react-icons/fa";
+import {
+  FaEllipsisV,
+  FaPlus,
+  FaChevronLeft,
+  FaChevronRight,
+  FaTimes,
+} from "react-icons/fa";
 import { api } from "~/trpc/react";
 import { Tab } from "@headlessui/react";
 
@@ -30,15 +34,24 @@ const dummyKeyConcepts: KeyConcept[] = [
   // Add more concepts as needed
 ];
 
-const Sidebar: React.FC<SidebarProps> = ({ userId, classId, toggleSidebar, isCollapsed }) => {
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
+const Sidebar: React.FC<SidebarProps> = ({
+                                           userId,
+                                           classId,
+                                           toggleSidebar,
+                                           isCollapsed,
+                                         }) => {
   const [documents, setDocuments] = useState<Document[]>([]);
-  const { data: documentsData = [], error, isLoading } = api.documents.getDocumentsByUserAndClass.useQuery({
+  const {
+    data: documentsData = [],
+    error,
+    isLoading,
+  } = api.documents.getDocumentsByUserAndClass.useQuery({
     userId: parseInt(userId),
     classId,
   });
 
-  const { mutateAsync: deleteDocument } = api.documents.deleteDocument.useMutation();
+  const { mutateAsync: deleteDocument } =
+    api.documents.deleteDocument.useMutation();
 
   useEffect(() => {
     setDocuments(documentsData);
@@ -49,33 +62,41 @@ const Sidebar: React.FC<SidebarProps> = ({ userId, classId, toggleSidebar, isCol
     try {
       console.log("Deleting document with ID:", docId); // Debugging line
       await deleteDocument({ documentId: docId });
-      setDocuments((prevDocuments) => prevDocuments.filter((doc) => doc.id !== docId));
-      if (selectedDocument && selectedDocument.id === docId) {
-        setSelectedDocument(null);
-      }
+      setDocuments((prevDocuments) =>
+        prevDocuments.filter((doc) => doc.id !== docId)
+      );
     } catch (error) {
       console.error("Failed to delete document", error);
     }
   };
 
   const handleDocumentClick = (doc: Document) => {
-    setSelectedDocument(doc);
-  };
-
-  const closeDocumentPreview = () => {
-    setSelectedDocument(null);
+    // Open the PDF in a new tab for preview
+    window.open(doc.url, "_blank");
   };
 
   return (
     <aside
-      className={`fixed right-0 top-0 h-full ${isCollapsed ? "w-16" : "w-64"} transition-width overflow-y-auto overflow-x-hidden bg-gray-800 p-4 text-white duration-300`}
+      className={`fixed right-0 top-0 h-full ${
+        isCollapsed ? "w-16" : "w-64"
+      } transition-width overflow-y-auto overflow-x-hidden bg-gray-800 p-4 text-white duration-300`}
     >
       <Tab.Group>
         <Tab.List className="flex space-x-1 bg-blue-900/20 p-1">
-          <Tab as="button" className={({ selected }: { selected: boolean }) => selected ? "bg-white text-black" : "text-white"}>
+          <Tab
+            as="button"
+            className={({ selected }: { selected: boolean }) =>
+              selected ? "bg-white text-black" : "text-white"
+            }
+          >
             Documents
           </Tab>
-          <Tab as="button" className={({ selected }: { selected: boolean }) => selected ? "bg-white text-black" : "text-white"}>
+          <Tab
+            as="button"
+            className={({ selected }: { selected: boolean }) =>
+              selected ? "bg-white text-black" : "text-white"
+            }
+          >
             Key Concepts
           </Tab>
         </Tab.List>
@@ -83,12 +104,20 @@ const Sidebar: React.FC<SidebarProps> = ({ userId, classId, toggleSidebar, isCol
           <Tab.Panel className="mt-2 space-y-4">
             {isLoading && <div>Loading documents...</div>}
             {error && <div>Error loading documents: {error.message}</div>}
-            {documents.length === 0 && !isLoading && <div>No documents found</div>}
+            {documents.length === 0 && !isLoading && (
+              <div>No documents found</div>
+            )}
             {documents.map((doc: Document) => (
-              <div key={doc.id} className="relative flex items-center p-2 bg-gray-700 rounded-md">
-                <a href={doc.url} target="_blank" rel="noopener noreferrer" onClick={() => handleDocumentClick(doc)}>
+              <div
+                key={doc.id}
+                className="relative flex items-center p-2 bg-gray-700 rounded-md"
+              >
+                <button
+                  onClick={() => handleDocumentClick(doc)}
+                  className="text-left flex-1"
+                >
                   {doc.name}
-                </a>
+                </button>
                 <button
                   onClick={() => handleDeleteDocument(doc.id)}
                   className="absolute top-0 right-0 mt-1 mr-1 text-red-500 hover:text-red-700"
@@ -113,18 +142,6 @@ const Sidebar: React.FC<SidebarProps> = ({ userId, classId, toggleSidebar, isCol
       >
         {isCollapsed ? <FaChevronLeft /> : <FaChevronRight />}
       </button>
-
-      {selectedDocument && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
-          <div className="relative p-4 bg-white rounded-md">
-            <button onClick={closeDocumentPreview} className="absolute top-0 right-0 mt-2 mr-2 text-black">
-              <FaTimes />
-            </button>
-            <h2 className="mb-4 text-2xl font-bold">{selectedDocument.name}</h2>
-            <iframe src={selectedDocument.url} className="w-full h-96" title="Document Preview"></iframe>
-          </div>
-        </div>
-      )}
     </aside>
   );
 };

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
-import uuid from 'react-uuid';
+import React, { useState } from "react";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
+import uuid from "react-uuid";
 import { api } from "~/trpc/react";
 
 interface FileUploadProps {
@@ -12,16 +12,22 @@ interface FileUploadProps {
   class_id: number;
 }
 
-export default function FileUpload({ onUploadSuccess, onError, setSessionId, user_id, class_id }: FileUploadProps) {
+export default function FileUpload({
+                                     onUploadSuccess,
+                                     onError,
+                                     setSessionId,
+                                     user_id,
+                                     class_id,
+                                   }: FileUploadProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [sessionTitle, setSessionTitle] = useState<string>('');
+  const [sessionTitle, setSessionTitle] = useState<string>("");
   const { mutateAsync: addSession } = api.session.addSession.useMutation();
-  const { mutateAsync: addDocument } = api.documents.addDocument.useMutation(); // Correct usage
+  const { mutateAsync: addDocument } = api.documents.addDocument.useMutation();
 
-  const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+  const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -31,8 +37,8 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
 
   const uploadFile = async (file: File, session_id: string) => {
     setUploading(true);
-    const S3_BUCKET = 'ducki-documents';
-    const REGION = 'us-east-1';
+    const S3_BUCKET = "ducki-documents";
+    const REGION = "us-east-1";
 
     const s3Client = new S3Client({
       region: REGION,
@@ -43,13 +49,15 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
     });
 
     const file_name = uuid();
-    const file_extension = file.name.split('.').pop();
+    const file_extension = file.name.split(".").pop();
     const file_key = `${file_name}.${file_extension}`;
 
     const params = {
       Bucket: S3_BUCKET,
       Key: file_key,
       Body: file,
+      ContentDisposition: "inline", // Set Content-Disposition to inline
+      ContentType: file.type, // Set the Content-Type to the file's MIME type
       Metadata: {
         index: session_id,
       },
@@ -128,8 +136,8 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
         const result = await uploadFile(file, session_id);
         if (result != null) {
           const { file_name, file_key } = result;
-          const S3_BUCKET = 'ducki-documents';
-          const REGION = 'us-east-1';
+          const S3_BUCKET = "ducki-documents";
+          const REGION = "us-east-1";
           await processFile(file_key, session_id);
           try {
             const newSession = await addSession({
@@ -149,9 +157,8 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
               classId: class_id,
               sessionId: session_id,
             });
-
           } catch (error) {
-            console.error('Failed to start session', error);
+            console.error("Failed to start session", error);
           }
         } else {
           onError("Failed to upload file");
@@ -192,7 +199,7 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
           <p className="text-gray-700">No files selected.</p>
         )}
       </div>
-      {(uploading || processing) ? (
+      {uploading || processing ? (
         <div className="border rounded py-1 px-2 flex-grow text-black text-sm mr-2">
           {uploading && <p>Uploading</p>}
           {processing && <p>Processing</p>}
@@ -214,7 +221,9 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
           </button>
         </>
       )}
-      {successMessage && <p className="text-green-500 mt-4">{successMessage}</p>}
+      {successMessage && (
+        <p className="text-green-500 mt-4">{successMessage}</p>
+      )}
     </div>
   );
 }
