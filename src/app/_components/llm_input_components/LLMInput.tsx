@@ -12,10 +12,18 @@ interface LLMInputProps {
   selectedClassName: string | null;
   selectedClassID: number | null;
   uniqueSessionId: string;
-  firstName: string;
+  userName: string; // Add userName prop
 }
 
-export default function LLMInput({ onFetchResults, onError, user_id, selectedClassName, selectedClassID, uniqueSessionId, firstName }: LLMInputProps) {
+export default function LLMInput({
+                                   onFetchResults,
+                                   onError,
+                                   user_id,
+                                   selectedClassName,
+                                   selectedClassID,
+                                   uniqueSessionId,
+                                   userName
+                                 }: LLMInputProps) {
   const [inputText, setInputText] = useState<string>("");
   const [chatMessages, setChatMessages] = useState<ChatMessageType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -24,22 +32,30 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [hydrated, setHydrated] = useState(false);
-  const [initialMessageSent, setInitialMessageSent] = useState<boolean>(false); // Track initial message
+  const [firstVisit, setFirstVisit] = useState<boolean>(false); // Track if it's the first visit
 
   const chatHistoryQuery = api.session.getChatHistoryBySessionId.useQuery({ session_id: uniqueSessionId });
-
-  useEffect(() => {
-    const fetchChatHistory = async () => {
-      chatHistoryQuery.refetch();
-    };
-    fetchChatHistory();
-  }, [uniqueSessionId]);
 
   const storeChatMessageMutation = api.session.storeChatMessage.useMutation();
 
   useEffect(() => {
     setHydrated(true);
   }, []);
+
+  useEffect(() => {
+    const fetchChatHistory = async () => {
+      const response = await chatHistoryQuery.refetch();
+
+      // Determine if it's the first visit based on chat history
+      if (response.data && response.data.length === 0) {
+        setFirstVisit(true);
+      } else {
+        setFirstVisit(false);
+      }
+    };
+
+    fetchChatHistory();
+  }, [uniqueSessionId]);
 
   useEffect(() => {
     if (hydrated) {
@@ -67,6 +83,13 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
   }, [chatHistoryQuery.isSuccess, chatHistoryQuery.isError, uniqueSessionId, onError]);
 
   useEffect(() => {
+    if (firstVisit) {
+      const initialMessage = `hey ducki, my name is ${userName}, and I'm ready to start my session about class: ${selectedClassName}.`;
+      fetchInitialLLMResponse(initialMessage);
+    }
+  }, [firstVisit, userName, selectedClassName]);
+
+  useEffect(() => {
     if (hydrated && !completedTyping && chatMessages.length > 0 && chatMessages[0]?.type === false) {
       let i = 0;
       const stringResponse = chatMessages[0].text;
@@ -82,14 +105,6 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
       return () => clearInterval(intervalId);
     }
   }, [chatMessages, completedTyping, hydrated]);
-
-  useEffect(() => {
-    if (!initialMessageSent) {
-      const initialMessage = `hey ducki, my name is ${firstName}, and I'm ready to start my session about class: ${selectedClassName}.`;
-      setInitialMessageSent(true);
-      fetchAndStoreChatHistory(initialMessage, false);
-    }
-  }, [initialMessageSent, firstName, selectedClassName]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputText(e.target.value);
@@ -115,7 +130,51 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     }
   };
 
-  const fetchAndStoreChatHistory = async (inputText: string, storeInitialMessage = true) => {
+  const fetchInitialLLMResponse = async (initialMessage: string) => {
+    // Send initial hidden message to LLM API
+    try {
+      const response = await fetch('/api/LLM', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chatHistory: [],
+          prompt: initialMessage,
+          session: uniqueSessionId,
+        }),
+      });
+
+      const data = await response.json();
+      if (!data.result) throw new Error('No response body');
+
+      const modelResponse = data.result;
+      const llmTimestamp = getPreciseTimestamp();
+      const llmResponseMessage: ChatMessageType = {
+        type: false, // LLM message
+        text: modelResponse,
+        session: uniqueSessionId,
+        timestamp: llmTimestamp,
+      };
+
+      // Display LLM response as the first message
+      setChatMessages([llmResponseMessage]);
+      setCompletedTyping(false);
+      setIsGenerating(false);
+
+      // Store LLM response in the database
+      await storeChatHistory(llmResponseMessage, false);
+
+    } catch (err) {
+      console.error("Error fetching initial LLM response:", err);
+      onError("Failed to fetch response from the server.");
+      setIsGenerating(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchAndStoreChatHistory = async (inputText: string) => {
     setLoading(true);
 
     const chatHistory = chatMessages.map(message => ({
@@ -139,15 +198,18 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
       const data = await response.json();
       if (!data.result) throw new Error('No response body');
 
-      const model_response = data.result;
+      const modelResponse = data.result;
       const llmTimestamp = getPreciseTimestamp();
-      const llmResponseMessage: ChatMessageType = { type: false, text: model_response, session: uniqueSessionId, timestamp: llmTimestamp };
+      const llmResponseMessage: ChatMessageType = {
+        type: false,
+        text: modelResponse,
+        session: uniqueSessionId,
+        timestamp: llmTimestamp
+      };
       setChatMessages(prevMessages => [...prevMessages, llmResponseMessage].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
       setCompletedTyping(false);
       setIsGenerating(false);
-      if (storeInitialMessage) {
-        await storeChatHistory(llmResponseMessage, false);
-      }
+      await storeChatHistory(llmResponseMessage, false);
 
     } catch (err) {
       console.error("Error fetching response:", err);
@@ -163,7 +225,12 @@ export default function LLMInput({ onFetchResults, onError, user_id, selectedCla
     onError(null);
 
     const userTimestamp = getPreciseTimestamp();
-    const userMessage: ChatMessageType = { type: true, text: inputText, session: uniqueSessionId, timestamp: userTimestamp };
+    const userMessage: ChatMessageType = {
+      type: true,
+      text: inputText,
+      session: uniqueSessionId,
+      timestamp: userTimestamp
+    };
     setChatMessages(prevMessages => [...prevMessages, userMessage].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
     setInputText('');
     await storeChatHistory(userMessage, true);
