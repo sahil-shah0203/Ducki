@@ -58,7 +58,17 @@ model Session {
   chatHistories ChatHistory[]
   createdAt     DateTime      @default(now())
   session_title String
-}
+
+model Event {
+  event_id    Int      @id @default(autoincrement())
+  title       String
+  description String?
+  start       DateTime
+  end         DateTime
+  user        User     @relation(fields: [user_id], references: [user_id])
+  user_id     Int
+  place       String?
+
 
 model Event {
   event_id    Int      @id @default(autoincrement())

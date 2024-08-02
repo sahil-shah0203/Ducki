@@ -62,7 +62,7 @@ body {
 .cursor {
   display: inline-block;
   width: 1ch;
-  animation: flicker 0.01s infinite;
+  animation: flicker 0.5s infinite;
   margin-bottom: 4px;
 }
 
@@ -197,4 +197,36 @@ ul {
   z-index: 2;
   overflow: hidden;
   padding-left: 10px;
+}
+
+.rbc-today {
+  background-color: #d3e4dd !important;
+}
+
+.rbc-toolbar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.rbc-btn-group {
+  display: inline-flex;
+}
+
+.rbc-btn-group button {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  padding: 5px 10px;
+  margin: 0 2px;
+  cursor: pointer;
+}
+
+.rbc-btn-group button:hover {
+  background-color: #e6e6e6;
+}
+
+.rbc-toolbar-label {
+  font-size: 16px;
+  font-weight: bold;
+  padding: 5px;
 }

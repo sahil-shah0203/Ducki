@@ -194,7 +194,7 @@ export default function Sidebar({
             <Link href="/dashboard">
               <DashboardButton onClick={resetSelectedClass} />
             </Link>
-            <Link href="/dashboard">
+            <Link href={{ pathname: '/calendar', query: { userId } }}>
               <CalendarButton onClick={resetSelectedClass} />
             </Link>
           </nav>
@@ -222,6 +222,7 @@ export default function Sidebar({
                     className="flex w-full items-center justify-between rounded-lg bg-transparent p-1 pl-3 text-left hover:bg-[#217853]"
                   >
                     {isCollapsed ? "" : classItem.class_name}
+
                     <div className="relative">
                       <button
                         onClick={(e) => {
