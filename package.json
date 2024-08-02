@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-lambda": "^3.623.0",
+    "@aws-sdk/client-s3": "^3.623.0",
     "@clerk/nextjs": "^5.0.9",
     "@langchain/community": "^0.2.17",
     "@langchain/openai": "^0.2.1",
