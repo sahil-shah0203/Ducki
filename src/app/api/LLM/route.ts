@@ -10,7 +10,8 @@ export async function POST(request: Request) {
 
     const params = await request.json();
     const prompt = params.prompt;
-    const session = params.session;
+    const session_id = params.session;
+    const class_id = params.class_id;
 
     const lambda = new LambdaClient({
       region: "us-east-1",
@@ -25,7 +26,8 @@ export async function POST(request: Request) {
       FunctionName: 'prompt_model',
       Payload: JSON.stringify({
         prompt: prompt,
-        index: session
+        class_id: class_id,
+        session_id: session_id,
       }),
     };
 

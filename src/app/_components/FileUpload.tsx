@@ -98,7 +98,8 @@ export default function FileUpload({
       FunctionName: LAMBDA_FUNCTION,
       Payload: JSON.stringify({
         document_name: file_key,
-        index: session_id,
+        class_id: class_id,
+        session_id: session_id,
       }),
     };
 
