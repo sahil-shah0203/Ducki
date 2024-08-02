@@ -5,6 +5,7 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaTimes,
+  FaSyncAlt,
 } from "react-icons/fa";
 import { api } from "~/trpc/react";
 import { Tab } from "@headlessui/react";
@@ -14,6 +15,7 @@ type SidebarProps = {
   classId: number;
   toggleSidebar: () => void;
   isCollapsed: boolean;
+  uniqueSessionId: string; // Add uniqueSessionId to props
 };
 
 type Document = {
@@ -27,24 +29,26 @@ type KeyConcept = {
   concept: string;
 };
 
-const dummyKeyConcepts: KeyConcept[] = [
-  { id: 1, concept: "Cell Theory" },
-  { id: 2, concept: "Genetics" },
-  { id: 3, concept: "Evolution" },
-  // Add more concepts as needed
-];
-
 const Sidebar: React.FC<SidebarProps> = ({
-                                           userId,
-                                           classId,
-                                           toggleSidebar,
-                                           isCollapsed,
-                                         }) => {
+  userId,
+  classId,
+  toggleSidebar,
+  isCollapsed,
+  uniqueSessionId, // Destructure uniqueSessionId from props
+}) => {
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(
+    null
+  );
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [keyConcepts, setKeyConcepts] = useState<KeyConcept[]>([]); // Ensure initialization as an array
+  const [isLoadingConcepts, setIsLoadingConcepts] = useState(false);
+  const [conceptsError, setConceptsError] = useState<string | null>(null);
+
   const {
     data: documentsData = [],
     error,
     isLoading,
+    refetch: refetchDocuments,
   } = api.documents.getDocumentsByUserAndClass.useQuery({
     userId: parseInt(userId),
     classId,
@@ -65,6 +69,9 @@ const Sidebar: React.FC<SidebarProps> = ({
       setDocuments((prevDocuments) =>
         prevDocuments.filter((doc) => doc.id !== docId)
       );
+      if (selectedDocument && selectedDocument.id === docId) {
+        setSelectedDocument(null);
+      }
     } catch (error) {
       console.error("Failed to delete document", error);
     }
@@ -73,6 +80,54 @@ const Sidebar: React.FC<SidebarProps> = ({
   const handleDocumentClick = (doc: Document) => {
     // Open the PDF in a new tab for preview
     window.open(doc.url, "_blank");
+  };
+
+  const fetchKeyConcepts = async () => {
+    try {
+      setIsLoadingConcepts(true);
+      setConceptsError(null);
+
+      // Assuming the API path is `/api/getKeyConcepts`
+      // You can fill in the actual path as needed
+      console.log("Fetching key concepts with session:", uniqueSessionId); // Debugging line
+      const response = await fetch("/api/getKeyConcepts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          session: uniqueSessionId, // Use uniqueSessionId as the session identifier
+        }),
+      });
+
+      console.log("Response status:", response.status); // Debugging line
+      if (!response.ok) {
+        throw new Error(`Error fetching key concepts: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log("API response for key concepts:", data); // Debugging line
+
+      if (Array.isArray(data.concepts)) {
+        setKeyConcepts(data.concepts);
+      } else {
+        throw new Error("No key concepts returned from API");
+      }
+    } catch (error: any) {
+      setConceptsError(error.message || "An error occurred");
+      console.error("Error in fetchKeyConcepts:", error); // Debugging line
+    } finally {
+      setIsLoadingConcepts(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchKeyConcepts();
+  }, [uniqueSessionId]); // Fetch key concepts when the uniqueSessionId changes
+
+  const handleRefresh = () => {
+    refetchDocuments(); // Refetch documents
+    fetchKeyConcepts(); // Refetch key concepts
   };
 
   return (
@@ -128,14 +183,30 @@ const Sidebar: React.FC<SidebarProps> = ({
             ))}
           </Tab.Panel>
           <Tab.Panel className="mt-2 space-y-4">
-            {dummyKeyConcepts.map((concept: KeyConcept) => (
-              <div key={concept.id} className="p-2 bg-gray-700 rounded-md">
-                {concept.concept}
-              </div>
-            ))}
+            {isLoadingConcepts && <div>Loading key concepts...</div>}
+            {conceptsError && <div>Error: {conceptsError}</div>}
+            {keyConcepts.length === 0 && !isLoadingConcepts && (
+              <div>No key concepts found</div>
+            )}
+            {Array.isArray(keyConcepts) &&
+              keyConcepts.map((concept: KeyConcept) => (
+                <div key={concept.id} className="p-2 bg-gray-700 rounded-md">
+                  {concept.concept}
+                </div>
+              ))}
           </Tab.Panel>
         </Tab.Panels>
       </Tab.Group>
+
+      {/* Refresh Button */}
+      <button
+        onClick={handleRefresh}
+        className="mt-4 flex w-full items-center justify-center space-x-2 p-2 bg-gray-700 rounded-md text-white hover:bg-gray-600 transition-colors"
+      >
+        <FaSyncAlt className="mr-2" />
+        <span>Refresh</span>
+      </button>
+
       <button
         onClick={toggleSidebar}
         className="absolute bottom-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-gray-700 focus:outline-none"

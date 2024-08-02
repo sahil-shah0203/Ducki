@@ -12,7 +12,7 @@ interface LLMInputProps {
   selectedClassName: string | null;
   selectedClassID: number | null;
   uniqueSessionId: string;
-  userName: string; // Add userName prop
+  firstName: string; // Add userName prop
 }
 
 export default function LLMInput({
@@ -22,7 +22,7 @@ export default function LLMInput({
                                    selectedClassName,
                                    selectedClassID,
                                    uniqueSessionId,
-                                   userName
+                                   firstName
                                  }: LLMInputProps) {
   const [inputText, setInputText] = useState<string>("");
   const [chatMessages, setChatMessages] = useState<ChatMessageType[]>([]);
@@ -84,10 +84,10 @@ export default function LLMInput({
 
   useEffect(() => {
     if (firstVisit) {
-      const initialMessage = `hey ducki, my name is ${userName}, and I'm ready to start my session about class: ${selectedClassName}.`;
+      const initialMessage = `hey ducki, my name is ${firstName}, and I'm ready to start my session about class: ${selectedClassName}.`;
       fetchInitialLLMResponse(initialMessage);
     }
-  }, [firstVisit, userName, selectedClassName]);
+  }, [firstVisit, firstName, selectedClassName]);
 
   useEffect(() => {
     if (hydrated && !completedTyping && chatMessages.length > 0 && chatMessages[0]?.type === false) {

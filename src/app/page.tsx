@@ -167,6 +167,7 @@ export default function MainPage() {
           classId={selectedClass?.class_id ?? 0} // Provide a default value for classId
           toggleSidebar={togglePopup}
           isCollapsed={isPopupCollapsed}
+          uniqueSessionId={sessionId}
         />
       </div>
     );
