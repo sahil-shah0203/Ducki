@@ -87,8 +87,6 @@ const Sidebar: React.FC<SidebarProps> = ({
       setIsLoadingConcepts(true);
       setConceptsError(null);
 
-      // Assuming the API path is `/api/getKeyConcepts`
-      // You can fill in the actual path as needed
       console.log("Fetching key concepts with session:", uniqueSessionId); // Debugging line
       const response = await fetch("/api/getKeyConcepts", {
         method: "POST",
@@ -96,6 +94,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          class_id: classId, // Use classId as the class identifier
           session: uniqueSessionId, // Use uniqueSessionId as the session identifier
         }),
       });
@@ -108,8 +107,16 @@ const Sidebar: React.FC<SidebarProps> = ({
       const data = await response.json();
       console.log("API response for key concepts:", data); // Debugging line
 
-      if (Array.isArray(data.concepts)) {
-        setKeyConcepts(data.concepts);
+      // Parse the concepts JSON string
+      const parsedData = JSON.parse(data.concepts);
+
+      // Check if main_topics is an array
+      if (Array.isArray(parsedData.main_topics)) {
+        const concepts = parsedData.main_topics.map((concept: string, index: number) => ({
+          id: index,
+          concept,
+        }));
+        setKeyConcepts(concepts);
       } else {
         throw new Error("No key concepts returned from API");
       }

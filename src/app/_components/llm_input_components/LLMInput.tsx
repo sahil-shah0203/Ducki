@@ -193,6 +193,7 @@ export default function LLMInput({
           chatHistory: chatHistory,
           prompt: inputText,
           session: uniqueSessionId,
+          class_id: selectedClassID,
         }),
       });
 

@@ -141,6 +141,7 @@ export default function MainPage() {
                         setSessionId={setSessionId}
                         user_id={user_id!}
                         class_id={selectedClass.class_id}
+                        selectedClassName={selectedClass.class_name}
                       />
                       <SessionCards classId={selectedClass.class_id} onSessionSelect={handleSessionSelect} />
                     </>

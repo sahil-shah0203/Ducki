@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
+import { custom } from 'zod';
 
 export async function POST(request: Request) {
   try {
@@ -52,8 +53,10 @@ export async function POST(request: Request) {
     const chatHistory = params.chatHistory;
     const customPrompt = {
       role: "user",
-      content: "Context: \n" + context + "\n\n" + "Prompt: \n" + prompt,
+      content: "Context from relevant course material for your reference in answering the student: \n" + context + "\n\n" + "What the student said to you: \n" + prompt,
     };
+
+    console.log("context:", customPrompt.content);
 
     const messages = [customPrompt, ...chatHistory].reverse();
 

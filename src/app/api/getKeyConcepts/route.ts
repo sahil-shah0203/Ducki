@@ -6,6 +6,7 @@ export async function POST(request: Request) {
     // Extract the prompt and session ID from the request body
     const params = await request.json();
     const session = params.session;
+    const class_id = params.class_id;
 
     // Initialize the AWS Lambda client
     const lambda = new LambdaClient({
@@ -23,7 +24,8 @@ export async function POST(request: Request) {
       FunctionName: 'prompt_model',
       Payload: JSON.stringify({
         task: 'topics',    // Set the task to 'topics'
-        index: session     // Pass the session ID as index
+        class_id: class_id,  // Set the class ID to 'default'
+        session_id: session     // Pass the session ID as index
       }),
     };
 
