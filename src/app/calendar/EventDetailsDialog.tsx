@@ -58,7 +58,7 @@ const EventDetailsDialog = ({ isOpen, onRequestClose, event, onDeleteEvent }: Ev
           <button
             type="button"
             onClick={handleDelete}
-            className="rounded bg-red-500 px-4 py-2 text-white hover:bg-red-700"
+            className="rounded bg-[#407855] px-4 py-2 text-white hover:bg-[#7c9c87]"
           >
             Delete
           </button>
