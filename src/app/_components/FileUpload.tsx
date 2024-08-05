@@ -91,7 +91,8 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
       FunctionName: LAMBDA_FUNCTION,
       Payload: JSON.stringify({
         document_name: file_name,
-        index: session_id,
+        class_id: class_id,
+        session_id: session_id,
       }),
     };
 

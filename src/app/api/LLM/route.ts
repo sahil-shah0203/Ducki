@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
+import { custom } from 'zod';
 
 export async function POST(request: Request) {
   try {
@@ -10,7 +11,8 @@ export async function POST(request: Request) {
 
     const params = await request.json();
     const prompt = params.prompt;
-    const session = params.session;
+    const session_id = params.session;
+    const class_id = params.class_id;
 
     const lambda = new LambdaClient({
       region: "us-east-1",
@@ -25,7 +27,8 @@ export async function POST(request: Request) {
       FunctionName: 'prompt_model',
       Payload: JSON.stringify({
         prompt: prompt,
-        index: session
+        class_id: class_id,
+        session_id: session_id,
       }),
     };
 
@@ -50,13 +53,15 @@ export async function POST(request: Request) {
     const chatHistory = params.chatHistory;
     const customPrompt = {
       role: "user",
-      content: "Context: \n" + context + "\n\n" + "Prompt: \n" + prompt,
+      content: "Context from relevant course material for your reference in answering the student: \n" + context + "\n\n" + "What the student said to you: \n" + prompt,
     };
+
+    console.log("context:", customPrompt.content);
 
     const messages = [customPrompt, ...chatHistory].reverse();
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",

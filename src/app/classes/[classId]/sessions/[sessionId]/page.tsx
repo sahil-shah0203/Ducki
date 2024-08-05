@@ -38,6 +38,7 @@ export default function SessionPage() {
           selectedClassName={selectedClassName}
           selectedClassID={selectedClassID_number}
           uniqueSessionId={session_id}
+          firstName={user?.firstName ?? ""}
         />
       </div>
     </div>

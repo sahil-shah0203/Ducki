@@ -17,6 +17,7 @@ model User {
   classes       Class[]
   sessions      Session[]
   events        Event[]
+  documents     Document[]    // Added relation for documents
 }
 
 model ChatHistory {
@@ -47,6 +48,7 @@ model Class {
   user_id       Int
   chatHistories ChatHistory[]
   sessions      Session[]
+  documents     Document[]
 }
 
 model Session {
@@ -58,6 +60,7 @@ model Session {
   chatHistories ChatHistory[]
   createdAt     DateTime      @default(now())
   session_title String
+  documents     Document[]
 }
 
 model Event {
@@ -69,4 +72,18 @@ model Event {
   user        User     @relation(fields: [user_id], references: [user_id])
   user_id     Int
   place       String?
+}
+
+model Document {
+  document_id String   @id
+  url         String
+  name        String
+  user_id     Int
+  class_id    Int
+  session_id  String   // Added session_id field
+  user        User     @relation(fields: [user_id], references: [user_id])
+  class       Class    @relation(fields: [class_id], references: [class_id])
+  session     Session  @relation(fields: [session_id], references: [session_id]) // Added relation to Session
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
