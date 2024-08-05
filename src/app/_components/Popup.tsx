@@ -8,7 +8,6 @@ import {
   FaSyncAlt,
 } from "react-icons/fa";
 import { api } from "~/trpc/react";
-import { Tab } from "@headlessui/react";
 
 type SidebarProps = {
   userId: string; // Ensure this is a string
@@ -43,6 +42,9 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [keyConcepts, setKeyConcepts] = useState<KeyConcept[]>([]); // Ensure initialization as an array
   const [isLoadingConcepts, setIsLoadingConcepts] = useState(false);
   const [conceptsError, setConceptsError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"documents" | "keyConcepts">(
+    "documents"
+  );
 
   const {
     data: documentsData = [],
@@ -112,10 +114,12 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       // Check if main_topics is an array
       if (Array.isArray(parsedData.main_topics)) {
-        const concepts = parsedData.main_topics.map((concept: string, index: number) => ({
-          id: index,
-          concept,
-        }));
+        const concepts = parsedData.main_topics.map(
+          (concept: string, index: number) => ({
+            id: index,
+            concept,
+          })
+        );
         setKeyConcepts(concepts);
       } else {
         throw new Error("No key concepts returned from API");
@@ -143,67 +147,69 @@ const Sidebar: React.FC<SidebarProps> = ({
         isCollapsed ? "w-16" : "w-64"
       } transition-width overflow-y-auto overflow-x-hidden bg-gray-800 p-4 text-white duration-300`}
     >
-      <Tab.Group>
-        <Tab.List className="flex space-x-1 bg-blue-900/20 p-1">
-          <Tab
-            as="button"
-            className={({ selected }: { selected: boolean }) =>
-              selected ? "bg-white text-black" : "text-white"
-            }
-          >
-            Documents
-          </Tab>
-          <Tab
-            as="button"
-            className={({ selected }: { selected: boolean }) =>
-              selected ? "bg-white text-black" : "text-white"
-            }
-          >
-            Key Concepts
-          </Tab>
-        </Tab.List>
-        <Tab.Panels>
-          <Tab.Panel className="mt-2 space-y-4">
-            {isLoading && <div>Loading documents...</div>}
-            {error && <div>Error loading documents: {error.message}</div>}
-            {documents.length === 0 && !isLoading && (
-              <div>No documents found</div>
-            )}
-            {documents.map((doc: Document) => (
-              <div
-                key={doc.id}
-                className="relative flex items-center p-2 bg-gray-700 rounded-md"
+      <div className="flex space-x-1 bg-blue-900/20 p-1">
+        <button
+          onClick={() => setActiveTab("documents")}
+          className={`p-2 ${
+            activeTab === "documents" ? "bg-white text-black" : "text-white"
+          }`}
+        >
+          Documents
+        </button>
+        <button
+          onClick={() => setActiveTab("keyConcepts")}
+          className={`p-2 ${
+            activeTab === "keyConcepts" ? "bg-white text-black" : "text-white"
+          }`}
+        >
+          Key Concepts
+        </button>
+      </div>
+
+      {activeTab === "documents" && (
+        <div className="mt-2 space-y-4">
+          {isLoading && <div>Loading documents...</div>}
+          {error && <div>Error loading documents: {error.message}</div>}
+          {documents.length === 0 && !isLoading && (
+            <div>No documents found</div>
+          )}
+          {documents.map((doc: Document) => (
+            <div
+              key={doc.id}
+              className="relative flex items-center p-2 bg-gray-700 rounded-md"
+            >
+              <button
+                onClick={() => handleDocumentClick(doc)}
+                className="text-left flex-1"
               >
-                <button
-                  onClick={() => handleDocumentClick(doc)}
-                  className="text-left flex-1"
-                >
-                  {doc.name}
-                </button>
-                <button
-                  onClick={() => handleDeleteDocument(doc.id)}
-                  className="absolute top-0 right-0 mt-1 mr-1 text-red-500 hover:text-red-700"
-                >
-                  <FaTimes />
-                </button>
+                {doc.name}
+              </button>
+              <button
+                onClick={() => handleDeleteDocument(doc.id)}
+                className="absolute top-0 right-0 mt-1 mr-1 text-red-500 hover:text-red-700"
+              >
+                <FaTimes />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {activeTab === "keyConcepts" && (
+        <div className="mt-2 space-y-4">
+          {isLoadingConcepts && <div>Loading key concepts...</div>}
+          {conceptsError && <div>Error: {conceptsError}</div>}
+          {keyConcepts.length === 0 && !isLoadingConcepts && (
+            <div>No key concepts found</div>
+          )}
+          {Array.isArray(keyConcepts) &&
+            keyConcepts.map((concept: KeyConcept) => (
+              <div key={concept.id} className="p-2 bg-gray-700 rounded-md">
+                {concept.concept}
               </div>
             ))}
-          </Tab.Panel>
-          <Tab.Panel className="mt-2 space-y-4">
-            {isLoadingConcepts && <div>Loading key concepts...</div>}
-            {conceptsError && <div>Error: {conceptsError}</div>}
-            {keyConcepts.length === 0 && !isLoadingConcepts && (
-              <div>No key concepts found</div>
-            )}
-            {Array.isArray(keyConcepts) &&
-              keyConcepts.map((concept: KeyConcept) => (
-                <div key={concept.id} className="p-2 bg-gray-700 rounded-md">
-                  {concept.concept}
-                </div>
-              ))}
-          </Tab.Panel>
-        </Tab.Panels>
-      </Tab.Group>
+        </div>
+      )}
 
       {/* Refresh Button */}
       <button
