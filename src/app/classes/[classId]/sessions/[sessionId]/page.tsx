@@ -19,7 +19,7 @@ export default function SessionPage() {
   const session_id = searchParams.get("sessionID");
 
   const [isPopupCollapsed, setIsPopupCollapsed] = useState(false); // State for popup collapse
-  const [sessionId, setSessionId] = useState<string>(session_id || ""); // State for session ID
+  const [sessionId, setSessionId] = useState<string>(session_id ?? ""); // State for session ID
   const [isDialogOpen, setIsDialogOpen] = useState(false); // State for dialog open/close
 
   if (!session_id) {
@@ -90,7 +90,7 @@ export default function SessionPage() {
 
       {/* Popup Component */}
       <Popup
-        userId={user_id?.toString()|| ""}
+        userId={user_id?.toString() ?? ""}
         classId={selectedClassID_number ?? 0}
         toggleSidebar={togglePopup}
         isCollapsed={isPopupCollapsed}
