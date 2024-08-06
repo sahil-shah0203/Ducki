@@ -116,13 +116,6 @@ export default function MainPage() {
           <HomeBackground isCollapsed={isSidebarCollapsed} />
           <Home />
         </div>
-        <Popup
-          userId={user_id?.toString() ?? ''}  // Convert user_id to string
-          classId={selectedClass?.class_id ?? 0} // Provide a default value for classId
-          toggleSidebar={togglePopup}
-          isCollapsed={isPopupCollapsed}
-          uniqueSessionId={sessionId}
-        />
       </div>
     );
   }
