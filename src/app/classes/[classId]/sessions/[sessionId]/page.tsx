@@ -90,7 +90,7 @@ export default function SessionPage() {
 
       {/* Popup Component */}
       <Popup
-        userId={user_id?.toString() ?? ""}
+        userId={user_id?.toString()|| ""}
         classId={selectedClassID_number ?? 0}
         toggleSidebar={togglePopup}
         isCollapsed={isPopupCollapsed}
