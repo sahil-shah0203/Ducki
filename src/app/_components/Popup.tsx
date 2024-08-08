@@ -1,11 +1,7 @@
-import React, { useState, useEffect } from "react";
-import {
-  FaChevronLeft,
-  FaChevronRight,
-  FaTimes,
-  FaSyncAlt,
-} from "react-icons/fa";
+import React, { useState, useEffect, useRef } from "react";
+import { FaChevronDown, FaSyncAlt, FaTimes } from "react-icons/fa";
 import { api } from "~/trpc/react";
+import { useDrag } from "../api/hooks/useDrag"; // Custom hook for dragging functionality
 
 type SidebarProps = {
   userId: string; // Ensure this is a string
@@ -43,6 +39,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [activeTab, setActiveTab] = useState<"documents" | "keyConcepts">(
     "documents"
   );
+  const [isMinimized, setIsMinimized] = useState(false);
+  const { dragRef } = useDrag();
 
   const {
     data: documentsData = [],
@@ -143,33 +141,45 @@ const Sidebar: React.FC<SidebarProps> = ({
   if (isCollapsed) return null;
 
   return (
-    <div className="fixed right-0 top-0 h-full z-50">
-      <aside
-        className={`h-full ${
-          isCollapsed ? "w-16" : "w-64"
-        } transition-width overflow-y-auto overflow-x-hidden bg-gray-800 p-4 text-white duration-300`}
-      >
-        <div className="flex space-x-1 bg-blue-900/20 p-1">
+    <div
+      ref={dragRef}
+      className="fixed top-10 left-10 z-50 p-4 bg-white shadow-lg rounded-md"
+      style={{ width: isMinimized ? "200px" : "400px" }}
+    >
+      <aside className="overflow-y-auto">
+        <div className="flex justify-between items-center mb-2">
+          <div className="flex space-x-1">
+            <button
+              onClick={() => setActiveTab("documents")}
+              className={`p-2 ${
+                activeTab === "documents"
+                  ? "bg-[#7c9c87] text-white"
+                  : "bg-[#407855] text-white"
+              } rounded`}
+            >
+              Documents
+            </button>
+            <button
+              onClick={() => setActiveTab("keyConcepts")}
+              className={`p-2 ${
+                activeTab === "keyConcepts"
+                  ? "bg-[#7c9c87] text-white"
+                  : "bg-[#407855] text-white"
+              } rounded`}
+            >
+              Key Concepts
+            </button>
+          </div>
           <button
-            onClick={() => setActiveTab("documents")}
-            className={`p-2 ${
-              activeTab === "documents" ? "bg-white text-black" : "text-white"
-            }`}
+            onClick={() => setIsMinimized(!isMinimized)}
+            className="text-gray-700 hover:text-gray-900"
           >
-            Documents
-          </button>
-          <button
-            onClick={() => setActiveTab("keyConcepts")}
-            className={`p-2 ${
-              activeTab === "keyConcepts" ? "bg-white text-black" : "text-white"
-            }`}
-          >
-            Key Concepts
+            <FaChevronDown />
           </button>
         </div>
 
         {activeTab === "documents" && (
-          <div className="mt-2 space-y-4">
+          <div className="space-y-4">
             {isLoading && <div>Loading documents...</div>}
             {error && <div>Error loading documents: {error.message}</div>}
             {documents.length === 0 && !isLoading && (
@@ -178,11 +188,11 @@ const Sidebar: React.FC<SidebarProps> = ({
             {documents.map((doc: Document) => (
               <div
                 key={doc.id}
-                className="relative flex items-center p-2 bg-gray-700 rounded-md"
+                className="relative flex items-center p-2 bg-[#217853] rounded-md"
               >
                 <button
                   onClick={() => handleDocumentClick(doc)}
-                  className="text-left flex-1"
+                  className="text-left flex-1 text-white"
                 >
                   {doc.name}
                 </button>
@@ -198,7 +208,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         )}
 
         {activeTab === "keyConcepts" && (
-          <div className="mt-2 space-y-4">
+          <div className="space-y-4">
             {isLoadingConcepts && <div>Loading key concepts...</div>}
             {conceptsError && <div>Error: {conceptsError}</div>}
             {keyConcepts.length === 0 && !isLoadingConcepts && (
@@ -206,7 +216,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             )}
             {Array.isArray(keyConcepts) &&
               keyConcepts.map((concept: KeyConcept) => (
-                <div key={concept.id} className="p-2 bg-gray-700 rounded-md">
+                <div key={concept.id} className="p-2 bg-[#217853] rounded-md">
                   {concept.concept}
                 </div>
               ))}
@@ -216,17 +226,10 @@ const Sidebar: React.FC<SidebarProps> = ({
         {/* Refresh Button */}
         <button
           onClick={handleRefresh}
-          className="mt-4 flex w-full items-center justify-center space-x-2 p-2 bg-gray-700 rounded-md text-white hover:bg-gray-600 transition-colors"
+          className="mt-4 flex w-full items-center justify-center space-x-2 p-2 bg-[#407855] text-white rounded hover:bg-[#7c9c87] transition-colors"
         >
           <FaSyncAlt className="mr-2" />
           <span>Refresh</span>
-        </button>
-
-        <button
-          onClick={toggleSidebar}
-          className="absolute bottom-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-gray-700 focus:outline-none"
-        >
-          {isCollapsed ? <FaChevronLeft /> : <FaChevronRight />}
         </button>
       </aside>
     </div>
