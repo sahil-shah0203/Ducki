@@ -20,7 +20,6 @@ export default function ClassPage() {
   const selectedClassID = searchParams.get("classID");
 
   const [sessionStarted, setSessionStarted] = useState(false);
-  const [filesUploaded, setFilesUploaded] = useState(false);
   const [sessionId, setSessionId] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
@@ -33,8 +32,7 @@ export default function ClassPage() {
 
   const handleSessionSelect = (sessionId: string) => {
     setSessionId(sessionId);
-    setSessionStarted(true);
-    setFilesUploaded(true);
+
   };
 
   return (
@@ -62,7 +60,6 @@ export default function ClassPage() {
           </button>
         ) : (
           <FileUpload
-            onUploadSuccess={() => {setFilesUploaded(true)}}
             onError={setError}
             setSessionId={setSessionId}
             user_id={user_id_number}
