@@ -38,17 +38,17 @@ type ClassItem = {
 };
 
 export default function Sidebar({
-                                  userId,
-                                  handleClassSelect,
-                                  toggleSidebar,
-                                  isCollapsed,
-                                  userImage,
-                                  onFetchResults,
-                                  onError,
-                                  user_id,
-                                  selectedClassName,
-                                  selectedClassID,
-                                }: SidebarProps) {
+  userId,
+  handleClassSelect,
+  toggleSidebar,
+  isCollapsed,
+  userImage,
+  onFetchResults,
+  onError,
+  user_id,
+  selectedClassName,
+  selectedClassID,
+}: SidebarProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState<Record<string, boolean>>(
@@ -214,64 +214,64 @@ export default function Sidebar({
             <div className="space-y-0">
               {classes.map((classItem, index) => (
                 <div
-                  key={index}
-                  className={`relative ${classItem.class_name === selectedClass?.class_name ? "rounded-lg bg-[#217853]" : ""}`}
+                key={index}
+                className={`relative ${classItem.class_name === selectedClass?.class_name ? "rounded-lg bg-[#217853]" : ""}`}
+              >
+                <a
+                  onClick={() => handleClassClick(classItem)}
+                  className="flex w-full items-center justify-between rounded-lg bg-transparent p-1 pl-3 text-left hover:bg-[#217853]"
                 >
-                  <a
-                    onClick={() => handleClassClick(classItem)}
-                    className="flex w-full items-center justify-between rounded-lg bg-transparent p-1 pl-3 text-left hover:bg-[#217853]"
-                  >
-                    {isCollapsed ? "" : classItem.class_name}
-
-                    <div className="relative">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevents the parent <a> tag from triggering
-                          setIsDropdownOpen((prevState) => ({
-                            ...prevState,
-                            [classItem.class_name]:
-                              !prevState[classItem.class_name],
-                          }));
+                  {isCollapsed ? "" : classItem.class_name}
+              
+                  <div className="relative">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevents the parent <a> tag from triggering
+                        setIsDropdownOpen((prevState) => ({
+                          ...prevState,
+                          [classItem.class_name]:
+                            !prevState[classItem.class_name],
+                        }));
+                      }}
+                      className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-transparent focus:outline-none"
+                    >
+                      <FaEllipsisV />
+                    </button>
+                    {isDropdownOpen[classItem.class_name] && (
+                      <div
+                        ref={(ref) => {
+                          dropdownRefs.current[classItem.class_name] = ref;
                         }}
-                        className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-transparent focus:outline-none"
+                        className="absolute right-0 z-10 mt-2 w-48 rounded-md bg-white shadow-xl"
                       >
-                        <FaEllipsisV />
-                      </button>
-                      {isDropdownOpen[classItem.class_name] && (
-                        <div
-                          ref={(ref) => {
-                            dropdownRefs.current[classItem.class_name] = ref;
+                        <a
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation(); // Prevents the parent <a> tag from triggering
+                            // Function to show all uploaded files from S3 (another API)
                           }}
-                          className="absolute right-0 z-10 mt-2 w-48 rounded-md bg-white shadow-xl"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-400 hover:text-white"
                         >
-                          <a
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation(); // Prevents the parent <a> tag from triggering
-                              // Function to show all uploaded files from S3 (another API)
-                            }}
-                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-400 hover:text-white"
-                          >
-                            See Files
-                          </a>
-                          <a
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation(); // Prevents the parent <a> tag from triggering
-                              setClassToDelete(classItem);
-                              setIsDropdownOpen({});
-                            }}
-                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-500 hover:text-white"
-                          >
-                            Delete Class
-                          </a>
-                        </div>
-                      )}
-                    </div>
-                  </a>
-                </div>
+                          See Files
+                        </a>
+                        <a
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation(); // Prevents the parent <a> tag from triggering
+                            setClassToDelete(classItem);
+                            setIsDropdownOpen({});
+                          }}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-500 hover:text-white"
+                        >
+                          Delete Class
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </a>
+              </div>              
               ))}
             </div>
           </nav>
