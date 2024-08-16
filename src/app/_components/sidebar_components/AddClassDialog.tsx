@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 type AddClassDialogProps = {
   isOpen: boolean;
@@ -8,11 +9,11 @@ type AddClassDialogProps = {
 };
 
 export default function AddClassDialog({
-  isOpen,
-  onRequestClose,
-  onAddClass,
-  classes,
-}: AddClassDialogProps) {
+                                         isOpen,
+                                         onRequestClose,
+                                         onAddClass,
+                                         classes,
+                                       }: AddClassDialogProps) {
   const [newClass, setNewClass] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -44,10 +45,12 @@ export default function AddClassDialog({
     }
   };
 
-  return (
+  const dialogContent = (
     <div
       style={{ zIndex: 9999 }}
-      className={`fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 ${isOpen ? "" : "hidden"}`}
+      className={`fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 ${
+        isOpen ? "" : "hidden"
+      }`}
     >
       <div className="rounded-md bg-white p-6 shadow-md">
         <h2 className="mb-4 text-xl text-black">Add a New Class</h2>
@@ -80,4 +83,7 @@ export default function AddClassDialog({
       </div>
     </div>
   );
+
+  // Render the dialog content via a React Portal
+  return isOpen ? createPortal(dialogContent, document.body) : null;
 }

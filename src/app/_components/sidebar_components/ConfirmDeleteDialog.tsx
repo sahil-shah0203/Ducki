@@ -1,3 +1,6 @@
+import React from "react";
+import { createPortal } from "react-dom";
+
 interface ConfirmDeleteDialogProps {
   className: string;
   onCancel: () => void;
@@ -5,13 +8,14 @@ interface ConfirmDeleteDialogProps {
 }
 
 export default function ConfirmDeleteDialog({
-  className,
-  onCancel,
-  onConfirm,
-}: ConfirmDeleteDialogProps) {
-  return (
-    <div className={"fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"}
-         style={{ zIndex: 9999 }}
+                                              className,
+                                              onCancel,
+                                              onConfirm,
+                                            }: ConfirmDeleteDialogProps) {
+  const dialogContent = (
+    <div
+      className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+      style={{ zIndex: 9999 }}
     >
       <div className="rounded-md bg-white p-6 shadow-md">
         <h2 className="mb-4 text-xl text-black">
@@ -34,4 +38,6 @@ export default function ConfirmDeleteDialog({
       </div>
     </div>
   );
+
+  return createPortal(dialogContent, document.body);
 }
