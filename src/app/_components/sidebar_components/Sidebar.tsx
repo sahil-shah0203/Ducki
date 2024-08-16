@@ -14,7 +14,6 @@ import {
 } from "react-icons/fa";
 import DashboardButton from "~/app/_components/sidebar_components/DashboardButton";
 import CalendarButton from "~/app/_components/sidebar_components/CalendarButton";
-
 import { useRouter } from "next/navigation";
 
 type SidebarProps = {
