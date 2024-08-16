@@ -38,17 +38,17 @@ type ClassItem = {
 };
 
 export default function Sidebar({
-  userId,
-  handleClassSelect,
-  toggleSidebar,
-  isCollapsed,
-  userImage,
-  onFetchResults,
-  onError,
-  user_id,
-  selectedClassName,
-  selectedClassID,
-}: SidebarProps) {
+                                  userId,
+                                  handleClassSelect,
+                                  toggleSidebar,
+                                  isCollapsed,
+                                  userImage,
+                                  onFetchResults,
+                                  onError,
+                                  user_id,
+                                  selectedClassName,
+                                  selectedClassID,
+                                }: SidebarProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState<Record<string, boolean>>(
@@ -226,7 +226,7 @@ export default function Sidebar({
                     <div className="relative">
                       <button
                         onClick={(e) => {
-                          e.stopPropagation();
+                          e.stopPropagation(); // Prevents the parent <a> tag from triggering
                           setIsDropdownOpen((prevState) => ({
                             ...prevState,
                             [classItem.class_name]:
@@ -248,6 +248,7 @@ export default function Sidebar({
                             href="#"
                             onClick={(e) => {
                               e.preventDefault();
+                              e.stopPropagation(); // Prevents the parent <a> tag from triggering
                               // Function to show all uploaded files from S3 (another API)
                             }}
                             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-400 hover:text-white"
@@ -258,6 +259,7 @@ export default function Sidebar({
                             href="#"
                             onClick={(e) => {
                               e.preventDefault();
+                              e.stopPropagation(); // Prevents the parent <a> tag from triggering
                               setClassToDelete(classItem);
                               setIsDropdownOpen({});
                             }}

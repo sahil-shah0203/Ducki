@@ -1,37 +1,42 @@
+import React from 'react';
+import { createPortal } from 'react-dom';
+
 interface ConfirmDeleteDialogProps {
-  className: string;
-  onCancel: () => void;
+  isOpen: boolean;
+  onClose: () => void;
   onConfirm: () => void;
 }
 
-export default function ConfirmDeleteDialog({
-  className,
-  onCancel,
-  onConfirm,
-}: ConfirmDeleteDialogProps) {
-  return (
-    <div className={"fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"}
-         style={{ zIndex: 9999 }}
-    >
-      <div className="rounded-md bg-white p-6 shadow-md">
-        <h2 className="mb-4 text-xl text-black">
-          Are you sure you want to delete {className}?
-        </h2>
-        <div className="flex justify-end">
+const ConfirmDeleteDialog: React.FC<ConfirmDeleteDialogProps> = ({ isOpen, onClose, onConfirm }) => {
+  if (!isOpen) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black opacity-50" onClick={onClose}></div>
+
+      {/* Dialog */}
+      <div className="relative z-60 bg-white p-6 rounded-lg shadow-lg">
+        <h2 className="text-lg font-semibold">Confirm Delete</h2>
+        <p>Are you sure you want to delete this item?</p>
+        <div className="mt-4 flex justify-end space-x-2">
           <button
-            onClick={onCancel}
-            className="mr-4 rounded border-2 border-[#437557] bg-white px-4 py-2 text-[#437557] hover:bg-[#cccccc]"
+            className="bg-gray-300 px-4 py-2 rounded"
+            onClick={onClose}
           >
             Cancel
           </button>
           <button
+            className="bg-red-500 text-white px-4 py-2 rounded"
             onClick={onConfirm}
-            className="rounded bg-[#407855] px-4 py-2 text-white hover:bg-[#7c9c87]"
           >
             Delete
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
-}
+};
+
+export default ConfirmDeleteDialog;
