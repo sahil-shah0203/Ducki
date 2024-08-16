@@ -6,7 +6,6 @@ import { api } from '~/trpc/react';
 import {useRouter} from 'next/navigation';
 
 interface FileUploadProps {
-  onUploadSuccess: () => void;
   onError: (error: string | null) => void;
   setSessionId: (sessionId: string) => void;
   user_id: number;
@@ -14,7 +13,7 @@ interface FileUploadProps {
   selectedClassName: string | null;
 }
 
-export default function FileUpload({ onUploadSuccess, onError, setSessionId, user_id, class_id, selectedClassName }: FileUploadProps) {
+export default function FileUpload({  onError, setSessionId, user_id, class_id, selectedClassName }: FileUploadProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -101,7 +100,6 @@ export default function FileUpload({ onUploadSuccess, onError, setSessionId, use
       setProcessing(false);
       setSuccessMessage('File processed successfully.');
       setSessionId(session_id);
-      onUploadSuccess();
     } catch (error) {
       console.error(error);
       setProcessing(false);

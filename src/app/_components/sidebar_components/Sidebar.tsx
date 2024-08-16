@@ -130,6 +130,8 @@ export default function Sidebar({
 
       handleClassSelect(null);
       setClassToDelete(null);
+
+      router.push("/dashboard");
     }
   };
 
@@ -194,7 +196,7 @@ export default function Sidebar({
             <Link href="/dashboard">
               <DashboardButton onClick={resetSelectedClass} />
             </Link>
-            <Link href={{ pathname: '/calendar', query: { userId } }}>
+            <Link href={{ pathname: "/calendar", query: { userId } }}>
               <CalendarButton onClick={resetSelectedClass} />
             </Link>
           </nav>
@@ -214,64 +216,64 @@ export default function Sidebar({
             <div className="space-y-0">
               {classes.map((classItem, index) => (
                 <div
-                key={index}
-                className={`relative ${classItem.class_name === selectedClass?.class_name ? "rounded-lg bg-[#217853]" : ""}`}
-              >
-                <a
-                  onClick={() => handleClassClick(classItem)}
-                  className="flex w-full items-center justify-between rounded-lg bg-transparent p-1 pl-3 text-left hover:bg-[#217853]"
+                  key={index}
+                  className={`relative ${classItem.class_name === selectedClass?.class_name ? "rounded-lg bg-[#217853]" : ""}`}
                 >
-                  {isCollapsed ? "" : classItem.class_name}
-              
-                  <div className="relative">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation(); // Prevents the parent <a> tag from triggering
-                        setIsDropdownOpen((prevState) => ({
-                          ...prevState,
-                          [classItem.class_name]:
-                            !prevState[classItem.class_name],
-                        }));
-                      }}
-                      className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-transparent focus:outline-none"
-                    >
-                      <FaEllipsisV />
-                    </button>
-                    {isDropdownOpen[classItem.class_name] && (
-                      <div
-                        ref={(ref) => {
-                          dropdownRefs.current[classItem.class_name] = ref;
+                  <a
+                    onClick={() => handleClassClick(classItem)}
+                    className="flex w-full items-center justify-between rounded-lg bg-transparent p-1 pl-3 text-left hover:bg-[#217853]"
+                  >
+                    {isCollapsed ? "" : classItem.class_name}
+
+                    <div className="relative">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevents the parent <a> tag from triggering
+                          setIsDropdownOpen((prevState) => ({
+                            ...prevState,
+                            [classItem.class_name]:
+                              !prevState[classItem.class_name],
+                          }));
                         }}
-                        className="absolute right-0 z-10 mt-2 w-48 rounded-md bg-white shadow-xl"
+                        className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-transparent focus:outline-none"
                       >
-                        <a
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation(); // Prevents the parent <a> tag from triggering
-                            // Function to show all uploaded files from S3 (another API)
+                        <FaEllipsisV />
+                      </button>
+                      {isDropdownOpen[classItem.class_name] && (
+                        <div
+                          ref={(ref) => {
+                            dropdownRefs.current[classItem.class_name] = ref;
                           }}
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-400 hover:text-white"
+                          className="absolute right-0 z-10 mt-2 w-48 rounded-md bg-white shadow-xl"
                         >
-                          See Files
-                        </a>
-                        <a
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation(); // Prevents the parent <a> tag from triggering
-                            setClassToDelete(classItem);
-                            setIsDropdownOpen({});
-                          }}
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-500 hover:text-white"
-                        >
-                          Delete Class
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                </a>
-              </div>              
+                          <a
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation(); // Prevents the parent <a> tag from triggering
+                              // Function to show all uploaded files from S3 (another API)
+                            }}
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-400 hover:text-white"
+                          >
+                            See Files
+                          </a>
+                          <a
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation(); // Prevents the parent <a> tag from triggering
+                              setClassToDelete(classItem);
+                              setIsDropdownOpen({});
+                            }}
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-500 hover:text-white"
+                          >
+                            Delete Class
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </a>
+                </div>
               ))}
             </div>
           </nav>

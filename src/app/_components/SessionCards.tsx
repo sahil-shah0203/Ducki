@@ -97,7 +97,7 @@ const SessionCards: React.FC<SessionCardsProps> = ({
           <SessionCard
             key={session.id}
             sessionId={session.id}
-            title={session.title} // This should display the session title
+            title={session.title}
             date={session.date}
             onClick={onSessionSelect}
           />
