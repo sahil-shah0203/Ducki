@@ -44,7 +44,7 @@ export default function ClassPage() {
         {!sessionStarted ? (
           <button
             onClick={() => setSessionStarted(true)}
-            className="flex w-full items-center justify-center space-x-3 rounded-xl border-2 border-dashed border-[#FFE072] bg-[#FFF0CB] px-2 py-4 shadow-md"
+            className="flex w-full items-center justify-center space-x-3 rounded-xl border-2 border-dashed border-[#FFE072] bg-[#FFF0CB] px-2 py-4 shadow-md bg-opacity-50"
           >
             <div className="flex items-center justify-center rounded-full bg-[#325B46] p-2">
               <img
