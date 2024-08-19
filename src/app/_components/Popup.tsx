@@ -57,7 +57,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   useEffect(() => {
     setDocuments(documentsData);
-    console.log("Fetched documents:", documentsData); // Debugging line
   }, [documentsData]);
 
   const handleDeleteDocument = async (docId: string) => {

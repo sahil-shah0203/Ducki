@@ -35,16 +35,14 @@ const AddEventDialog = ({
 
   const addEventMutation = api.events.addEvent.useMutation({
     onSuccess: (newEvent) => {
-      const maxEventId = events.length > 0 ? Math.max(...events.map(event => event.event_id)) : 0;
-      const newEventId = maxEventId + 1;
       onAddEvent({
-        event_id: newEventId,
+        event_id: newEvent.event_id,
         user_id: user_id,
         title: newEvent.title,
         start: new Date(newEvent.start),
         end: new Date(newEvent.end),
-        place: place.trim(),
-        description: description.trim(),
+        place: newEvent.place,
+        description: newEvent.description,
       });
       onRequestClose();
     },
@@ -72,10 +70,7 @@ const AddEventDialog = ({
     if (startDateTime >= endDateTime) {
       setErrorMessage("End time must be after start time.");
     } else {
-      const maxEventId = events.length > 0 ? Math.max(...events.map(event => event.event_id)) : 0;
-      const newEventId = maxEventId + 1;
       addEventMutation.mutate({
-        event_id: newEventId,
         user_id: user_id,
         title: title.trim(),
         description: description.trim(),
@@ -85,6 +80,7 @@ const AddEventDialog = ({
       });
     }
   };
+
 
   return (
     <div
