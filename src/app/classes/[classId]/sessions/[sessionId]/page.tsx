@@ -7,6 +7,7 @@ import MainPage from "~/app/page";
 import LLMInput from "~/app/_components/llm_input_components/LLMInput";
 import Popup from "~/app/_components/Popup";
 import SessionEndDialog from "~/app/_components/SessionEndDialog";
+import { api } from "~/trpc/react"; // Ensure the import is correct for the TRPC API
 
 export default function SessionPage() {
   const { user } = useUser();
@@ -21,6 +22,19 @@ export default function SessionPage() {
   const [isPopupCollapsed, setIsPopupCollapsed] = useState(false); // State for popup collapse
   const [sessionId, setSessionId] = useState<string>(session_id ?? ""); // State for session ID
   const [isDialogOpen, setIsDialogOpen] = useState(false); // State for dialog open/close
+
+  const utils = api.useContext(); // Use this for query invalidation
+  const addEventMutation = api.events.addEvent.useMutation({
+    onSuccess: async () => {
+      // Invalidate the query to refetch the events
+      await utils.events.getEventsByUserId.invalidate({ user_id: Number(user_id) });
+      alert("Review sessions have been scheduled!");
+    },
+    onError: (error) => {
+      console.error("Error scheduling events:", error.message);
+      alert("Failed to schedule review sessions. Please try again.");
+    },
+  });
 
   if (!session_id) {
     throw new Error("Session ID is needed");
@@ -44,14 +58,27 @@ export default function SessionPage() {
   };
 
   // Function to handle dialog close and other actions
-  const handleDialogClose = (scheduleReview: boolean) => {
+  const handleDialogClose = async (selectedDays: number[]) => {
     setIsDialogOpen(false); // Close the dialog
 
-    if (scheduleReview) {
-      // Logic to schedule review sessions can be implemented here
-      console.log("Scheduling review sessions...");
-      // Simulate scheduling review sessions
-      alert("Review sessions have been scheduled!");
+    if (selectedDays.length > 0) {
+      const now = new Date();
+      const newEvents = selectedDays.map((day) => ({
+        user_id: user_id_number,
+        title: "Review Session",
+        description: "Scheduled review session",
+        place: "Online",
+        start: new Date(now.getTime() + day * 24 * 60 * 60 * 1000).toISOString(),
+        end: new Date(now.getTime() + day * 24 * 60 * 60 * 1000 + 60 * 60 * 1000).toISOString(), // 1 hour later
+      }));
+      console.log("Fetched Events from session:", newEvents);
+      try {
+        for (const event of newEvents) {
+          await addEventMutation.mutateAsync(event);
+        }
+      } catch (error) {
+        console.error("Error scheduling events:", error);
+      }
     }
 
     // Redirect back to the class page

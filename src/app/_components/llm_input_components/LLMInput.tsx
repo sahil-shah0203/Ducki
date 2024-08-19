@@ -220,6 +220,7 @@ export default function LLMInput({
     } finally {
       setLoading(false);
     }
+    await chatHistoryQuery.refetch();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

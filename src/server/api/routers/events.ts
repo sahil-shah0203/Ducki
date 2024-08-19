@@ -15,7 +15,6 @@ export const eventsRouter = createTRPCRouter({
 
   addEvent: publicProcedure
     .input(z.object({
-      event_id: z.number(),
       user_id: z.number(),
       title: z.string().min(1),
       description: z.string().optional(),
@@ -26,7 +25,6 @@ export const eventsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const newEvent = await ctx.db.event.create({
         data: {
-          event_id: input.event_id,
           user_id: input.user_id,
           title: input.title,
           description: input.description,
@@ -35,7 +33,15 @@ export const eventsRouter = createTRPCRouter({
           end: new Date(input.end),
         },
       });
-      return { event_id: newEvent.event_id, title: newEvent.title, start: newEvent.start, end: newEvent.end };
+      console.log("Fetched Events from api:", newEvent);
+      return {
+        event_id: newEvent.event_id, // Return the generated event_id
+        title: newEvent.title,
+        start: newEvent.start,
+        end: newEvent.end,
+        place: newEvent.place,
+        description: newEvent.description,
+      };
     }),
 
   removeEvent: publicProcedure

@@ -32,7 +32,7 @@ const CalendarPage: React.FC = () => {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const userId = Number(searchParams.get('user_id'));
   const { data, isLoading, error } = api.events.getEventsByUserId.useQuery({ user_id: userId });
-
+  console.log("Fetched Events from calendar:", data);
   useEffect(() => {
     if (data) {
       setEvents(data.map(event => ({
@@ -41,11 +41,11 @@ const CalendarPage: React.FC = () => {
         description: event.description,
         start: new Date(event.start),
         end: new Date(event.end),
-        user_id: userId,
+        user_id: event.user_id,
         place: event.place,
       })));
     }
-  }, [data, userId]);
+  }, [data]);
 
   if (pathname !== '/calendar') {
     return null;
