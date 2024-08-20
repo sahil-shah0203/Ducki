@@ -7,7 +7,7 @@ import MainPage from "~/app/page";
 import LLMInput from "~/app/_components/llm_input_components/LLMInput";
 import Popup from "~/app/_components/Popup";
 import SessionEndDialog from "~/app/_components/SessionEndDialog";
-import { api } from "~/trpc/react"; // Ensure the import is correct for the TRPC API
+import { api } from "~/trpc/react";
 
 export default function SessionPage() {
   const { user } = useUser();
@@ -19,14 +19,13 @@ export default function SessionPage() {
   const selectedClassID = searchParams.get("classID");
   const session_id = searchParams.get("sessionID");
 
-  const [isPopupCollapsed, setIsPopupCollapsed] = useState(false); // State for popup collapse
-  const [sessionId, setSessionId] = useState<string>(session_id ?? ""); // State for session ID
-  const [isDialogOpen, setIsDialogOpen] = useState(false); // State for dialog open/close
+  const [isPopupCollapsed, setIsPopupCollapsed] = useState(false);
+  const [sessionId, setSessionId] = useState<string>(session_id ?? "");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const utils = api.useContext(); // Use this for query invalidation
+  const utils = api.useContext();
   const addEventMutation = api.events.addEvent.useMutation({
     onSuccess: async () => {
-      // Invalidate the query to refetch the events
       await utils.events.getEventsByUserId.invalidate({ user_id: Number(user_id) });
       alert("Review sessions have been scheduled!");
     },
@@ -47,19 +46,16 @@ export default function SessionPage() {
     router.push("/");
   }
 
-  // Function to toggle the popup
   const togglePopup = () => {
     setIsPopupCollapsed(!isPopupCollapsed);
   };
 
-  // Function to handle session end
   const sessionBack = () => {
-    setIsDialogOpen(true); // Open the dialog when "End Session" is clicked
+    setIsDialogOpen(true);
   };
 
-  // Function to handle dialog close and other actions
   const handleDialogClose = async (selectedDays: number[]) => {
-    setIsDialogOpen(false); // Close the dialog
+    setIsDialogOpen(false);
 
     if (selectedDays.length > 0) {
       const now = new Date();
@@ -79,13 +75,12 @@ export default function SessionPage() {
       } catch (error) {
         console.error("Error scheduling events:", error);
       }
-    }
 
-    // Redirect back to the class page
-    router.push(`/classes/${selectedClassID}`);
+      // Only redirect if events were scheduled
+      router.push(`/classes/${selectedClassID}/?user=${user_id}&className=${selectedClassName}&classID=${selectedClassID}`);
+    }
   };
 
-  // Debugging: Log component mount
   useEffect(() => {
     console.log("SessionPage component mounted");
   }, []);
@@ -105,26 +100,14 @@ export default function SessionPage() {
         />
       </div>
 
-      {/* End Session Button */}
-      <div className="fixed top-4 left-4 z-50">
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-          onClick={sessionBack} // Open dialog on click
-        >
-          End Session
-        </button>
-      </div>
-
-      {/* Popup Component */}
       <Popup
         userId={user_id?.toString() ?? ""}
         classId={selectedClassID_number ?? 0}
-        toggleSidebar={togglePopup}
         isCollapsed={isPopupCollapsed}
         uniqueSessionId={sessionId}
+        onEndSession={sessionBack}
       />
 
-      {/* Session End Dialog */}
       <SessionEndDialog isOpen={isDialogOpen} onClose={handleDialogClose} />
     </div>
   );

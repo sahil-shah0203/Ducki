@@ -3,7 +3,7 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
 import uuid from 'react-uuid';
 import { api } from '~/trpc/react';
-import {useRouter} from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 interface FileUploadProps {
   onError: (error: string | null) => void;
@@ -13,13 +13,20 @@ interface FileUploadProps {
   selectedClassName: string | null;
 }
 
-export default function FileUpload({  onError, setSessionId, user_id, class_id, selectedClassName }: FileUploadProps) {
+export default function FileUpload({
+                                     onError,
+                                     setSessionId,
+                                     user_id,
+                                     class_id,
+                                     selectedClassName,
+                                   }: FileUploadProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [sessionTitle, setSessionTitle] = useState<string>('');
   const { mutateAsync: addSession } = api.session.addSession.useMutation();
+  const { mutateAsync: addDocument } = api.documents.addDocument.useMutation();
 
   const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
 
@@ -45,11 +52,15 @@ export default function FileUpload({  onError, setSessionId, user_id, class_id, 
     });
 
     const file_name = uuid();
+    const file_extension = file.name.split('.').pop();
+    const file_key = `${file_name}.${file_extension}`;
 
     const params = {
       Bucket: S3_BUCKET,
-      Key: `${file_name}.pdf`,
+      Key: file_key,
       Body: file,
+      ContentDisposition: 'inline',
+      ContentType: file.type,
       Metadata: {
         index: session_id,
       },
@@ -58,7 +69,7 @@ export default function FileUpload({  onError, setSessionId, user_id, class_id, 
     try {
       await s3Client.send(new PutObjectCommand(params));
       setUploading(false);
-      return file_name;
+      return { file_name, file_key };
     } catch (error) {
       console.error(error);
       setUploading(false);
@@ -73,7 +84,7 @@ export default function FileUpload({  onError, setSessionId, user_id, class_id, 
     }
   };
 
-  const processFile = async (file_name: string, session_id: string) => {
+  const processFile = async (file_key: string, session_id: string) => {
     setProcessing(true);
     const LAMBDA_FUNCTION = 'process_document';
     const REGION = 'us-east-1';
@@ -89,7 +100,7 @@ export default function FileUpload({  onError, setSessionId, user_id, class_id, 
     const params = {
       FunctionName: LAMBDA_FUNCTION,
       Payload: JSON.stringify({
-        document_name: file_name,
+        document_name: file_key,
         class_id: class_id,
         session_id: session_id,
       }),
@@ -125,15 +136,30 @@ export default function FileUpload({  onError, setSessionId, user_id, class_id, 
           onError('Invalid file type');
           return;
         }
-        const file_name = await uploadFile(file, session_id);
-        if (file_name != null) {
-          await processFile(file_name, session_id);
+        const result = await uploadFile(file, session_id);
+        if (result != null) {
+          const { file_name, file_key } = result;
+          await processFile(file_key, session_id);
           try {
             const newSession = await addSession({
               user_id,
               class_id: class_id,
               session_id: session_id,
               session_title: sessionTitle,
+            });
+
+            const S3_BUCKET = 'ducki-documents';
+            const REGION = 'us-east-1';
+
+            // Add the document to the Prisma database
+            const documentUrl = `https://${S3_BUCKET}.s3.${REGION}.amazonaws.com/${file_key}`;
+            await addDocument({
+              document_id: file_name,
+              url: documentUrl,
+              name: file.name,
+              userId: user_id,
+              classId: class_id,
+              sessionId: session_id,
             });
           } catch (error) {
             console.error('Failed to start session', error);
@@ -144,12 +170,10 @@ export default function FileUpload({  onError, setSessionId, user_id, class_id, 
       }
 
       const url = `/classes/${class_id}/sessions/${session_id}?user=${user_id}&className=${selectedClassName}&classID=${class_id}&sessionID=${session_id}`;
-      router.push(url)
+      router.push(url);
     } else {
       onError('Select a file to begin.');
     }
-
-    
   };
 
   return (
@@ -165,7 +189,7 @@ export default function FileUpload({  onError, setSessionId, user_id, class_id, 
           />
           <label
             htmlFor="fileInput"
-            className="mt-4 mr-4 rounded border-2 border-[#437557] bg-white px-4 py-2 text-[#437557] hover:bg-[#cccccc]"
+            className="mt-4 mr-4 rounded border-2 border-[#437557] bg-white px-4 py-2 text-[#437557] hover:bg-[#CCCCCC]"
           >
             Add File
           </label>
@@ -199,7 +223,7 @@ export default function FileUpload({  onError, setSessionId, user_id, class_id, 
             />
             <button
               onClick={handleFileUpload}
-              className="rounded bg-[#407855] px-4 py-2 text-white hover:bg-[#7c9c87]"
+              className="rounded bg-[#407855] px-4 py-2 text-white hover:bg-[#7C9C87]"
             >
               Start Session
             </button>
