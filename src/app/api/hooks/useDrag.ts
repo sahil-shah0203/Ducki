@@ -9,8 +9,18 @@ export const useDrag = () => {
     const element = dragRef.current;
     if (!element) return;
 
+    const handleMouseMove = (e: MouseEvent) => {
+      requestAnimationFrame(() => {
+        position.current = {
+          x: e.clientX - startPosition.current.x,
+          y: e.clientY - startPosition.current.y,
+        };
+
+        element.style.transform = `translate(${position.current.x}px, ${position.current.y}px)`;
+      });
+    };
+
     const handleMouseDown = (e: MouseEvent) => {
-      // Prevent text selection
       e.preventDefault();
 
       startPosition.current = {
@@ -18,31 +28,20 @@ export const useDrag = () => {
         y: e.clientY - position.current.y,
       };
 
-      const handleMouseMove = (e: MouseEvent) => {
-        position.current = {
-          x: e.clientX - startPosition.current.x,
-          y: e.clientY - startPosition.current.y,
-        };
-
-        // Apply the transform for smoother animation
-        element.style.transform = `translate(${position.current.x}px, ${position.current.y}px)`;
-      };
-
       document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp, { once: true });
+    };
 
-      document.addEventListener(
-        "mouseup",
-        () => {
-          document.removeEventListener("mousemove", handleMouseMove);
-        },
-        { once: true }
-      );
+    const handleMouseUp = () => {
+      document.removeEventListener("mousemove", handleMouseMove);
     };
 
     element.addEventListener("mousedown", handleMouseDown);
 
     return () => {
       element.removeEventListener("mousedown", handleMouseDown);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
     };
   }, []);
 
