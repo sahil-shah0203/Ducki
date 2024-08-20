@@ -103,7 +103,6 @@ export default function SessionPage() {
       <Popup
         userId={user_id?.toString() ?? ""}
         classId={selectedClassID_number ?? 0}
-        toggleSidebar={togglePopup}
         isCollapsed={isPopupCollapsed}
         uniqueSessionId={sessionId}
         onEndSession={sessionBack}
