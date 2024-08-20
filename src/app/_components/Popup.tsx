@@ -7,7 +7,6 @@ import logo from "../../../public/duck.png";
 type SidebarProps = {
   userId: string; // Ensure this is a string
   classId: number;
-  toggleSidebar: () => void;
   isCollapsed: boolean;
   uniqueSessionId: string; // Add uniqueSessionId to props
   onEndSession: () => void; // Function to handle the end session
@@ -27,7 +26,6 @@ type KeyConcept = {
 const Sidebar: React.FC<SidebarProps> = ({
                                            userId,
                                            classId,
-                                           toggleSidebar,
                                            isCollapsed,
                                            uniqueSessionId, // Destructure uniqueSessionId from props
                                            onEndSession, // Destructure onEndSession from props
