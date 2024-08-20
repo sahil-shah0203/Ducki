@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { FaChevronDown, FaSyncAlt, FaTimes, FaChevronLeft } from "react-icons/fa";
+import { FaSyncAlt, FaTimes, FaChevronDown } from "react-icons/fa";
+import { Tabs, Tab, Box } from "@mui/material"; // Import Material-UI components
 import { api } from "~/trpc/react";
 import { useDrag } from "../api/hooks/useDrag"; // Custom hook for dragging functionality
 import logo from "../../../public/duck.png";
 
-type SidebarProps = {
+type PopupProps = {
   userId: string; // Ensure this is a string
   classId: number;
-  toggleSidebar: () => void;
   isCollapsed: boolean;
   uniqueSessionId: string; // Add uniqueSessionId to props
   onEndSession: () => void; // Function to handle the end session
@@ -24,20 +24,19 @@ type KeyConcept = {
   concept: string;
 };
 
-const Sidebar: React.FC<SidebarProps> = ({
-                                           userId,
-                                           classId,
-                                           toggleSidebar,
-                                           isCollapsed,
-                                           uniqueSessionId, // Destructure uniqueSessionId from props
-                                           onEndSession, // Destructure onEndSession from props
-                                         }) => {
+const Popup: React.FC<PopupProps> = ({
+  userId,
+  classId,
+  isCollapsed,
+  uniqueSessionId, // Destructure uniqueSessionId from props
+  onEndSession, // Destructure onEndSession from props
+}) => {
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [keyConcepts, setKeyConcepts] = useState<KeyConcept[]>([]); // Ensure initialization as an array
   const [isLoadingConcepts, setIsLoadingConcepts] = useState(false);
   const [conceptsError, setConceptsError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"documents" | "keyConcepts">("documents");
+  const [activeTab, setActiveTab] = useState(0); // Use index for tabs
   const [isMinimized, setIsMinimized] = useState(false);
   const { dragRef } = useDrag();
 
@@ -132,20 +131,24 @@ const Sidebar: React.FC<SidebarProps> = ({
     fetchKeyConcepts(); // Refetch key concepts
   };
 
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setActiveTab(newValue);
+  };
+
   // Ensure the sidebar appears only when isCollapsed is false
   if (isCollapsed) return null;
 
   return (
     <div
       ref={dragRef}
-      className={`fixed top-10 right-10 z-50 ${
+      className={`fixed top-10 right-10 z-50 transition-all duration-300 ${
         isMinimized ? "p-0 bg-transparent shadow-none" : "p-4 bg-white shadow-lg"
-      } rounded-md ${isMinimized ? "w-auto h-auto" : "w-96 h-auto"}`}
+      } rounded-md ${isMinimized ? "w-20 h-20" : "w-96 h-auto"}`}
     >
       {isMinimized ? (
         <button
           onClick={() => setIsMinimized(false)}
-          className="flex items-center justify-center p-0 bg-transparent border-0 w-20 h-20"
+          className="flex items-center justify-center p-0 bg-transparent border-0"
           style={{
             backgroundImage: `url(${logo.src})`,
             backgroundSize: 'contain',
@@ -159,102 +162,116 @@ const Sidebar: React.FC<SidebarProps> = ({
       ) : (
         <aside className="overflow-y-auto">
           <div className="flex justify-between items-center mb-2">
-            <div className="flex space-x-2"> {/* Adjusted spacing between buttons */}
-              <button
-                onClick={() => setActiveTab("documents")}
-                className={`px-3 py-2 ${
-                  activeTab === "documents"
-                    ? "bg-[#7c9c87] text-white"
-                    : "bg-[#407855] text-white"
-                } rounded text-sm`}
+            <Box sx={{ borderBottom: 1, borderColor: 'divider', width: '100%' }}>
+              <Tabs
+                value={activeTab}
+                onChange={handleTabChange}
+                aria-label="sidebar tabs"
+                TabIndicatorProps={{ style: { backgroundColor: '#7c9c87' } }} // Green underline
               >
-                Documents
-              </button>
-              <button
-                onClick={() => setActiveTab("keyConcepts")}
-                className={`px-3 py-2 ${
-                  activeTab === "keyConcepts"
-                    ? "bg-[#7c9c87] text-white"
-                    : "bg-[#407855] text-white"
-                } rounded text-sm`}
-              >
-                Key Concepts
-              </button>
-              <button
-                className="bg-blue-500 text-white px-3 py-2 rounded text-sm"
-                onClick={onEndSession} // Call the end session function
-              >
-                End Session
-              </button>
-            </div>
+                <Tab
+                  label="Documents"
+                  sx={{
+                    textTransform: 'none', // No capitalization change
+                    color: '#407855', // Green text
+                    fontFamily: 'inherit', // Match font with other buttons
+                    fontWeight: 'normal', // Match font weight with other buttons
+                    '&.Mui-selected': { color: '#407855' }, // Ensure selected tab is also green
+                  }}
+                />
+                <Tab
+                  label="Key Concepts"
+                  sx={{
+                    textTransform: 'none', // No capitalization change
+                    color: '#407855', // Green text
+                    fontFamily: 'inherit', // Match font with other buttons
+                    fontWeight: 'normal', // Match font weight with other buttons
+                    '&.Mui-selected': { color: '#407855' }, // Ensure selected tab is also green
+                  }}
+                />
+              </Tabs>
+            </Box>
             <button
               onClick={() => setIsMinimized(true)}
               className="text-gray-700 hover:text-gray-900 ml-2"
             >
-              <FaChevronDown/>
+              <FaChevronDown />
             </button>
           </div>
 
-          {activeTab === "documents" && (
-            <div className="space-y-4">
-              {isLoading && <div>Loading documents...</div>}
-              {error && <div>Error loading documents: {error.message}</div>}
-              {documents.length === 0 && !isLoading && (
-                <div>No documents found</div>
-              )}
-              {documents.map((doc: Document) => (
-                <div
-                  key={doc.id}
-                  className="relative flex items-center p-2 bg-[#217853] rounded-md"
-                >
-                  <button
-                    onClick={() => handleDocumentClick(doc)}
-                    className="text-left flex-1 text-white"
-                  >
-                    {doc.name}
-                  </button>
-                  <button
-                    onClick={() => handleDeleteDocument(doc.id)}
-                    className="absolute top-0 right-0 mt-1 mr-1 text-red-500 hover:text-red-700"
-                  >
-                    <FaTimes/>
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {activeTab === "keyConcepts" && (
-            <div className="space-y-4">
-              {isLoadingConcepts && <div>Loading key concepts...</div>}
-              {conceptsError && <div>Error: {conceptsError}</div>}
-              {keyConcepts.length === 0 && !isLoadingConcepts && (
-                <div>No key concepts found</div>
-              )}
-              {Array.isArray(keyConcepts) &&
-                keyConcepts.map((concept: KeyConcept) => (
+          <div role="tabpanel" hidden={activeTab !== 0}>
+            {activeTab === 0 && (
+              <div className="space-y-4">
+                {isLoading && <div>Loading documents...</div>}
+                {error && <div>Error loading documents: {error.message}</div>}
+                {documents.length === 0 && !isLoading && (
+                  <div>No documents found</div>
+                )}
+                {documents.map((doc: Document) => (
                   <div
-                    key={concept.id}
-                    className="p-2 bg-[#217853] rounded-md"
+                    key={doc.id}
+                    className="relative flex items-center p-2 bg-[#217853] rounded-md text-white"
                   >
-                    {concept.concept}
+                    <button
+                      onClick={() => handleDocumentClick(doc)}
+                      className="text-left flex-1 text-white"
+                    >
+                      {doc.name}
+                    </button>
+                    <button
+                      onClick={() => handleDeleteDocument(doc.id)}
+                      className="absolute top-0 right-0 mt-1 mr-1 text-red-500 hover:text-red-700"
+                    >
+                      <FaTimes />
+                    </button>
                   </div>
                 ))}
-            </div>
-          )}
+              </div>
+            )}
+          </div>
 
-          {/* Refresh Button */}
-          <button
-            onClick={handleRefresh}
-            className="mt-4 flex w-full items-center justify-center space-x-2 p-2 bg-[#407855] text-white rounded hover:bg-[#7c9c87] transition-colors"
-          >
-            <FaSyncAlt className="mr-2"/>
-            <span>Refresh</span>
-          </button>
+          <div role="tabpanel" hidden={activeTab !== 1}>
+            {activeTab === 1 && (
+              <div className="space-y-4">
+                {isLoadingConcepts && <div>Loading key concepts...</div>}
+                {conceptsError && <div>Error: {conceptsError}</div>}
+                {keyConcepts.length === 0 && !isLoadingConcepts && (
+                  <div>No key concepts found</div>
+                )}
+                {Array.isArray(keyConcepts) &&
+                  keyConcepts.map((concept: KeyConcept) => (
+                    <div
+                      key={concept.id}
+                      className="p-2 bg-[#217853] rounded-md text-white"
+                    >
+                      {concept.concept}
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+
+          {/* Refresh and End Session Buttons */}
+          <div className="flex justify-between mt-4">
+            <button
+              onClick={handleRefresh}
+              className="flex items-center justify-center space-x-2 p-2 bg-[#407855] text-white rounded hover:bg-[#7c9c87] transition-colors"
+            >
+              <FaSyncAlt className="mr-2" />
+              <span>Refresh</span>
+            </button>
+
+            <button
+              className="flex items-center justify-center space-x-2 p-2 bg-[#407855] text-white rounded hover:bg-[#7c9c87] transition-colors"
+              onClick={onEndSession} // Call the end session function
+            >
+              <span>End Session</span>
+            </button>
+          </div>
         </aside>
       )}
     </div>
   );
 };
 
-export default Sidebar;
+export default Popup;

@@ -19,6 +19,11 @@ const SessionEndDialog: React.FC<SessionEndDialogProps> = ({
     );
   };
 
+  const handleCancel = () => {
+    setSelectedDays([]); // Clear any selected days
+    onClose([]); // Just close the dialog
+  };
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-white p-6 rounded shadow-lg">
@@ -60,7 +65,7 @@ const SessionEndDialog: React.FC<SessionEndDialogProps> = ({
         </button>
         <button
           className="bg-gray-500 text-white px-4 py-2 rounded"
-          onClick={() => onClose([])} // Pass an empty array to indicate no scheduling
+          onClick={handleCancel} // Only close the dialog
         >
           Cancel
         </button>
