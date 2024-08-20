@@ -105,24 +105,15 @@ export default function SessionPage() {
         />
       </div>
 
-      {/* End Session Button */}
-      <div className="fixed top-4 left-4 z-50">
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-          onClick={sessionBack} // Open dialog on click
-        >
-          End Session
-        </button>
-      </div>
-
-      {/* Popup Component */}
       <Popup
         userId={user_id?.toString() ?? ""}
         classId={selectedClassID_number ?? 0}
         toggleSidebar={togglePopup}
         isCollapsed={isPopupCollapsed}
         uniqueSessionId={sessionId}
+        onEndSession={sessionBack} // Pass the sessionBack function here
       />
+
 
       {/* Session End Dialog */}
       <SessionEndDialog isOpen={isDialogOpen} onClose={handleDialogClose} />

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaChevronDown, FaSyncAlt, FaTimes, FaChevronLeft } from "react-icons/fa";
 import { api } from "~/trpc/react";
 import { useDrag } from "../api/hooks/useDrag"; // Custom hook for dragging functionality
+import logo from "../../../public/duck.png";
 
 type SidebarProps = {
   userId: string; // Ensure this is a string
@@ -9,6 +10,7 @@ type SidebarProps = {
   toggleSidebar: () => void;
   isCollapsed: boolean;
   uniqueSessionId: string; // Add uniqueSessionId to props
+  onEndSession: () => void; // Function to handle the end session
 };
 
 type Document = {
@@ -23,22 +25,19 @@ type KeyConcept = {
 };
 
 const Sidebar: React.FC<SidebarProps> = ({
-  userId,
-  classId,
-  toggleSidebar,
-  isCollapsed,
-  uniqueSessionId, // Destructure uniqueSessionId from props
-}) => {
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(
-    null
-  );
+                                           userId,
+                                           classId,
+                                           toggleSidebar,
+                                           isCollapsed,
+                                           uniqueSessionId, // Destructure uniqueSessionId from props
+                                           onEndSession, // Destructure onEndSession from props
+                                         }) => {
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [keyConcepts, setKeyConcepts] = useState<KeyConcept[]>([]); // Ensure initialization as an array
   const [isLoadingConcepts, setIsLoadingConcepts] = useState(false);
   const [conceptsError, setConceptsError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"documents" | "keyConcepts">(
-    "documents"
-  );
+  const [activeTab, setActiveTab] = useState<"documents" | "keyConcepts">("documents");
   const [isMinimized, setIsMinimized] = useState(false);
   const { dragRef } = useDrag();
 
@@ -52,8 +51,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     classId,
   });
 
-  const { mutateAsync: deleteDocument } =
-    api.documents.deleteDocument.useMutation();
+  const { mutateAsync: deleteDocument } = api.documents.deleteDocument.useMutation();
 
   useEffect(() => {
     setDocuments(documentsData);
@@ -63,9 +61,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     try {
       console.log("Deleting document with ID:", docId); // Debugging line
       await deleteDocument({ documentId: docId });
-      setDocuments((prevDocuments) =>
-        prevDocuments.filter((doc) => doc.id !== docId)
-      );
+      setDocuments((prevDocuments) => prevDocuments.filter((doc) => doc.id !== docId));
       if (selectedDocument && selectedDocument.id === docId) {
         setSelectedDocument(null);
       }
@@ -142,47 +138,60 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <div
       ref={dragRef}
-      className={`fixed top-10 right-10 z-50 p-4 bg-white shadow-lg rounded-md ${
-        isMinimized ? "w-10 h-10" : "w-96 h-auto"
-      }`}
+      className={`fixed top-10 right-10 z-50 ${
+        isMinimized ? "p-0 bg-transparent shadow-none" : "p-4 bg-white shadow-lg"
+      } rounded-md ${isMinimized ? "w-auto h-auto" : "w-96 h-auto"}`}
     >
       {isMinimized ? (
         <button
           onClick={() => setIsMinimized(false)}
-          className="text-gray-700 hover:text-gray-900 w-full h-full flex items-center justify-center"
+          className="flex items-center justify-center p-0 bg-transparent border-0 w-20 h-20"
+          style={{
+            backgroundImage: `url(${logo.src})`,
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center',
+            width: 50,
+            height: 50,
+          }}
         >
-          <FaChevronLeft />
         </button>
       ) : (
         <aside className="overflow-y-auto">
           <div className="flex justify-between items-center mb-2">
-            <div className="flex space-x-1">
+            <div className="flex space-x-2"> {/* Adjusted spacing between buttons */}
               <button
                 onClick={() => setActiveTab("documents")}
-                className={`p-2 ${
+                className={`px-3 py-2 ${
                   activeTab === "documents"
                     ? "bg-[#7c9c87] text-white"
                     : "bg-[#407855] text-white"
-                } rounded`}
+                } rounded text-sm`}
               >
                 Documents
               </button>
               <button
                 onClick={() => setActiveTab("keyConcepts")}
-                className={`p-2 ${
+                className={`px-3 py-2 ${
                   activeTab === "keyConcepts"
                     ? "bg-[#7c9c87] text-white"
                     : "bg-[#407855] text-white"
-                } rounded`}
+                } rounded text-sm`}
               >
                 Key Concepts
+              </button>
+              <button
+                className="bg-blue-500 text-white px-3 py-2 rounded text-sm"
+                onClick={onEndSession} // Call the end session function
+              >
+                End Session
               </button>
             </div>
             <button
               onClick={() => setIsMinimized(true)}
-              className="text-gray-700 hover:text-gray-900"
+              className="text-gray-700 hover:text-gray-900 ml-2"
             >
-              <FaChevronDown />
+              <FaChevronDown/>
             </button>
           </div>
 
@@ -208,7 +217,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     onClick={() => handleDeleteDocument(doc.id)}
                     className="absolute top-0 right-0 mt-1 mr-1 text-red-500 hover:text-red-700"
                   >
-                    <FaTimes />
+                    <FaTimes/>
                   </button>
                 </div>
               ))}
@@ -239,7 +248,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             onClick={handleRefresh}
             className="mt-4 flex w-full items-center justify-center space-x-2 p-2 bg-[#407855] text-white rounded hover:bg-[#7c9c87] transition-colors"
           >
-            <FaSyncAlt className="mr-2" />
+            <FaSyncAlt className="mr-2"/>
             <span>Refresh</span>
           </button>
         </aside>
