@@ -176,7 +176,7 @@ export default function Sidebar({
             onClick={resetSelectedClass}
             src="\duck.png"
             alt="Ducki"
-            className="h-7 w-7 cursor-pointer rounded-full"
+            className="h-7 w-7 cursor-pointer"
           />
         </Link>
         {!isCollapsed && (
