@@ -25,8 +25,6 @@ type SidebarProps = {
   toggleSidebar: () => void;
   isCollapsed: boolean;
   userImage: string | undefined;
-  onFetchResults: (choices: any[]) => void;
-  onError: (error: string | null) => void;
   user_id: number | undefined;
   selectedClassName: string | undefined;
   selectedClassID: number | undefined;
@@ -43,8 +41,6 @@ export default function Sidebar({
   toggleSidebar,
   isCollapsed,
   userImage,
-  onFetchResults,
-  onError,
   user_id,
   selectedClassName,
   selectedClassID,
