@@ -20,7 +20,6 @@ export default function SessionPage() {
   const session_id = searchParams.get("sessionID");
 
   const [isPopupCollapsed, setIsPopupCollapsed] = useState(false);
-  const [sessionId, setSessionId] = useState<string>(session_id ?? "");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const utils = api.useContext();
@@ -45,10 +44,6 @@ export default function SessionPage() {
   if (!user) {
     router.push("/");
   }
-
-  const togglePopup = () => {
-    setIsPopupCollapsed(!isPopupCollapsed);
-  };
 
   const sessionBack = () => {
     setIsDialogOpen(true);
@@ -104,7 +99,7 @@ export default function SessionPage() {
         userId={user_id?.toString() ?? ""}
         classId={selectedClassID_number ?? 0}
         isCollapsed={isPopupCollapsed}
-        uniqueSessionId={sessionId}
+        uniqueSessionId={session_id}
         onEndSession={sessionBack}
       />
 

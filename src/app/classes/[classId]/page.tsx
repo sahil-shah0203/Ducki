@@ -2,12 +2,8 @@
 import { useUser } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import MainPage from "~/app/page";
-import LLMInput from "~/app/_components/llm_input_components/LLMInput";
-import Link from "next/link";
-
 import { useState } from "react";
 import FileUpload from "~/app/_components/FileUpload";
-import { api } from "~/trpc/react";
 import SessionCards from "~/app/_components/SessionCards";
 
 export default function ClassPage() {

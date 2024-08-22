@@ -31,6 +31,9 @@ export default function ProfileSettings({ userId }: ProfileSettingsProps) {
     }
   }, [user]);
 
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
   const deleteUser = api.user.deleteUser.useMutation();
 
   if (!user) {
@@ -54,9 +57,6 @@ export default function ProfileSettings({ userId }: ProfileSettingsProps) {
       );
     }
   };
-
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
 
   return (
     <div>
