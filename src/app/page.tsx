@@ -10,19 +10,10 @@ import { useRouter } from "next/navigation";
 
 export default function MainPage() {
   const { user, isSignedIn } = useUser();
-  const [selectedClass, setSelectedClass] = useState<{
-    class_id: number;
-    class_name: string;
-  } | null>(null);
+  
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const router = useRouter();
-
-  const handleClassSelect = (
-    selectedClass: { class_id: number; class_name: string } | null,
-  ) => {
-    setSelectedClass(selectedClass);
-  };
 
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
@@ -68,13 +59,10 @@ export default function MainPage() {
       <div className="relative flex h-screen" style={{ zIndex: 0 }}>
         <Sidebar
           userId={user_id}
-          handleClassSelect={handleClassSelect}
           toggleSidebar={toggleSidebar}
           isCollapsed={isSidebarCollapsed}
           userImage={user_image}
           user_id={user_id}
-          selectedClassName={selectedClass?.class_name}
-          selectedClassID={selectedClass?.class_id}
         />
         <div
           className={`flex-grow transition-all duration-300 ${isSidebarCollapsed ? "ml-10" : "ml-64"}`}
