@@ -19,17 +19,10 @@ import { useRouter } from "next/navigation";
 
 type SidebarProps = {
   userId: number | undefined;
-  handleClassSelect: (
-    selectedClass: { class_id: number; class_name: string } | null,
-  ) => void;
   toggleSidebar: () => void;
   isCollapsed: boolean;
   userImage: string | undefined;
-  onFetchResults: (choices: any[]) => void;
-  onError: (error: string | null) => void;
   user_id: number | undefined;
-  selectedClassName: string | undefined;
-  selectedClassID: number | undefined;
 };
 
 type ClassItem = {
@@ -39,15 +32,10 @@ type ClassItem = {
 
 export default function Sidebar({
   userId,
-  handleClassSelect,
   toggleSidebar,
   isCollapsed,
   userImage,
-  onFetchResults,
-  onError,
   user_id,
-  selectedClassName,
-  selectedClassID,
 }: SidebarProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [classes, setClasses] = useState<ClassItem[]>([]);
@@ -101,7 +89,6 @@ export default function Sidebar({
   }, [dropdownRefs]);
 
   const handleClassClick = (classItem: ClassItem) => {
-    handleClassSelect(classItem);
     setSelectedClass(classItem);
     const url = `/classes/${classItem.class_id}?user=${user_id}&className=${classItem.class_name}&classID=${classItem.class_id}`;
     router.push(url);
@@ -128,7 +115,6 @@ export default function Sidebar({
         console.error("Error deleting class:", error);
       }
 
-      handleClassSelect(null);
       setClassToDelete(null);
 
       router.push("/dashboard");

@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { FaChevronDown, FaSyncAlt, FaTimes, FaChevronLeft } from "react-icons/fa";
+import {
+  FaChevronDown,
+  FaSyncAlt,
+  FaTimes,
+} from "react-icons/fa";
 import { api } from "~/trpc/react";
 import { useDrag } from "../api/hooks/useDrag"; // Custom hook for dragging functionality
 import logo from "../../../public/duck.png";
@@ -24,18 +28,22 @@ type KeyConcept = {
 };
 
 const Sidebar: React.FC<SidebarProps> = ({
-                                           userId,
-                                           classId,
-                                           isCollapsed,
-                                           uniqueSessionId, // Destructure uniqueSessionId from props
-                                           onEndSession, // Destructure onEndSession from props
-                                         }) => {
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
+  userId,
+  classId,
+  isCollapsed,
+  uniqueSessionId, 
+  onEndSession,
+}) => {
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(
+    null,
+  );
   const [documents, setDocuments] = useState<Document[]>([]);
   const [keyConcepts, setKeyConcepts] = useState<KeyConcept[]>([]); // Ensure initialization as an array
   const [isLoadingConcepts, setIsLoadingConcepts] = useState(false);
   const [conceptsError, setConceptsError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"documents" | "keyConcepts">("documents");
+  const [activeTab, setActiveTab] = useState<"documents" | "keyConcepts">(
+    "documents",
+  );
   const [isMinimized, setIsMinimized] = useState(false);
   const { dragRef } = useDrag();
 
@@ -49,7 +57,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     classId,
   });
 
-  const { mutateAsync: deleteDocument } = api.documents.deleteDocument.useMutation();
+  const { mutateAsync: deleteDocument } =
+    api.documents.deleteDocument.useMutation();
 
   useEffect(() => {
     setDocuments(documentsData);
@@ -59,7 +68,9 @@ const Sidebar: React.FC<SidebarProps> = ({
     try {
       console.log("Deleting document with ID:", docId); // Debugging line
       await deleteDocument({ documentId: docId });
-      setDocuments((prevDocuments) => prevDocuments.filter((doc) => doc.id !== docId));
+      setDocuments((prevDocuments) =>
+        prevDocuments.filter((doc) => doc.id !== docId),
+      );
       if (selectedDocument && selectedDocument.id === docId) {
         setSelectedDocument(null);
       }
@@ -78,7 +89,6 @@ const Sidebar: React.FC<SidebarProps> = ({
       setIsLoadingConcepts(true);
       setConceptsError(null);
 
-      console.log("Fetching key concepts with session:", uniqueSessionId); // Debugging line
       const response = await fetch("/api/getKeyConcepts", {
         method: "POST",
         headers: {
@@ -107,7 +117,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           (concept: string, index: number) => ({
             id: index,
             concept,
-          })
+          }),
         );
         setKeyConcepts(concepts);
       } else {
@@ -136,28 +146,31 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <div
       ref={dragRef}
-      className={`fixed top-10 right-10 z-50 ${
-        isMinimized ? "p-0 bg-transparent shadow-none" : "p-4 bg-white shadow-lg"
-      } rounded-md ${isMinimized ? "w-auto h-auto" : "w-96 h-auto"}`}
+      className={`fixed right-10 top-10 z-50 ${
+        isMinimized
+          ? "bg-transparent p-0 shadow-none"
+          : "bg-white p-4 shadow-lg"
+      } rounded-md ${isMinimized ? "h-auto w-auto" : "h-auto w-96"}`}
     >
       {isMinimized ? (
         <button
           onClick={() => setIsMinimized(false)}
-          className="flex items-center justify-center p-0 bg-transparent border-0 w-20 h-20"
+          className="flex h-20 w-20 items-center justify-center border-0 bg-transparent p-0"
           style={{
             backgroundImage: `url(${logo.src})`,
-            backgroundSize: 'contain',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center',
+            backgroundSize: "contain",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center",
             width: 50,
             height: 50,
           }}
-        >
-        </button>
+        ></button>
       ) : (
         <aside className="overflow-y-auto">
-          <div className="flex justify-between items-center mb-2">
-            <div className="flex space-x-2"> {/* Adjusted spacing between buttons */}
+          <div className="mb-2 flex items-center justify-between">
+            <div className="flex space-x-2">
+              {" "}
+              {/* Adjusted spacing between buttons */}
               <button
                 onClick={() => setActiveTab("documents")}
                 className={`px-3 py-2 ${
@@ -179,7 +192,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 Key Concepts
               </button>
               <button
-                className="bg-blue-500 text-white px-3 py-2 rounded text-sm"
+                className="rounded bg-blue-500 px-3 py-2 text-sm text-white"
                 onClick={onEndSession} // Call the end session function
               >
                 End Session
@@ -187,9 +200,9 @@ const Sidebar: React.FC<SidebarProps> = ({
             </div>
             <button
               onClick={() => setIsMinimized(true)}
-              className="text-gray-700 hover:text-gray-900 ml-2"
+              className="ml-2 text-gray-700 hover:text-gray-900"
             >
-              <FaChevronDown/>
+              <FaChevronDown />
             </button>
           </div>
 
@@ -203,19 +216,19 @@ const Sidebar: React.FC<SidebarProps> = ({
               {documents.map((doc: Document) => (
                 <div
                   key={doc.id}
-                  className="relative flex items-center p-2 bg-[#217853] rounded-md"
+                  className="relative flex items-center rounded-md bg-[#217853] p-2"
                 >
                   <button
                     onClick={() => handleDocumentClick(doc)}
-                    className="text-left flex-1 text-white"
+                    className="flex-1 text-left text-white"
                   >
                     {doc.name}
                   </button>
                   <button
                     onClick={() => handleDeleteDocument(doc.id)}
-                    className="absolute top-0 right-0 mt-1 mr-1 text-red-500 hover:text-red-700"
+                    className="absolute right-0 top-0 mr-1 mt-1 text-red-500 hover:text-red-700"
                   >
-                    <FaTimes/>
+                    <FaTimes />
                   </button>
                 </div>
               ))}
@@ -231,10 +244,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               )}
               {Array.isArray(keyConcepts) &&
                 keyConcepts.map((concept: KeyConcept) => (
-                  <div
-                    key={concept.id}
-                    className="p-2 bg-[#217853] rounded-md"
-                  >
+                  <div key={concept.id} className="rounded-md bg-[#217853] p-2">
                     {concept.concept}
                   </div>
                 ))}
@@ -244,9 +254,9 @@ const Sidebar: React.FC<SidebarProps> = ({
           {/* Refresh Button */}
           <button
             onClick={handleRefresh}
-            className="mt-4 flex w-full items-center justify-center space-x-2 p-2 bg-[#407855] text-white rounded hover:bg-[#7c9c87] transition-colors"
+            className="mt-4 flex w-full items-center justify-center space-x-2 rounded bg-[#407855] p-2 text-white transition-colors hover:bg-[#7c9c87]"
           >
-            <FaSyncAlt className="mr-2"/>
+            <FaSyncAlt className="mr-2" />
             <span>Refresh</span>
           </button>
         </aside>
