@@ -1,9 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  FaChevronDown,
-  FaSyncAlt,
-  FaTimes,
-} from "react-icons/fa";
+import { FaChevronDown, FaSyncAlt, FaTimes } from "react-icons/fa";
 import { api } from "~/trpc/react";
 import { useDrag } from "../api/hooks/useDrag"; // Custom hook for dragging functionality
 import logo from "../../../public/duck.png";
@@ -31,7 +27,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   userId,
   classId,
   isCollapsed,
-  uniqueSessionId, 
+  uniqueSessionId,
   onEndSession,
 }) => {
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(
@@ -65,7 +61,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const handleDeleteDocument = async (docId: string) => {
     try {
-      console.log("Deleting document with ID:", docId); // Debugging line
+      console.log("Deleting document with ID:", docId);
       await deleteDocument({ documentId: docId });
       setDocuments((prevDocuments) =>
         prevDocuments.filter((doc) => doc.id !== docId),
@@ -99,16 +95,20 @@ const Sidebar: React.FC<SidebarProps> = ({
         }),
       });
 
-      console.log("Response status:", response.status); // Debugging line
+      console.log("Response status:", response.status); 
       if (!response.ok) {
         throw new Error(`Error fetching key concepts: ${response.statusText}`);
       }
 
       const data = await response.json();
-      console.log("API response for key concepts:", data); // Debugging line
+      console.log("API response for key concepts:", data);
+
+      let parsedData = []
 
       // Parse the concepts JSON string
-      const parsedData = JSON.parse(data.concepts);
+      if(data.concepts.length > 0){
+        parsedData = JSON.parse(data.concepts);
+      }
 
       // Check if main_topics is an array
       if (Array.isArray(parsedData.main_topics)) {
@@ -256,7 +256,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             className="mt-4 flex w-full items-center justify-center space-x-2 rounded bg-[#407855] p-2 text-white transition-colors hover:bg-[#7c9c87]"
           >
             <FaSyncAlt className="mr-2" />
-            <span>Refresh</span>
+            <span>Refresh!</span>
           </button>
         </aside>
       )}

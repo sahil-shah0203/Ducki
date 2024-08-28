@@ -28,7 +28,6 @@ export default function ClassPage() {
 
   const handleSessionSelect = (sessionId: string) => {
     setSessionId(sessionId);
-
   };
 
   return (
