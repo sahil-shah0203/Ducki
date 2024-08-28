@@ -129,7 +129,6 @@ export default function FileUpload({
 
       const session_id = uuid();
       setSessionId(session_id);
-      console.log("Session ID:", session_id);
 
       for (const file of files) {
         if (!allowedTypes.includes(file.type)) {
