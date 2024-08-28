@@ -52,9 +52,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     error,
     isLoading,
     refetch: refetchDocuments,
-  } = api.documents.getDocumentsByUserAndClass.useQuery({
-    userId: parseInt(userId),
-    classId,
+  } = api.documents.getDocumentsBySessionId.useQuery({
+    sessionId: uniqueSessionId,
   });
 
   const { mutateAsync: deleteDocument } =
