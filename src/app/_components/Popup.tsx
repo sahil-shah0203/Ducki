@@ -13,14 +13,9 @@ type SidebarProps = {
 };
 
 type Document = {
-  id: string; // Using document_id as id
+  id: string;
   url: string;
   name: string;
-};
-
-type KeyConcept = {
-  id: number;
-  concept: string;
 };
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -34,7 +29,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     null,
   );
   const [documents, setDocuments] = useState<Document[]>([]);
-  const [keyConcepts, setKeyConcepts] = useState<KeyConcept[]>([]); // Ensure initialization as an array
+  const [keyConcepts, setKeyConcepts] = useState<string[]>([]);
   const [isLoadingConcepts, setIsLoadingConcepts] = useState(false);
   const [conceptsError, setConceptsError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"documents" | "keyConcepts">(
@@ -95,33 +90,20 @@ const Sidebar: React.FC<SidebarProps> = ({
         }),
       });
 
-      console.log("Response status:", response.status); 
       if (!response.ok) {
         throw new Error(`Error fetching key concepts: ${response.statusText}`);
       }
 
       const data = await response.json();
-      console.log("API response for key concepts:", data);
 
-      let parsedData = []
+      let parsedData = [];
 
       // Parse the concepts JSON string
-      if(data.concepts.length > 0){
+      if (data.concepts.length > 0) {
         parsedData = JSON.parse(data.concepts);
       }
 
-      // Check if main_topics is an array
-      if (Array.isArray(parsedData.main_topics)) {
-        const concepts = parsedData.main_topics.map(
-          (concept: string, index: number) => ({
-            id: index,
-            concept,
-          }),
-        );
-        setKeyConcepts(concepts);
-      } else {
-        throw new Error("No key concepts returned from API");
-      }
+      setKeyConcepts(parsedData.main_topics);
     } catch (error: any) {
       setConceptsError(error.message || "An error occurred");
       console.error("Error in fetchKeyConcepts:", error); // Debugging line
@@ -241,12 +223,11 @@ const Sidebar: React.FC<SidebarProps> = ({
               {keyConcepts.length === 0 && !isLoadingConcepts && (
                 <div>No key concepts found</div>
               )}
-              {Array.isArray(keyConcepts) &&
-                keyConcepts.map((concept: KeyConcept) => (
-                  <div key={concept.id} className="rounded-md bg-[#217853] p-2">
-                    {concept.concept}
-                  </div>
-                ))}
+              {keyConcepts.map((concept, index: number) => (
+                <div key={index} className="rounded-md bg-[#217853] p-2">
+                  {concept}
+                </div>
+              ))}
             </div>
           )}
 
