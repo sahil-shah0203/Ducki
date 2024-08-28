@@ -75,9 +75,9 @@ model Event {
 }
 
 model Document {
-  document_id String   @id
+  document_id String   @id // UUID-based document ID
   url         String
-  name        String
+  name        String   // Original file name
   user_id     Int
   class_id    Int
   session_id  String   // Added session_id field
