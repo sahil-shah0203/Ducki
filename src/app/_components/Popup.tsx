@@ -18,6 +18,11 @@ type Document = {
   name: string;
 };
 
+type KeyConcept = {
+  concept_id: number | null;
+  description: string;
+};
+
 const Sidebar: React.FC<SidebarProps> = ({
   userId,
   classId,
@@ -29,7 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     null,
   );
   const [documents, setDocuments] = useState<Document[]>([]);
-  const [keyConcepts, setKeyConcepts] = useState<string[]>([]);
+  const [keyConcepts, setKeyConcepts] = useState<KeyConcept[]>([]);
   const [isLoadingConcepts, setIsLoadingConcepts] = useState(false);
   const [conceptsError, setConceptsError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"documents" | "keyConcepts">(
@@ -49,6 +54,18 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const { mutateAsync: deleteDocument } =
     api.documents.deleteDocument.useMutation();
+
+  const {
+    data: keyConceptData,
+    error: queryError,
+    isLoading: keyConceptsLoading,
+  } = api.keyconcepts.getKeyConcepts.useQuery({
+    session_id: uniqueSessionId,
+    class_id: classId,
+    user_id: Number(userId),
+  });
+
+  console.log(keyConceptData);
 
   useEffect(() => {
     setDocuments(documentsData);
@@ -74,47 +91,28 @@ const Sidebar: React.FC<SidebarProps> = ({
     window.open(doc.url, "_blank");
   };
 
-  const fetchKeyConcepts = async () => {
-    try {
-      setIsLoadingConcepts(true);
-      setConceptsError(null);
+  const fetchKeyConcepts = () => {
+    setIsLoadingConcepts(true);
+    setConceptsError(null);
 
-      const response = await fetch("/api/getKeyConcepts", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          class_id: classId, // Use classId as the class identifier
-          session: uniqueSessionId, // Use uniqueSessionId as the session identifier
-        }),
-      });
+    if (queryError) {
+      setConceptsError(queryError.message);
+      console.error("Error in fetchKeyConcepts:", queryError);
+    }
 
-      if (!response.ok) {
-        throw new Error(`Error fetching key concepts: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-
-      let parsedData = [];
-
-      // Parse the concepts JSON string
-      if (data.concepts.length > 0) {
-        parsedData = JSON.parse(data.concepts);
-      }
-
-      setKeyConcepts(parsedData.main_topics);
-    } catch (error: any) {
-      setConceptsError(error.message || "An error occurred");
-      console.error("Error in fetchKeyConcepts:", error); // Debugging line
-    } finally {
+    if (keyConceptData) {
+      setKeyConcepts(keyConceptData);
       setIsLoadingConcepts(false);
     }
   };
 
   useEffect(() => {
-    fetchKeyConcepts();
-  }, [uniqueSessionId]); // Fetch key concepts when the uniqueSessionId changes
+    if (keyConceptsLoading) {
+      setIsLoadingConcepts(true);
+    } else {
+      fetchKeyConcepts();
+    }
+  }, [uniqueSessionId, isLoading, keyConceptData, queryError]); // Fetch key concepts when the uniqueSessionId changes
 
   const handleRefresh = () => {
     refetchDocuments(); // Refetch documents
@@ -223,9 +221,12 @@ const Sidebar: React.FC<SidebarProps> = ({
               {keyConcepts.length === 0 && !isLoadingConcepts && (
                 <div>No key concepts found</div>
               )}
-              {keyConcepts.map((concept, index: number) => (
-                <div key={index} className="rounded-md bg-[#217853] p-2">
-                  {concept}
+              {keyConcepts.map((concept) => (
+                <div
+                  key={concept.concept_id}
+                  className="rounded-md bg-[#217853] p-2"
+                >
+                  {concept.description}
                 </div>
               ))}
             </div>

@@ -31,7 +31,7 @@ export const sessionRouter = createTRPCRouter({
       user_id: z.number(),
       class_id: z.number(),
       session_id: z.string(),
-      session_title: z.string(), // Include session_title in the input schema
+      session_title: z.string(),
     }))
     .mutation(async ({ input }) => {
       const newSession = await db.session.create({
@@ -39,7 +39,7 @@ export const sessionRouter = createTRPCRouter({
           session_id: input.session_id,
           user_id: input.user_id,
           class_id: input.class_id,
-          session_title: input.session_title, // Include session_title in the data
+          session_title: input.session_title,
           createdAt: new Date(),
         },
       });
