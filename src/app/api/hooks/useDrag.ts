@@ -2,12 +2,15 @@ import { useRef, useEffect } from "react";
 
 export const useDrag = () => {
   const dragRef = useRef<HTMLDivElement | null>(null);
+  const handleRef = useRef<HTMLDivElement | null>(null); 
   const position = useRef({ x: 0, y: 0 });
   const startPosition = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     const element = dragRef.current;
-    if (!element) return;
+    const handle = handleRef.current;
+
+    if (!element || !handle) return;
 
     const handleMouseMove = (e: MouseEvent) => {
       requestAnimationFrame(() => {
@@ -36,14 +39,14 @@ export const useDrag = () => {
       document.removeEventListener("mousemove", handleMouseMove);
     };
 
-    element.addEventListener("mousedown", handleMouseDown);
+    handle.addEventListener("mousedown", handleMouseDown);
 
     return () => {
-      element.removeEventListener("mousedown", handleMouseDown);
+      handle.removeEventListener("mousedown", handleMouseDown);
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
   }, []);
 
-  return { dragRef };
+  return { dragRef, handleRef };
 };

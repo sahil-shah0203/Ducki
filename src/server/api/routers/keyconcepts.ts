@@ -78,4 +78,51 @@ export const keyConceptRouter = createTRPCRouter({
 
       return parsedData;
     }),
+
+    deleteKeyConcept: publicProcedure
+    .input(
+      z.object({
+        concept_id: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { concept_id } = input;
+
+      const deletedConcept = await ctx.db.keyConcept.delete({
+        where: {
+          concept_id: concept_id,
+        },
+      });
+
+      // Return the deleted concept's information or a success message
+      return {
+        message: `Key concept with ID ${concept_id} was deleted successfully.`,
+        deletedConcept,
+      };
+    }),
+
+    editConcept: publicProcedure
+    .input(
+      z.object({
+        concept_id: z.number(),
+        description: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { concept_id, description } = input;
+
+      const updatedConcept = await ctx.db.keyConcept.update({
+        where: {
+          concept_id: concept_id,
+        },
+        data: {
+          description: description,
+        },
+      });
+
+      return {
+        message: `Key concept with ID ${concept_id} was updated successfully.`,
+        updatedConcept,
+      };
+    }),
 });

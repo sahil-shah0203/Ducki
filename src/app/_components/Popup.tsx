@@ -40,10 +40,10 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [activeTab, setActiveTab] = useState<"documents" | "keyConcepts">(
     "documents",
   );
-  const [editConceptId, setEditConceptId] = useState(null);
+  const [editConceptId, setEditConceptId] = useState<number | null>(null);
   const [editedDescription, setEditedDescription] = useState("");
   const [isMinimized, setIsMinimized] = useState(false);
-  const { dragRef } = useDrag();
+  const { dragRef, handleRef } = useDrag();
 
   const {
     data: documentsData = [],
@@ -66,6 +66,9 @@ const Sidebar: React.FC<SidebarProps> = ({
     class_id: classId,
     user_id: Number(userId),
   });
+
+  const deleteConcept = api.keyconcepts.deleteKeyConcept.useMutation();
+  const editConcept = api.keyconcepts.editConcept.useMutation();
 
   useEffect(() => {
     setDocuments(documentsData);
@@ -119,23 +122,62 @@ const Sidebar: React.FC<SidebarProps> = ({
     fetchKeyConcepts(); // Refetch key concepts
   };
 
-  const handleEditClick = (concept) => {
+  const editKeyConcept = (concept: KeyConcept) => {
     setEditConceptId(concept.concept_id);
     setEditedDescription(concept.description);
   };
 
-  const handleDescriptionChange = (e) => {
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEditedDescription(e.target.value);
   };
 
-  // Function to handle save button click
-  const handleSaveClick = (concept_id) => {
-    // Here, you'd typically call a function to update the key concept in your backend
-    // For now, let's just exit the editing mode
-    console.log(
-      `Save new description: ${editedDescription} for concept ID: ${concept_id}`,
+  const saveKeyConcept = (concept_id: number) => {
+    if (keyConceptData) {
+      const updatedKeyConceptData = keyConceptData.map((concept) => {
+        if (concept.concept_id === concept_id) {
+          return { ...concept, description: editedDescription };
+        }
+        return concept;
+      });
+
+      setKeyConcepts(updatedKeyConceptData);
+    }
+    editConcept.mutate(
+      {
+        concept_id,
+        description: editedDescription,
+      },
+      {
+        onError: (error) => {
+          console.error(`Error updating key concept: ${error.message}`);
+        },
+      },
     );
+
+    // Reset the edit state
     setEditConceptId(null);
+  };
+
+  const deleteKeyConcept = (concept_id: number) => {
+    if (keyConceptData) {
+      const updatedKeyConcepts = keyConceptData.filter(
+        (concept) => concept.concept_id !== concept_id,
+      );
+      setKeyConcepts(updatedKeyConcepts);
+    }
+
+    deleteConcept.mutate(
+      { concept_id },
+      {
+        onSuccess: (data) => {
+          console.log(data.message);
+          // refetch key conetps?
+        },
+        onError: (error) => {
+          console.error(`Error deleting key concept: ${error.message}`);
+        },
+      },
+    );
   };
 
   // Ensure the sidebar appears only when isCollapsed is false
@@ -150,24 +192,24 @@ const Sidebar: React.FC<SidebarProps> = ({
           : "bg-white p-4 shadow-lg"
       } rounded-md ${isMinimized ? "h-auto w-auto" : "h-auto w-96"}`}
     >
-      {isMinimized ? (
-        <button
-          onClick={() => setIsMinimized(false)}
-          className="flex h-20 w-20 items-center justify-center border-0 bg-transparent p-0"
-          style={{
-            backgroundImage: `url(${logo.src})`,
-            backgroundSize: "contain",
-            backgroundRepeat: "no-repeat",
-            backgroundPosition: "center",
-            width: 50,
-            height: 50,
-          }}
-        ></button>
-      ) : (
-        <aside className="overflow-y-auto">
+      {/* Draggable Header Section */}
+      <div ref={handleRef} className="cursor-move">
+        {isMinimized ? (
+          <button
+            onClick={() => setIsMinimized(false)}
+            className="flex h-20 w-20 items-center justify-center border-0 bg-transparent p-0"
+            style={{
+              backgroundImage: `url(${logo.src})`,
+              backgroundSize: "contain",
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "center",
+              width: 50,
+              height: 50,
+            }}
+          ></button>
+        ) : (
           <div className="mb-2 flex items-center justify-between">
             <div className="flex space-x-2">
-              {" "}
               {/* Adjusted spacing between buttons */}
               <button
                 onClick={() => setActiveTab("documents")}
@@ -191,7 +233,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               </button>
               <button
                 className="rounded bg-blue-500 px-3 py-2 text-sm text-white"
-                onClick={onEndSession} // Call the end session function
+                onClick={onEndSession}
               >
                 End Session
               </button>
@@ -203,7 +245,12 @@ const Sidebar: React.FC<SidebarProps> = ({
               <FaChevronDown />
             </button>
           </div>
+        )}
+      </div>
 
+      {/* Non-Draggable Content Section */}
+      {!isMinimized && (
+        <aside className="overflow-y-auto">
           {activeTab === "documents" && (
             <div className="space-y-4">
               {isLoading && <div>Loading documents...</div>}
@@ -259,20 +306,31 @@ const Sidebar: React.FC<SidebarProps> = ({
                   <div className="ml-4 flex space-x-2">
                     {editConceptId === concept.concept_id ? (
                       <button
-                        onClick={() => handleSaveClick(concept.concept_id)}
+                        onClick={() => {
+                          if (concept.concept_id !== null) {
+                            saveKeyConcept(concept.concept_id);
+                          }
+                        }}
                         className="rounded bg-green-500 px-2 py-1 text-xs text-white hover:bg-green-700"
                       >
                         Save
                       </button>
                     ) : (
                       <button
-                        onClick={() => handleEditClick(concept)}
+                        onClick={() => editKeyConcept(concept)}
                         className="rounded bg-blue-500 px-2 py-1 text-xs text-white hover:bg-blue-700"
                       >
                         Edit
                       </button>
                     )}
-                    <button className="rounded bg-red-500 px-2 py-1 text-xs text-white hover:bg-red-700">
+                    <button
+                      onClick={() => {
+                        if (concept.concept_id !== null) {
+                          deleteKeyConcept(concept.concept_id);
+                        }
+                      }}
+                      className="rounded bg-red-500 px-2 py-1 text-xs text-white hover:bg-red-700"
+                    >
                       Delete
                     </button>
                   </div>
