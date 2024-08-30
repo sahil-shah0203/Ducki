@@ -40,6 +40,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [activeTab, setActiveTab] = useState<"documents" | "keyConcepts">(
     "documents",
   );
+  const [editConceptId, setEditConceptId] = useState(null);
+  const [editedDescription, setEditedDescription] = useState("");
   const [isMinimized, setIsMinimized] = useState(false);
   const { dragRef } = useDrag();
 
@@ -64,8 +66,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     class_id: classId,
     user_id: Number(userId),
   });
-
-  console.log(keyConceptData);
 
   useEffect(() => {
     setDocuments(documentsData);
@@ -117,6 +117,25 @@ const Sidebar: React.FC<SidebarProps> = ({
   const handleRefresh = () => {
     refetchDocuments(); // Refetch documents
     fetchKeyConcepts(); // Refetch key concepts
+  };
+
+  const handleEditClick = (concept) => {
+    setEditConceptId(concept.concept_id);
+    setEditedDescription(concept.description);
+  };
+
+  const handleDescriptionChange = (e) => {
+    setEditedDescription(e.target.value);
+  };
+
+  // Function to handle save button click
+  const handleSaveClick = (concept_id) => {
+    // Here, you'd typically call a function to update the key concept in your backend
+    // For now, let's just exit the editing mode
+    console.log(
+      `Save new description: ${editedDescription} for concept ID: ${concept_id}`,
+    );
+    setEditConceptId(null);
   };
 
   // Ensure the sidebar appears only when isCollapsed is false
@@ -224,9 +243,39 @@ const Sidebar: React.FC<SidebarProps> = ({
               {keyConcepts.map((concept) => (
                 <div
                   key={concept.concept_id}
-                  className="rounded-md bg-[#217853] p-2"
+                  className="flex transform items-center justify-between rounded-md bg-gradient-to-r from-[#217853] to-[#1c5f46] p-2 shadow-md transition-shadow duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
                 >
-                  {concept.description}
+                  {editConceptId === concept.concept_id ? (
+                    <input
+                      className="text-sm font-medium text-black"
+                      value={editedDescription}
+                      onChange={handleDescriptionChange}
+                    />
+                  ) : (
+                    <p className="text-sm font-medium text-white">
+                      {concept.description}
+                    </p>
+                  )}
+                  <div className="ml-4 flex space-x-2">
+                    {editConceptId === concept.concept_id ? (
+                      <button
+                        onClick={() => handleSaveClick(concept.concept_id)}
+                        className="rounded bg-green-500 px-2 py-1 text-xs text-white hover:bg-green-700"
+                      >
+                        Save
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleEditClick(concept)}
+                        className="rounded bg-blue-500 px-2 py-1 text-xs text-white hover:bg-blue-700"
+                      >
+                        Edit
+                      </button>
+                    )}
+                    <button className="rounded bg-red-500 px-2 py-1 text-xs text-white hover:bg-red-700">
+                      Delete
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
