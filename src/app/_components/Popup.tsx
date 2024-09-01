@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { FaChevronDown, FaSyncAlt, FaTimes } from "react-icons/fa";
+import { FaChevronDown, FaTimes } from "react-icons/fa";
+import { FiEdit2 } from "react-icons/fi";
 import { api } from "~/trpc/react";
 import { useDrag } from "../api/hooks/useDrag"; // Custom hook for dragging functionality
 import logo from "../../../public/duck.png";
+import { AddKeyConceptModal } from "./AddKeyConceptModal";
 
 type SidebarProps = {
-  userId: string; // Ensure this is a string
+  userId: string;
   classId: number;
   isCollapsed: boolean;
-  uniqueSessionId: string; // Add uniqueSessionId to props
+  uniqueSessionId: string;
   onEndSession: () => void; // Function to handle the end session
 };
 
@@ -21,6 +23,7 @@ type Document = {
 type KeyConcept = {
   concept_id: number | null;
   description: string;
+  understanding_level: number;
 };
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -36,6 +39,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [documents, setDocuments] = useState<Document[]>([]);
   const [keyConcepts, setKeyConcepts] = useState<KeyConcept[]>([]);
   const [isLoadingConcepts, setIsLoadingConcepts] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [conceptsError, setConceptsError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"documents" | "keyConcepts">(
     "documents",
@@ -69,6 +74,8 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const deleteConcept = api.keyconcepts.deleteKeyConcept.useMutation();
   const editConcept = api.keyconcepts.editConcept.useMutation();
+  const { mutateAsync: createKeyConcept } =
+    api.keyconcepts.createKeyConcept.useMutation();
 
   useEffect(() => {
     setDocuments(documentsData);
@@ -117,9 +124,26 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   }, [uniqueSessionId, isLoading, keyConceptData, queryError]); // Fetch key concepts when the uniqueSessionId changes
 
-  const handleRefresh = () => {
-    refetchDocuments(); // Refetch documents
-    fetchKeyConcepts(); // Refetch key concepts
+  const handleAddKeyConcept = async (description: string) => {
+    try {
+      const result = await createKeyConcept({
+        description,
+        user_id: Number(userId),
+        class_id: classId,
+        session_id: uniqueSessionId,
+      });
+
+      setKeyConcepts((prevKeyConcepts) => [
+        ...prevKeyConcepts,
+        {
+          concept_id: result.newConcept.concept_id,
+          description: result.newConcept.description,
+          understanding_level: result.newConcept.understanding_level,
+        },
+      ]);
+    } catch (error) {
+      console.error("Failed to create key concept:", error);
+    }
   };
 
   const editKeyConcept = (concept: KeyConcept) => {
@@ -171,7 +195,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       {
         onSuccess: (data) => {
           console.log(data.message);
-          // refetch key conetps?
+          // refetch key concepts????
         },
         onError: (error) => {
           console.error(`Error deleting key concept: ${error.message}`);
@@ -210,7 +234,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         ) : (
           <div className="mb-2 flex items-center justify-between">
             <div className="flex space-x-2">
-              {/* Adjusted spacing between buttons */}
               <button
                 onClick={() => setActiveTab("documents")}
                 className={`px-3 py-2 ${
@@ -290,7 +313,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               {keyConcepts.map((concept) => (
                 <div
                   key={concept.concept_id}
-                  className="flex transform items-center justify-between rounded-md bg-gradient-to-r from-[#217853] to-[#1c5f46] p-2 shadow-md transition-shadow duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
+                  className="flex transform items-center justify-between rounded-md bg-gradient-to-r from-[#217853] to-[#1c5f46] p-2 shadow-md transition-shadow duration-300 ease-in-out hover:shadow-lg"
                 >
                   {editConceptId === concept.concept_id ? (
                     <input
@@ -306,32 +329,26 @@ const Sidebar: React.FC<SidebarProps> = ({
                   <div className="ml-4 flex space-x-2">
                     {editConceptId === concept.concept_id ? (
                       <button
-                        onClick={() => {
-                          if (concept.concept_id !== null) {
-                            saveKeyConcept(concept.concept_id);
-                          }
-                        }}
-                        className="rounded bg-green-500 px-2 py-1 text-xs text-white hover:bg-green-700"
+                        onClick={() => saveKeyConcept(concept.concept_id!)}
+                        className="mr-4 rounded bg-green-500 px-2 py-1 text-xs text-white hover:bg-green-700"
                       >
                         Save
                       </button>
                     ) : (
                       <button
                         onClick={() => editKeyConcept(concept)}
-                        className="rounded bg-blue-500 px-2 py-1 text-xs text-white hover:bg-blue-700"
+                        className="absolute right-0 top-0 mr-5 mt-1 text-blue-500 hover:text-blue-700"
                       >
-                        Edit
+                        <FiEdit2 />
                       </button>
                     )}
                     <button
                       onClick={() => {
-                        if (concept.concept_id !== null) {
-                          deleteKeyConcept(concept.concept_id);
-                        }
+                        deleteKeyConcept(concept.concept_id!);
                       }}
-                      className="rounded bg-red-500 px-2 py-1 text-xs text-white hover:bg-red-700"
+                      className="absolute right-0 top-0 mr-1 mt-1 text-red-500 hover:text-red-700"
                     >
-                      Delete
+                      <FaTimes />
                     </button>
                   </div>
                 </div>
@@ -339,14 +356,21 @@ const Sidebar: React.FC<SidebarProps> = ({
             </div>
           )}
 
-          {/* Refresh Button */}
-          <button
-            onClick={handleRefresh}
-            className="mt-4 flex w-full items-center justify-center space-x-2 rounded bg-[#407855] p-2 text-white transition-colors hover:bg-[#7c9c87]"
-          >
-            <FaSyncAlt className="mr-2" />
-            <span>Refresh!</span>
-          </button>
+          {activeTab === "keyConcepts" && (
+            <div>
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="mt-4 flex w-full items-center justify-center space-x-2 rounded bg-[#407855] p-2 text-white transition-colors hover:bg-[#7c9c87]"
+              >
+                <span>Add Key Concept</span>
+              </button>
+              <AddKeyConceptModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSave={handleAddKeyConcept}
+              />
+            </div>
+          )}
         </aside>
       )}
     </div>

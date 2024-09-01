@@ -20,6 +20,7 @@ export const keyConceptRouter = createTRPCRouter({
         select: {
           concept_id: true,
           description: true,
+          understanding_level: true,
         },
       });
 
@@ -52,13 +53,16 @@ export const keyConceptRouter = createTRPCRouter({
       let parsedData: Array<{
         concept_id: number | null;
         description: string;
+        understanding_level: number;
       }> = [];
 
       if (Array.isArray(parsedObject.main_topics)) {
-        parsedData = parsedObject.main_topics.map((description: string) => ({
-          concept_id: null,
-          description,
-        }));
+        parsedData = parsedObject.main_topics.map(
+          (topic: { description: string; understanding_level: number }) => ({
+            concept_id: null,
+            description: topic.description,
+          }),
+        );
       } else {
         throw new Error("Unexpected format of main_topics data");
       }
@@ -70,6 +74,7 @@ export const keyConceptRouter = createTRPCRouter({
             session_id: session_id,
             class_id: class_id,
             user_id: user_id,
+            understanding_level: 1,
           },
         });
 
@@ -79,7 +84,7 @@ export const keyConceptRouter = createTRPCRouter({
       return parsedData;
     }),
 
-    deleteKeyConcept: publicProcedure
+  deleteKeyConcept: publicProcedure
     .input(
       z.object({
         concept_id: z.number(),
@@ -101,7 +106,7 @@ export const keyConceptRouter = createTRPCRouter({
       };
     }),
 
-    editConcept: publicProcedure
+  editConcept: publicProcedure
     .input(
       z.object({
         concept_id: z.number(),
@@ -123,6 +128,36 @@ export const keyConceptRouter = createTRPCRouter({
       return {
         message: `Key concept with ID ${concept_id} was updated successfully.`,
         updatedConcept,
+      };
+    }),
+
+  createKeyConcept: publicProcedure
+    .input(
+      z.object({
+        description: z.string(),
+        user_id: z.number(),
+        class_id: z.number(),
+        session_id: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { description, user_id, class_id, session_id } = input;
+
+      const understanding_level = 1; // Default level of understanding
+
+      const newConcept = await ctx.db.keyConcept.create({
+        data: {
+          description,
+          user_id,
+          class_id,
+          session_id,
+          understanding_level,
+        },
+      });
+
+      return {
+        message: `Key concept created successfully.`,
+        newConcept,
       };
     }),
 });

@@ -93,12 +93,14 @@ model Document {
 }
 
 model KeyConcept {
-  concept_id   Int      @id @default(autoincrement())
-  description  String
-  user_id      Int
-  class_id     Int
-  session_id   String
-  user         User     @relation(fields: [user_id], references: [user_id])
-  class        Class    @relation(fields: [class_id], references: [class_id])
-  session      Session  @relation(fields: [session_id], references: [session_id])
+  concept_id         Int      @id @default(autoincrement())
+  description        String
+  user_id            Int
+  class_id           Int
+  session_id         String
+  understanding_level Int     // (1-5)
+  user               User     @relation(fields: [user_id], references: [user_id])
+  class              Class    @relation(fields: [class_id], references: [class_id])
+  session            Session  @relation(fields: [session_id], references: [session_id])
 }
+
