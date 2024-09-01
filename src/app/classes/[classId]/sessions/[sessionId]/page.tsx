@@ -2,7 +2,7 @@
 
 import { useUser } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import MainPage from "~/app/page";
 import LLMInput from "~/app/_components/llm_input_components/LLMInput";
 import Popup from "~/app/_components/Popup";
@@ -75,10 +75,6 @@ export default function SessionPage() {
       router.push(`/classes/${selectedClassID}/?user=${user_id}&className=${selectedClassName}&classID=${selectedClassID}`);
     }
   };
-
-  useEffect(() => {
-    console.log("SessionPage component mounted");
-  }, []);
 
   return (
     <div className="container relative min-h-screen">

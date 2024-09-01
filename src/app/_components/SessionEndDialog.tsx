@@ -6,16 +6,16 @@ interface SessionEndDialogProps {
 }
 
 const SessionEndDialog: React.FC<SessionEndDialogProps> = ({
-                                                             isOpen,
-                                                             onClose,
-                                                           }) => {
+  isOpen,
+  onClose,
+}) => {
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
 
   if (!isOpen) return null;
 
   const toggleDay = (day: number) => {
     setSelectedDays((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
     );
   };
 
@@ -25,11 +25,12 @@ const SessionEndDialog: React.FC<SessionEndDialogProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white p-6 rounded shadow-lg">
-        <h2 className="text-xl font-bold mb-4">Session Complete</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="rounded bg-white p-6 shadow-lg">
+        <h2 className="mb-4 text-xl font-bold">Session Complete</h2>
         <p className="mb-4">
-          Your session is now complete. Would you like to schedule review sessions?
+          Your session is now complete. Would you like to schedule review
+          sessions?
         </p>
         <div className="mb-4">
           <label className="block">
@@ -58,13 +59,13 @@ const SessionEndDialog: React.FC<SessionEndDialogProps> = ({
           </label>
         </div>
         <button
-          className="bg-blue-500 text-white px-4 py-2 rounded mr-2"
+          className="mr-2 rounded bg-blue-500 px-4 py-2 text-white"
           onClick={() => onClose(selectedDays)} // Pass selected days array to onClose
         >
           Schedule
         </button>
         <button
-          className="bg-gray-500 text-white px-4 py-2 rounded"
+          className="rounded bg-gray-500 px-4 py-2 text-white"
           onClick={handleCancel} // Only close the dialog
         >
           Cancel
