@@ -409,7 +409,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   </div>
 
                   {/* Slider */}
-                  <div className="slider-container">
+                  {/* <div className="slider-container">
                     <input
                       type="range"
                       min="1"
@@ -425,7 +425,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                         <span key={num}>{num}</span>
                       ))}
                     </div>
-                  </div>
+                  </div> */}
+
                 </div>
               ))}
             </div>
@@ -439,12 +440,12 @@ const Sidebar: React.FC<SidebarProps> = ({
               >
                 Add Key Concept
               </button>
-              <button
+              {/* <button
                 onClick={saveUnderstandingChange}
                 className="flex w-1/2 items-center justify-center space-x-2 rounded bg-green-500 p-2 text-white transition-colors hover:bg-green-700"
               >
                 Save
-              </button>
+              </button> */}
 
               <AddKeyConceptModal
                 isOpen={isModalOpen}
