@@ -49,6 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [editedDescription, setEditedDescription] = useState("");
   const [isMinimized, setIsMinimized] = useState(false);
   const { dragRef, handleRef } = useDrag();
+  const [sliderValues, setSliderValues] = useState<Record<number, number>>({});
 
   const {
     data: documentsData = [],
@@ -76,6 +77,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   const editConcept = api.keyconcepts.editConcept.useMutation();
   const { mutateAsync: createKeyConcept } =
     api.keyconcepts.createKeyConcept.useMutation();
+  const { mutateAsync: updateUnderstandingLevels } =
+    api.keyconcepts.updateUnderstanding.useMutation();
 
   useEffect(() => {
     setDocuments(documentsData);
@@ -112,6 +115,16 @@ const Sidebar: React.FC<SidebarProps> = ({
 
     if (keyConceptData) {
       setKeyConcepts(keyConceptData);
+      const initialSliderValues = keyConceptData.reduce(
+        (acc, concept) => {
+          if (concept.concept_id !== null) {
+            acc[concept.concept_id] = concept.understanding_level || 1;
+          }
+          return acc;
+        },
+        {} as Record<number, number>,
+      );
+      setSliderValues(initialSliderValues);
       setIsLoadingConcepts(false);
     }
   };
@@ -157,7 +170,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const saveKeyConcept = (concept_id: number) => {
     if (keyConceptData) {
-      const updatedKeyConceptData = keyConceptData.map((concept) => {
+      const updatedKeyConceptData = keyConcepts.map((concept) => {
         if (concept.concept_id === concept_id) {
           return { ...concept, description: editedDescription };
         }
@@ -183,8 +196,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const deleteKeyConcept = (concept_id: number) => {
-    if (keyConceptData) {
-      const updatedKeyConcepts = keyConceptData.filter(
+    if (keyConcepts) {
+      const updatedKeyConcepts = keyConcepts.filter(
         (concept) => concept.concept_id !== concept_id,
       );
       setKeyConcepts(updatedKeyConcepts);
@@ -202,6 +215,47 @@ const Sidebar: React.FC<SidebarProps> = ({
         },
       },
     );
+  };
+
+  const handleUnderstandingChange = (
+    concept_id: number,
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const newValue = Number(event.target.value);
+    setSliderValues((prev) => ({
+      ...prev,
+      [concept_id]: newValue,
+    }));
+  };
+
+  const saveUnderstandingChange = async () => {
+    const updatedSliderValues: Record<number, number> = {};
+
+    keyConcepts.forEach((concept) => {
+      if (concept.concept_id !== null) {
+        const conceptId = concept.concept_id;
+
+        if (conceptId in sliderValues) {
+          const sliderValue = sliderValues[conceptId];
+          if (
+            sliderValue !== undefined &&
+            sliderValue !== concept.understanding_level
+          ) {
+            updatedSliderValues[conceptId] = sliderValue;
+          }
+        }
+      }
+    });
+
+    if (Object.keys(updatedSliderValues).length > 0) {
+      try {
+        await updateUnderstandingLevels(updatedSliderValues);
+      } catch (error) {
+        console.error("Error updating understanding levels:", error);
+      }
+    } else {
+      console.log("No updates to save.");
+    }
   };
 
   // Ensure the sidebar appears only when isCollapsed is false
@@ -311,45 +365,66 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <div>No key concepts found</div>
               )}
               {keyConcepts.map((concept) => (
-                <div
-                  key={concept.concept_id}
-                  className="flex transform items-center justify-between rounded-md bg-gradient-to-r from-[#217853] to-[#1c5f46] p-2 shadow-md transition-shadow duration-300 ease-in-out hover:shadow-lg"
-                >
-                  {editConceptId === concept.concept_id ? (
-                    <input
-                      className="text-sm font-medium text-black"
-                      value={editedDescription}
-                      onChange={handleDescriptionChange}
-                    />
-                  ) : (
-                    <p className="text-sm font-medium text-white">
-                      {concept.description}
-                    </p>
-                  )}
-                  <div className="ml-4 flex space-x-2">
+                <div key={concept.concept_id}>
+                  <div
+                    key={concept.concept_id}
+                    className="flex transform items-center justify-between rounded-md bg-gradient-to-r from-[#217853] to-[#1c5f46] p-2 shadow-md transition-shadow duration-300 ease-in-out hover:shadow-lg"
+                  >
                     {editConceptId === concept.concept_id ? (
-                      <button
-                        onClick={() => saveKeyConcept(concept.concept_id!)}
-                        className="mr-4 rounded bg-green-500 px-2 py-1 text-xs text-white hover:bg-green-700"
-                      >
-                        Save
-                      </button>
+                      <input
+                        className="text-sm font-medium text-black"
+                        value={editedDescription}
+                        onChange={handleDescriptionChange}
+                      />
                     ) : (
-                      <button
-                        onClick={() => editKeyConcept(concept)}
-                        className="absolute right-0 top-0 mr-5 mt-1 text-blue-500 hover:text-blue-700"
-                      >
-                        <FiEdit2 />
-                      </button>
+                      <p className="text-sm font-medium text-white">
+                        {concept.description}
+                      </p>
                     )}
-                    <button
-                      onClick={() => {
-                        deleteKeyConcept(concept.concept_id!);
-                      }}
-                      className="absolute right-0 top-0 mr-1 mt-1 text-red-500 hover:text-red-700"
-                    >
-                      <FaTimes />
-                    </button>
+                    <div className="ml-4 flex space-x-2">
+                      {editConceptId === concept.concept_id ? (
+                        <button
+                          onClick={() => saveKeyConcept(concept.concept_id!)}
+                          className="mr-4 rounded bg-green-500 px-2 py-1 text-xs text-white hover:bg-green-700"
+                        >
+                          Save
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => editKeyConcept(concept)}
+                          className="absolute right-0 top-0 mr-5 mt-1 text-blue-500 hover:text-blue-700"
+                        >
+                          <FiEdit2 />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          deleteKeyConcept(concept.concept_id!);
+                        }}
+                        className="absolute right-0 top-0 mr-1 mt-1 text-red-500 hover:text-red-700"
+                      >
+                        <FaTimes />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Slider */}
+                  <div className="slider-container">
+                    <input
+                      type="range"
+                      min="1"
+                      max="5"
+                      value={sliderValues[concept.concept_id!]}
+                      className="slider"
+                      onChange={(event) =>
+                        handleUnderstandingChange(concept.concept_id!, event)
+                      }
+                    />
+                    <div className="slider-labels">
+                      {[1, 2, 3, 4, 5].map((num) => (
+                        <span key={num}>{num}</span>
+                      ))}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -357,13 +432,20 @@ const Sidebar: React.FC<SidebarProps> = ({
           )}
 
           {activeTab === "keyConcepts" && (
-            <div>
+            <div className="mt-4 flex space-x-2">
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="mt-4 flex w-full items-center justify-center space-x-2 rounded bg-[#407855] p-2 text-white transition-colors hover:bg-[#7c9c87]"
+                className="flex w-1/2 items-center justify-center space-x-2 rounded bg-[#407855] p-2 text-white transition-colors hover:bg-[#7c9c87]"
               >
-                <span>Add Key Concept</span>
+                Add Key Concept
               </button>
+              <button
+                onClick={saveUnderstandingChange}
+                className="flex w-1/2 items-center justify-center space-x-2 rounded bg-green-500 p-2 text-white transition-colors hover:bg-green-700"
+              >
+                Save
+              </button>
+
               <AddKeyConceptModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}

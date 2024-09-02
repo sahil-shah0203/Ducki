@@ -160,4 +160,31 @@ export const keyConceptRouter = createTRPCRouter({
         newConcept,
       };
     }),
+
+  updateUnderstanding: publicProcedure
+    .input(z.record(z.string(), z.number()))
+    .mutation(async ({ ctx, input }) => {
+      const conceptIds = Object.keys(input).map(Number);
+      const updatePromises = conceptIds.map(async (concept_id) => {
+        const understanding_level = input[concept_id];
+
+        const updatedConcept = await ctx.db.keyConcept.update({
+          where: {
+            concept_id: Number(concept_id),
+          },
+          data: {
+            understanding_level: understanding_level,
+          },
+        });
+
+        return updatedConcept;
+      });
+
+      const updatedConcepts = await Promise.all(updatePromises);
+
+      return {
+        message: "Understanding levels updated successfully.",
+        updatedConcepts,
+      };
+    }),
 });
