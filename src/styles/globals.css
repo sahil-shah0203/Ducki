@@ -195,8 +195,9 @@ ul {
 .sidebar_category {
   flex: 5;
   z-index: 2;
+  flex-grow: 1;
   overflow: hidden;
-  padding-left: 10px;
+  padding: 10px;
 }
 
 .rbc-today {
