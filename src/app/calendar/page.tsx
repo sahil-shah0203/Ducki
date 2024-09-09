@@ -77,41 +77,39 @@ const CalendarPage: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-row w-full h-screen bg-white">
+    <div className="flex flex-row w-full h-screen">
       <MainPage />
-      <div className="flex-1 flex justify-center overflow-hidden">
-        <div className="w-full max-w-8xl p-4">
-          <Calendar
-            localizer={localizer}
-            events={events}
-            startAccessor="start"
-            endAccessor="end"
-            selectable
-            onSelectSlot={handleSelectSlot}
-            onSelectEvent={handleSelectEvent}
-            style={{ height: '90vh', width: '100%' }}
-            eventPropGetter={(event) => ({
-              style: {
-                backgroundColor: '#3174ad',
-                borderRadius: '5px',
-                opacity: 0.8,
-                color: 'white',
-                border: '0px',
-                display: 'block'
-              }
-            })}
-            components={{
-              toolbar: CustomToolbar,
-              event: ({ event }) => (
-                <span>
-                <strong>{event.title}</strong>
-                <br />
-                  {event.place}
-              </span>
-              )
-            }}
-          />
-        </div>
+      <div className="w-full max-w-8xl p-4 z-10">
+        <Calendar
+          localizer={localizer}
+          events={events}
+          startAccessor="start"
+          endAccessor="end"
+          selectable
+          onSelectSlot={handleSelectSlot}
+          onSelectEvent={handleSelectEvent}
+          style={{ height: '90vh', width: '100%' }}
+          eventPropGetter={(event) => ({
+            style: {
+              backgroundColor: '#3174ad',
+              borderRadius: '5px',
+              opacity: 0.8,
+              color: 'white',
+              border: '0px',
+              display: 'block'
+            }
+          })}
+          components={{
+            toolbar: CustomToolbar,
+            event: ({ event }) => (
+              <span>
+              <strong>{event.title}</strong>
+              <br />
+                {event.place}
+            </span>
+            )
+          }}
+        />
       </div>
       <AddEventDialog
         isOpen={isAddDialogOpen}

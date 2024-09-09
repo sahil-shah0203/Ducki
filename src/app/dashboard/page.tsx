@@ -12,9 +12,9 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="container">
-      <MainPage />
-      <div className="sidebar_category">
+    <div className="flex flex-row w-full h-screen">
+      <MainPage/>
+      <div className="w-full max-w-8xl p-4 z-10">
         <h1>Welcome to Ducki</h1>
       </div>
     </div>

@@ -86,9 +86,9 @@ export default function SessionPage() {
   }, []);
 
   return (
-    <div className="container relative min-h-screen">
-      <MainPage />
-      <div className="sidebar_category">
+    <div className="flex flex-row w-full h-screen">
+      <MainPage/>
+      <div className="w-full max-w-8xl p-4 z-10">
         <LLMInput
           onFetchResults={(choices) => console.log(choices)}
           onError={(error) => console.log(error)}
@@ -108,7 +108,7 @@ export default function SessionPage() {
         onEndSession={sessionBack}
       />
 
-      <SessionEndDialog isOpen={isDialogOpen} onClose={handleDialogClose} />
+      <SessionEndDialog isOpen={isDialogOpen} onClose={handleDialogClose}/>
     </div>
   );
 }

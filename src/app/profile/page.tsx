@@ -18,10 +18,10 @@ export default function Page() {
   }
 
   return (
-    <div className="container">
-      <MainPage />
-      <div className="sidebar_category">
-        <ProfileSettings userId={numericUserId} />
+    <div className="flex flex-row w-full h-screen">
+      <MainPage/>
+      <div className="w-full max-w-8xl p-4 z-10">
+        <ProfileSettings userId={numericUserId}/>
       </div>
     </div>
   );
