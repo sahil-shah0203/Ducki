@@ -51,9 +51,10 @@ export default function FileUpload({
       },
     });
 
-    const file_name = uuid();
-    const file_extension = file.name.split(".").pop();
-    const file_key = `${file_name}.${file_extension}`;
+
+    const uuid_file_name = uuid(); // Generate UUID
+    const file_extension = file.name.split('.').pop();
+    const file_key = `${uuid_file_name}.${file_extension}`;
 
     const params = {
       Bucket: S3_BUCKET,
@@ -69,7 +70,7 @@ export default function FileUpload({
     try {
       await s3Client.send(new PutObjectCommand(params));
       setUploading(false);
-      return { file_name, file_key };
+      return { uuid_file_name, original_file_name: file.name, file_key };
     } catch (error) {
       console.error(error);
       setUploading(false);
@@ -137,7 +138,7 @@ export default function FileUpload({
         }
         const result = await uploadFile(file, session_id);
         if (result != null) {
-          const { file_name, file_key } = result;
+          const { uuid_file_name, original_file_name, file_key } = result;
           await processFile(file_key, session_id);
           try {
             const newSession = await addSession({
@@ -150,12 +151,12 @@ export default function FileUpload({
             const S3_BUCKET = "ducki-documents";
             const REGION = "us-east-1";
 
-            // Add the document to the Prisma database
+            // Add the document to the Prisma database with both UUID and original file name
             const documentUrl = `https://${S3_BUCKET}.s3.${REGION}.amazonaws.com/${file_key}`;
             await addDocument({
-              document_id: file_name,
+              document_id: uuid_file_name, // UUID
               url: documentUrl,
-              name: file.name,
+              name: original_file_name, // Original file name
               userId: user_id,
               classId: class_id,
               sessionId: session_id,

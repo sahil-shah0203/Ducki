@@ -32,22 +32,21 @@ export const documentsRouter = createTRPCRouter({
     }),
 
   addDocument: publicProcedure
-    .input(
-      z.object({
-        document_id: z.string(),
-        url: z.string(),
-        name: z.string(),
-        userId: z.number(),
-        classId: z.number(),
-        sessionId: z.string(),
-      }),
-    )
+
+    .input(z.object({
+      document_id: z.string(), // UUID-based document ID
+      url: z.string(), // S3 URL
+      name: z.string(), // Original file name
+      userId: z.number(),
+      classId: z.number(),
+      sessionId: z.string(),
+    }))
     .mutation(async ({ ctx, input }) => {
       const document = await ctx.db.document.create({
         data: {
-          document_id: input.document_id,
-          url: input.url,
-          name: input.name,
+          document_id: input.document_id, // UUID-based document ID
+          url: input.url, // S3 URL
+          name: input.name, // Original file name
           user_id: input.userId,
           class_id: input.classId,
           session_id: input.sessionId,
