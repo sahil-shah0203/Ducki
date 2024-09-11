@@ -28,19 +28,16 @@ export const keyConceptRouter = createTRPCRouter({
         return keyConcepts;
       }
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/getKeyConcepts`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            class_id: class_id,
-            session: session_id,
-          }),
+      const response = await fetch(`https://ducki.ai/api/getKeyConcepts`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({
+          class_id: class_id,
+          session: session_id,
+        }),
+      });
 
       if (!response.ok) {
         throw new Error(`Error fetching key concepts: ${response.statusText}`);
