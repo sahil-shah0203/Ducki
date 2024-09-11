@@ -77,7 +77,6 @@ const SessionCards: React.FC<SessionCardsProps> = ({
 
   useEffect(() => {
     if (data) {
-      console.log("Fetched sessions:", data);
       setSessions(data);
     } else if (error) {
       console.error("Error fetching sessions:", error);

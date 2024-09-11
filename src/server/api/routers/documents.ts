@@ -11,27 +11,28 @@ const s3 = new S3Client({
 });
 
 export const documentsRouter = createTRPCRouter({
-  getDocumentsByUserAndClass: publicProcedure
-    .input(z.object({
-      userId: z.number(),
-      classId: z.number(),
-    }))
+  getDocumentsBySessionId: publicProcedure
+    .input(
+      z.object({
+        sessionId: z.string(), 
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const documents = await ctx.db.document.findMany({
         where: {
-          user_id: input.userId,
-          class_id: input.classId,
+          session_id: input.sessionId, 
         },
       });
 
       return documents.map((document) => ({
-        id: document.document_id, // Return document_id as id
+        id: document.document_id, 
         url: document.url,
         name: document.name,
       }));
     }),
 
   addDocument: publicProcedure
+
     .input(z.object({
       document_id: z.string(), // UUID-based document ID
       url: z.string(), // S3 URL
@@ -56,9 +57,11 @@ export const documentsRouter = createTRPCRouter({
     }),
 
   deleteDocument: publicProcedure
-    .input(z.object({
-      documentId: z.string(),
-    }))
+    .input(
+      z.object({
+        documentId: z.string(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       const document = await ctx.db.document.findUnique({
         where: { document_id: input.documentId },
@@ -71,7 +74,7 @@ export const documentsRouter = createTRPCRouter({
       // Delete the document from S3
       const s3Params = {
         Bucket: process.env.AWS_BUCKET_NAME!,
-        Key: document.url.split('/').pop(), // Assuming URL contains the file key at the end
+        Key: document.url.split("/").pop(), // Assuming URL contains the file key at the end
       };
 
       const command = new DeleteObjectCommand(s3Params);

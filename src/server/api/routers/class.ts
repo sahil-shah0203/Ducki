@@ -23,10 +23,12 @@ export const classRouter = createTRPCRouter({
     }),
 
   addClass: publicProcedure
-    .input(z.object({
-      user_id: z.number(),
-      class_name: z.string().min(1),
-    }))
+    .input(
+      z.object({
+        user_id: z.number(),
+        class_name: z.string().min(1),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       const newClass = await ctx.db.class.create({
         data: {
@@ -38,10 +40,12 @@ export const classRouter = createTRPCRouter({
     }),
 
   removeClass: publicProcedure
-    .input(z.object({
-      user_id: z.number(),
-      class_id: z.number(),
-    }))
+    .input(
+      z.object({
+        user_id: z.number(),
+        class_id: z.number(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       const classToDelete = await ctx.db.class.findFirst({
         where: {
@@ -64,7 +68,7 @@ export const classRouter = createTRPCRouter({
       for (const document of documents) {
         const s3Params = {
           Bucket: process.env.AWS_BUCKET_NAME!,
-          Key: document.url.split('/').pop(), // Assuming URL contains the file key at the end
+          Key: document.url.split("/").pop(), // Assuming URL contains the file key at the end
         };
         const command = new DeleteObjectCommand(s3Params);
         await s3.send(command);
@@ -86,8 +90,13 @@ export const classRouter = createTRPCRouter({
         },
       });
 
-      // Delete related chat histories
       await ctx.db.chatHistory.deleteMany({
+        where: {
+          class_id: input.class_id,
+        },
+      });
+
+      await ctx.db.keyConcept.deleteMany({
         where: {
           class_id: input.class_id,
         },

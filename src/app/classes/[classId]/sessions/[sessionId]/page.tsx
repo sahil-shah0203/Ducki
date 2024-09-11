@@ -2,7 +2,7 @@
 
 import { useUser } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import MainPage from "~/app/page";
 import LLMInput from "~/app/_components/llm_input_components/LLMInput";
 import Popup from "~/app/_components/Popup";
@@ -20,7 +20,6 @@ export default function SessionPage() {
   const session_id = searchParams.get("sessionID");
 
   const [isPopupCollapsed, setIsPopupCollapsed] = useState(false);
-  const [sessionId, setSessionId] = useState<string>(session_id ?? "");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const utils = api.useContext();
@@ -45,10 +44,6 @@ export default function SessionPage() {
   if (!user) {
     router.push("/");
   }
-
-  const togglePopup = () => {
-    setIsPopupCollapsed(!isPopupCollapsed);
-  };
 
   const sessionBack = () => {
     setIsDialogOpen(true);
@@ -81,10 +76,6 @@ export default function SessionPage() {
     }
   };
 
-  useEffect(() => {
-    console.log("SessionPage component mounted");
-  }, []);
-
   return (
     <div className="container relative min-h-screen">
       <MainPage />
@@ -104,7 +95,7 @@ export default function SessionPage() {
         userId={user_id?.toString() ?? ""}
         classId={selectedClassID_number ?? 0}
         isCollapsed={isPopupCollapsed}
-        uniqueSessionId={sessionId}
+        uniqueSessionId={session_id}
         onEndSession={sessionBack}
       />
 
