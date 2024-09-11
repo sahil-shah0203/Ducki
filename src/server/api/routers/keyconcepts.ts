@@ -37,7 +37,7 @@ export const keyConceptRouter = createTRPCRouter({
           class_id: class_id,
           session: session_id,
         }),
-      }); 
+      });
 
       if (!response.ok) {
         throw new Error(`Error fetching key concepts: ${response.statusText}`);
@@ -57,7 +57,7 @@ export const keyConceptRouter = createTRPCRouter({
         parsedData = parsedObject.main_topics.map(
           (topic: { description: string; understanding_level: number }) => ({
             concept_id: null,
-            description: topic.description,
+            description: topic,
           }),
         );
       } else {
