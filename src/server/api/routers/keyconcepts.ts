@@ -37,7 +37,7 @@ export const keyConceptRouter = createTRPCRouter({
           class_id: class_id,
           session: session_id,
         }),
-      });
+      }); 
 
       if (!response.ok) {
         throw new Error(`Error fetching key concepts: ${response.statusText}`);
