@@ -77,9 +77,9 @@ const CalendarPage: React.FC = () => {
   }
 
   return (
-    <div className="container">
+    <div className="flex flex-row w-full h-screen">
       <MainPage />
-      <div className="sidebar_category">
+      <div className="w-full max-w-8xl p-4 z-10">
         <Calendar
           localizer={localizer}
           events={events}
@@ -88,7 +88,7 @@ const CalendarPage: React.FC = () => {
           selectable
           onSelectSlot={handleSelectSlot}
           onSelectEvent={handleSelectEvent}
-          style={{ height: '90%', width: '100%' }}
+          style={{ height: '90vh', width: '100%' }}
           eventPropGetter={(event) => ({
             style: {
               backgroundColor: '#3174ad',
@@ -103,10 +103,10 @@ const CalendarPage: React.FC = () => {
             toolbar: CustomToolbar,
             event: ({ event }) => (
               <span>
-                <strong>{event.title}</strong>
-                <br />
+              <strong>{event.title}</strong>
+              <br />
                 {event.place}
-              </span>
+            </span>
             )
           }}
         />

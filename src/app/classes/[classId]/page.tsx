@@ -31,9 +31,9 @@ export default function ClassPage() {
   };
 
   return (
-    <div className="container">
-      <MainPage />
-      <div className="sidebar_category">
+    <div className="flex flex-row w-full h-screen">
+      <MainPage/>
+      <div className="w-full max-w-8xl p-4 z-10">
         {!sessionStarted ? (
           <button
             onClick={() => setSessionStarted(true)}
