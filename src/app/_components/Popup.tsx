@@ -49,7 +49,9 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [editedDescription, setEditedDescription] = useState("");
   const [isMinimized, setIsMinimized] = useState(false);
   const { dragRef, handleRef } = useDrag();
-  const [sliderValues, setSliderValues] = useState<Record<number, number>>({});
+  const [selectedButtons, setSelectedButtons] = useState<
+    Record<number, number>
+  >({});
 
   const {
     data: documentsData = [],
@@ -124,7 +126,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         },
         {} as Record<number, number>,
       );
-      setSliderValues(initialSliderValues);
+      setSelectedButtons(initialSliderValues);
       setIsLoadingConcepts(false);
     }
   };
@@ -154,6 +156,11 @@ const Sidebar: React.FC<SidebarProps> = ({
           understanding_level: result.newConcept.understanding_level,
         },
       ]);
+
+      setSelectedButtons((prevSelectedButtons) => ({
+        ...prevSelectedButtons,
+        [result.newConcept.concept_id]: 1,
+      }));
     } catch (error) {
       console.error("Failed to create key concept:", error);
     }
@@ -218,13 +225,12 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const handleUnderstandingChange = (
-    concept_id: number,
-    event: React.ChangeEvent<HTMLInputElement>,
+    conceptId: number,
+    buttonNumber: number,
   ) => {
-    const newValue = Number(event.target.value);
-    setSliderValues((prev) => ({
-      ...prev,
-      [concept_id]: newValue,
+    setSelectedButtons((prevState) => ({
+      ...prevState,
+      [conceptId]: buttonNumber,
     }));
   };
 
@@ -235,8 +241,8 @@ const Sidebar: React.FC<SidebarProps> = ({
       if (concept.concept_id !== null) {
         const conceptId = concept.concept_id;
 
-        if (conceptId in sliderValues) {
-          const sliderValue = sliderValues[conceptId];
+        if (conceptId in selectedButtons) {
+          const sliderValue = selectedButtons[conceptId];
           if (
             sliderValue !== undefined &&
             sliderValue !== concept.understanding_level
@@ -408,25 +414,24 @@ const Sidebar: React.FC<SidebarProps> = ({
                     </div>
                   </div>
 
-                  {/* Slider */}
-                  {/* <div className="slider-container">
-                    <input
-                      type="range"
-                      min="1"
-                      max="5"
-                      value={sliderValues[concept.concept_id!]}
-                      className="slider"
-                      onChange={(event) =>
-                        handleUnderstandingChange(concept.concept_id!, event)
-                      }
-                    />
-                    <div className="slider-labels">
-                      {[1, 2, 3, 4, 5].map((num) => (
-                        <span key={num}>{num}</span>
-                      ))}
-                    </div>
-                  </div> */}
-
+                  {/* Understanding buttons */}
+                  <div className="mt-2 flex space-x-4">
+                    {[1, 2, 3, 4].map((num) => (
+                      <button
+                        key={num}
+                        className={`flex-grow rounded bg-blue-500 font-bold text-white hover:bg-blue-700 ${
+                          selectedButtons[concept.concept_id!] === num
+                            ? "bg-blue-500"
+                            : "bg-blue-100"
+                        }`}
+                        onClick={() =>
+                          handleUnderstandingChange(concept.concept_id!, num)
+                        }
+                      >
+                        {num}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
@@ -440,12 +445,12 @@ const Sidebar: React.FC<SidebarProps> = ({
               >
                 Add Key Concept
               </button>
-              {/* <button
+              <button
                 onClick={saveUnderstandingChange}
                 className="flex w-1/2 items-center justify-center space-x-2 rounded bg-green-500 p-2 text-white transition-colors hover:bg-green-700"
               >
                 Save
-              </button> */}
+              </button>
 
               <AddKeyConceptModal
                 isOpen={isModalOpen}
