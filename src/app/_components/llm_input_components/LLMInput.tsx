@@ -33,6 +33,7 @@ export default function LLMInput({
   const inputRef = useRef<HTMLInputElement>(null);
   const [hydrated, setHydrated] = useState(false);
   const [firstVisit, setFirstVisit] = useState<boolean>(false); // Track if it's the first visit
+  const [userStop, setUserStop] = useState<boolean>(false);
 
   const chatHistoryQuery = api.session.getChatHistoryBySessionId.useQuery({ session_id: uniqueSessionId });
 
@@ -183,6 +184,12 @@ export default function LLMInput({
       content: message.text,
     }));
 
+    if(userStop){ //user stops before API call
+      setLoading(false);
+      setUserStop(false);
+      return;
+    }
+
     try {
       const response = await fetch('/api/LLM', {
         method: 'POST',
@@ -208,6 +215,13 @@ export default function LLMInput({
         session: uniqueSessionId,
         timestamp: llmTimestamp
       };
+
+      if(userStop){ //user stops after API call but before displaying response
+        setLoading(false);
+        setUserStop(false);
+        return;
+      }
+
       setChatMessages(prevMessages => [...prevMessages, llmResponseMessage].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
       setCompletedTyping(false);
       setIsGenerating(false);
@@ -227,6 +241,9 @@ export default function LLMInput({
     e.preventDefault();
     onError(null);
 
+    setUserStop(false);
+    setIsGenerating(true);
+
     const userTimestamp = getPreciseTimestamp();
     const userMessage: ChatMessageType = {
       type: true,
@@ -239,7 +256,7 @@ export default function LLMInput({
     await storeChatHistory(userMessage, true);
     fetchAndStoreChatHistory(inputText);
 
-    setIsGenerating(true);
+    //setIsGenerating(true); //Moving this forward so the button is more responsive
   };
 
   const handleStopGeneration = () => {
@@ -248,6 +265,7 @@ export default function LLMInput({
     setChatMessages(prevMessages => [...prevMessages, { type: false, text: '<span class="generation-stopped">Response generation stopped</span>', session: uniqueSessionId, timestamp: stopTimestamp }].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()).reverse());
     setIsGenerating(false);
     setCompletedTyping(true);
+    setUserStop(true);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
