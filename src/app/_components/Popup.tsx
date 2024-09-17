@@ -5,6 +5,8 @@ import { api } from "~/trpc/react";
 import { useDrag } from "../api/hooks/useDrag"; // Custom hook for dragging functionality
 import logo from "../../../public/duck.png";
 import { AddKeyConceptModal } from "./AddKeyConceptModal";
+import { Scrollbar } from 'react-scrollbars-custom';
+
 
 type SidebarProps = {
   userId: string;
@@ -330,17 +332,21 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
         )}
       </div>
-
+      
       {/* Non-Draggable Content Section */}
+     
       {!isMinimized && (
         <aside className="overflow-y-auto">
           {activeTab === "documents" && (
+            <Scrollbar style={{ width: 350, height: 250 }}>
+
             <div className="space-y-4">
               {isLoading && <div>Loading documents...</div>}
               {error && <div>Error loading documents: {error.message}</div>}
               {documents.length === 0 && !isLoading && (
                 <div>No documents found</div>
               )}
+              
               {documents.map((doc: Document) => (
                 <div
                   key={doc.id}
@@ -359,11 +365,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                     <FaTimes />
                   </button>
                 </div>
+                
               ))}
             </div>
+            </Scrollbar>
           )}
 
           {activeTab === "keyConcepts" && (
+            <Scrollbar style={{ width: 350, height: 250 }}>
             <div className="space-y-4">
               {isLoadingConcepts && <div>Loading key concepts...</div>}
               {conceptsError && <div>Error: {conceptsError}</div>}
@@ -435,6 +444,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </div>
               ))}
             </div>
+           </Scrollbar>
           )}
 
           {activeTab === "keyConcepts" && (
