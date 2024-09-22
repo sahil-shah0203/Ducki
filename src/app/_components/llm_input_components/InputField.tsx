@@ -1,6 +1,7 @@
 import React, { useState, useRef, RefObject } from 'react';
 import AWS, { CostExplorer } from 'aws-sdk';
 import uuid from 'react-uuid';
+import AudioRecorder from './AudioInput';
 
 interface InputFieldProps {
   inputRef: RefObject<HTMLInputElement>;
@@ -125,7 +126,8 @@ export default function InputField({
   };
 
   return (
-    <div className="w-full flex items-center bg-transparent p-14 border-12 mb-14">
+    <div className="w-full flex items-center bg-transparent p-14 border-12 mb-14 mr-2">
+      
       {/*below is the old + button next to LLM Input for uploading documents, it still functions for future testing*/}
       {/* <div>
         <input
@@ -142,6 +144,7 @@ export default function InputField({
           +
         </label>
       </div> */}
+      <AudioRecorder />
       {(uploading == processing) && <input
         ref={inputRef}
         type="text"
@@ -200,25 +203,7 @@ export default function InputField({
           )}
         </div>
       </button>
-      <button
-        className="group relative inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-[#3a5e4d]"
-        onClick={isGenerating ? handleStopGeneration : (e) => handleSubmit(e)}
-        aria-label={isGenerating ? "Stop Generation" : "Submit prompt to LLM"}
-      >
-        <div className="transition duration-300 group-hover:rotate-[360deg]">
-          <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          fill="currentColor" 
-          viewBox="0 0 24 24" 
-          stroke-width="1.5" 
-          stroke="currentColor" 
-          className="h-5 w-5 text-[#FEFEFE]">
-          <path stroke-linecap="round" 
-          stroke-linejoin="round" 
-          d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
-        </svg>
-        </div>
-      </button>
+      
     </div>
   );
 }
