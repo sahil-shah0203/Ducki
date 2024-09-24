@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 interface AudioRecorderProps {
-  isRecording: boolean;
-  audioURL: string | null;
+  handleAudioInput: (e: React.FormEvent, audioURL: string) => void;
 }
-export default function AudioRecorder() {
+export default function AudioRecorder({
+  handleAudioInput
+}: AudioRecorderProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [audioURL, setAudioURL] = useState<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const [formEvent, setFormEvent] = useState<React.FormEvent | null>(null);
 
   useEffect(() => {
     if (isRecording) {
@@ -22,12 +24,16 @@ export default function AudioRecorder() {
           const audioUrl = URL.createObjectURL(audioBlob);
           setAudioURL(audioUrl);
           audioChunksRef.current = [];
+          if(formEvent){
+            handleAudioInput(formEvent, audioUrl);
+          }
+          
         };
         mediaRecorderRef.current.start();
       });
     } else {
       mediaRecorderRef.current?.stop();
-      console.log(audioURL);
+      //console.log(audioURL);
       //nputText = audioURL;
     }
   }, [isRecording]);
@@ -38,7 +44,10 @@ export default function AudioRecorder() {
   className={`group relative inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-full transition duration-300 ${
     isRecording ? "bg-red-500" : "bg-[#3a5e4d]"
   }`}
-  onClick={() => setIsRecording(prev => !prev)}
+  onClick={(e) => {
+    setFormEvent(e);
+    setIsRecording(prev => !prev);
+  }}
   aria-label={"Record input"}
 >
   {isRecording ? (

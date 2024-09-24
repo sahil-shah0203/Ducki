@@ -10,6 +10,7 @@ interface InputFieldProps {
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleKeyPress: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   handleSubmit: (e: React.FormEvent) => void;
+  handleAudioInput: (e: React.FormEvent, audioURL: string) => void;
   handleStopGeneration: () => void;
   uniqueSessionId: string;
 }
@@ -21,6 +22,7 @@ export default function InputField({
                                      handleInputChange,
                                      handleKeyPress,
                                      handleSubmit,
+                                     handleAudioInput,
                                      handleStopGeneration,
                                      uniqueSessionId
                                    }: InputFieldProps) {
@@ -144,7 +146,9 @@ export default function InputField({
           +
         </label>
       </div> */}
-      <AudioRecorder />
+      <AudioRecorder 
+        handleAudioInput={handleAudioInput}
+      />
       {(uploading == processing) && <input
         ref={inputRef}
         type="text"

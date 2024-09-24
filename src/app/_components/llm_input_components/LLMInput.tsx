@@ -237,6 +237,32 @@ export default function LLMInput({
     await chatHistoryQuery.refetch();
   };
 
+  const handleAudioInput = async (e: React.FormEvent, audioURL: string) => {
+    e.preventDefault();
+    onError(null);
+    console.log("I'm here!" + audioURL);
+
+    try {
+      const blobResponse = await fetch(audioURL);
+      const audioBlob = await blobResponse.blob();
+      const formData = new FormData();
+      formData.append('file', audioBlob, 'recording.wav'); // Append the audio blob directly
+    
+      const response = await fetch('/api/Whisper', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await response.json();
+      console.log(data);
+      // if (!data.result) throw new Error('No response body');
+
+      const transcriptionText = data.transcription;
+      console.log('Transcription:', transcriptionText);
+      setInputText(transcriptionText);
+    } catch (error) {
+      console.error("Error during transcription:", error);
+    }
+  }
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     onError(null);
@@ -294,6 +320,7 @@ export default function LLMInput({
         handleInputChange={handleInputChange}
         handleKeyPress={handleKeyPress}
         handleSubmit={handleSubmit}
+        handleAudioInput={handleAudioInput}
         handleStopGeneration={handleStopGeneration}
         uniqueSessionId={uniqueSessionId}
       />
