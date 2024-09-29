@@ -1,5 +1,6 @@
 import { userRouter } from "./routers/user";
 import { classRouter } from "./routers/class";
+import { semesterRouter} from "./routers/semester";
 import { chatRouter } from "./routers/chats";
 import { documentsRouter } from "./routers/documents";
 import { sessionRouter } from "./routers/session";
@@ -15,6 +16,7 @@ import { eventsRouter } from "./routers/events";
 export const appRouter = createTRPCRouter({
   user: userRouter,
   class: classRouter,
+  semester: semesterRouter,
   chats: chatRouter,
   session: sessionRouter,
   events: eventsRouter,

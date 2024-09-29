@@ -4,44 +4,74 @@ import { createPortal } from "react-dom";
 type AddClassDialogProps = {
   isOpen: boolean;
   onRequestClose: () => void;
-  onAddClass: (classTemp: string) => Promise<boolean>;
-  classes: { class_id: number; class_name: string }[];
+  onAddClass: (
+    classTemp: string,
+    semesterId: number | null,
+    newSemesterName?: string
+  ) => Promise<boolean>;
+  semesters: { semester_id: number; semester_name: string }[];
 };
 
 export default function AddClassDialog({
                                          isOpen,
                                          onRequestClose,
                                          onAddClass,
-                                         classes,
+                                         semesters,
                                        }: AddClassDialogProps) {
   const [newClass, setNewClass] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [selectedSemester, setSelectedSemester] = useState<number | null>(null);
+  const [newSemesterName, setNewSemesterName] = useState<string>("");
+  const [isCreatingNewSemester, setIsCreatingNewSemester] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       // Reset state when the dialog is opened
       setNewClass("");
       setErrorMessage(null);
+      setSelectedSemester(null);
+      setNewSemesterName("");
+      setIsCreatingNewSemester(false);
     }
   }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const classExists = classes.some(
-      (classItem) =>
-        classItem.class_name.toLowerCase() === newClass.trim().toLowerCase(),
-    );
+    if (newClass.trim() === "") {
+      setErrorMessage("Class name cannot be empty.");
+      return;
+    }
 
-    if (classExists) {
-      setErrorMessage("Class name already exists.");
+    if (selectedSemester === null && newSemesterName.trim() === "") {
+      setErrorMessage("Please select or create a semester.");
+      return;
+    }
+
+    if (
+      await onAddClass(
+        newClass.trim(),
+        selectedSemester,
+        isCreatingNewSemester ? newSemesterName.trim() : undefined,
+      )
+    ) {
+      setNewClass("");
+      setSelectedSemester(null);
+      setNewSemesterName("");
+      onRequestClose();
+      setErrorMessage(null);
     } else {
-      if (await onAddClass(newClass.trim())) {
-        setNewClass("");
-        onRequestClose();
-        setErrorMessage(null);
-      } else {
-        setErrorMessage("Failed to add class. Please try again.");
-      }
+      setErrorMessage("Failed to add class. Please try again.");
+    }
+  };
+
+  const handleSemesterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedValue = e.target.value;
+    if (selectedValue === "new") {
+      setIsCreatingNewSemester(true);
+      setSelectedSemester(null); // Unset selected semester
+    } else {
+      setIsCreatingNewSemester(false);
+      setSelectedSemester(Number(selectedValue) || null);
     }
   };
 
@@ -63,6 +93,33 @@ export default function AddClassDialog({
             placeholder="Class name"
             required
           />
+          <select
+            value={selectedSemester ?? ""}
+            onChange={handleSemesterChange}
+            className="mb-4 w-full rounded border p-2 text-black"
+          >
+            <option value="">Select Semester</option>
+            {semesters.map((semester) => (
+              <option
+                key={semester.semester_id}
+                value={semester.semester_id}
+              >
+                {semester.semester_name}
+              </option>
+            ))}
+            <option value="new">Create New Semester</option>
+          </select>
+
+          {isCreatingNewSemester && (
+            <input
+              type="text"
+              value={newSemesterName}
+              onChange={(e) => setNewSemesterName(e.target.value)}
+              className="mb-4 w-full rounded border p-2 text-black"
+              placeholder="New Semester Name"
+              required
+            />
+          )}
           {errorMessage && <p className="mb-4 text-red-500">{errorMessage}</p>}
           <div className="flex justify-end">
             <button

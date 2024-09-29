@@ -11,6 +11,7 @@ const s3 = new S3Client({
 });
 
 export const classRouter = createTRPCRouter({
+  // Fetch all classes for a specific user
   getClassesByUserId: publicProcedure
     .input(z.object({ user_id: z.number() }))
     .query(async ({ ctx, input }) => {
@@ -18,14 +19,37 @@ export const classRouter = createTRPCRouter({
         where: {
           user_id: input.user_id,
         },
+        include: {
+          semester: true, // Include semester information if needed
+        },
       });
       return classes;
     }),
 
+  // Fetch all classes for a specific user and semester
+  getClassesBySemesterId: publicProcedure
+    .input(
+      z.object({
+        user_id: z.number(),
+        semester_id: z.number(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const classes = await ctx.db.class.findMany({
+        where: {
+          user_id: input.user_id,
+          semester_id: input.semester_id,
+        },
+      });
+      return classes;
+    }),
+
+  // Add a new class for a user within a specific semester
   addClass: publicProcedure
     .input(
       z.object({
         user_id: z.number(),
+        semester_id: z.number(), // Include semester_id in input
         class_name: z.string().min(1),
       }),
     )
@@ -33,12 +57,18 @@ export const classRouter = createTRPCRouter({
       const newClass = await ctx.db.class.create({
         data: {
           user_id: input.user_id,
+          semester_id: input.semester_id, // Save semester_id
           class_name: input.class_name,
         },
       });
-      return { class_id: newClass.class_id, class_name: newClass.class_name };
+      return {
+        class_id: newClass.class_id,
+        class_name: newClass.class_name,
+        semester_id: newClass.semester_id,
+      };
     }),
 
+  // Remove a class along with related data and files
   removeClass: publicProcedure
     .input(
       z.object({

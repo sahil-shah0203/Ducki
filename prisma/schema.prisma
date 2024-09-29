@@ -21,7 +21,6 @@ model User {
   keyConcepts   KeyConcept[]
 }
 
-
 model ChatHistory {
   chat_id      Int           @id @default(autoincrement())
   timestamp    DateTime      @default(now())
@@ -48,10 +47,20 @@ model Class {
   class_name    String
   user          User          @relation(fields: [user_id], references: [user_id])
   user_id       Int
+  semester      Semester      @relation(fields: [semester_id], references: [semester_id])
+  semester_id   Int           @default(1) // Temporary default value
   chatHistories ChatHistory[]
   sessions      Session[]
   documents     Document[]
   keyConcepts   KeyConcept[]
+}
+
+model Semester {
+  semester_id   Int      @id @default(autoincrement())
+  semester_name String // e.g., "Fall 2024", "Spring 2025"
+  start_date    DateTime // Start date of the semester
+  end_date      DateTime // End date of the semester
+  classes       Class[]
 }
 
 model Session {
@@ -81,10 +90,10 @@ model Event {
 model Document {
   document_id String   @id // UUID-based document ID
   url         String
-  name        String   // Original file name
+  name        String // Original file name
   user_id     Int
   class_id    Int
-  session_id  String   // Added session_id field
+  session_id  String // Added session_id field
   user        User     @relation(fields: [user_id], references: [user_id])
   class       Class    @relation(fields: [class_id], references: [class_id])
   session     Session  @relation(fields: [session_id], references: [session_id]) // Added relation to Session
@@ -93,14 +102,13 @@ model Document {
 }
 
 model KeyConcept {
-  concept_id         Int      @id @default(autoincrement())
-  description        String
-  user_id            Int
-  class_id           Int
-  session_id         String
-  understanding_level Int     // (1-5)
-  user               User     @relation(fields: [user_id], references: [user_id])
-  class              Class    @relation(fields: [class_id], references: [class_id])
-  session            Session  @relation(fields: [session_id], references: [session_id])
+  concept_id          Int     @id @default(autoincrement())
+  description         String
+  user_id             Int
+  class_id            Int
+  session_id          String
+  understanding_level Int // (1-5)
+  user                User    @relation(fields: [user_id], references: [user_id])
+  class               Class   @relation(fields: [class_id], references: [class_id])
+  session             Session @relation(fields: [session_id], references: [session_id])
 }
-

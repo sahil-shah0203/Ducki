@@ -11,6 +11,8 @@ import {
   FaPlus,
   FaChevronLeft,
   FaChevronRight,
+  FaChevronDown,
+  FaChevronUp,
 } from "react-icons/fa";
 import DashboardButton from "~/app/_components/sidebar_components/DashboardButton";
 import CalendarButton from "~/app/_components/sidebar_components/CalendarButton";
@@ -30,15 +32,21 @@ type ClassItem = {
   class_name: string;
 };
 
+type SemesterItem = {
+  semester_id: number;
+  semester_name: string;
+  classes: ClassItem[];
+};
+
 export default function Sidebar({
-  userId,
-  toggleSidebar,
-  isCollapsed,
-  userImage,
-  user_id,
-}: SidebarProps) {
+                                  userId,
+                                  toggleSidebar,
+                                  isCollapsed,
+                                  userImage,
+                                  user_id,
+                                }: SidebarProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [classes, setClasses] = useState<ClassItem[]>([]);
+  const [semesters, setSemesters] = useState<SemesterItem[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState<Record<string, boolean>>(
     {},
   );
@@ -48,10 +56,10 @@ export default function Sidebar({
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const { mutateAsync: addClassMutation } = api.class.addClass.useMutation();
-  const { mutateAsync: removeClassMutation } =
-    api.class.removeClass.useMutation();
+  const { mutateAsync: removeClassMutation } = api.class.removeClass.useMutation();
+  const { mutateAsync: addSemesterMutation } = api.semester.addSemester.useMutation();
 
-  const { data, error, isLoading } = api.class.getClassesByUserId.useQuery(
+  const { data, error, isLoading } = api.semester.getSemestersByUserId.useQuery(
     { user_id: userId! },
     {
       enabled: !!userId,
@@ -62,7 +70,7 @@ export default function Sidebar({
 
   useEffect(() => {
     if (data) {
-      setClasses(data);
+      setSemesters(data);
     }
   }, [data]);
 
@@ -106,10 +114,14 @@ export default function Sidebar({
           class_id: classToDelete?.class_id,
         });
         console.log("Deleted class:", deleteClass);
-        setClasses(
-          classes.filter(
-            (classItem) => classItem.class_id !== classToDelete?.class_id,
-          ),
+
+        setSemesters((prevSemesters) =>
+          prevSemesters.map((semester) => ({
+            ...semester,
+            classes: semester.classes.filter(
+              (classItem) => classItem.class_id !== classToDelete.class_id,
+            ),
+          })),
         );
       } catch (error) {
         console.error("Error deleting class:", error);
@@ -121,17 +133,41 @@ export default function Sidebar({
     }
   };
 
-  const handleAddClass = async (classTemp: string): Promise<boolean> => {
+  const handleAddClass = async (
+    classTemp: string,
+    semesterId: number | null,
+    newSemesterName?: string,
+  ): Promise<boolean> => {
     const className = classTemp.trim();
 
     if (userId) {
       try {
+        // Check if we need to create a new semester
+        let finalSemesterId = semesterId;
+        if (newSemesterName) {
+          const newSemester = await addSemesterMutation({
+            semester_name: newSemesterName,
+            start_date: new Date(), // Customize start and end dates as needed
+            end_date: new Date(),
+          });
+          finalSemesterId = newSemester.semester_id;
+        }
+
         const newClass = await addClassMutation({
           user_id: userId,
           class_name: className,
+          semester_id: finalSemesterId!, // Use the selected or newly created semester ID
         });
         console.log("Added new class:", newClass);
-        setClasses((prevClasses) => [...prevClasses, newClass]);
+
+        setSemesters((prevSemesters) =>
+          prevSemesters.map((semester) =>
+            semester.semester_id === finalSemesterId
+              ? { ...semester, classes: [...semester.classes, newClass] }
+              : semester,
+          ),
+        );
+
         return true;
       } catch (error) {
         console.error("Error adding class:", error);
@@ -151,7 +187,9 @@ export default function Sidebar({
 
   return (
     <aside
-      className={`fixed left-0 top-0 h-full ${isCollapsed ? "w-16" : "w-64"} transition-width overflow-y-auto overflow-x-hidden bg-transparent p-4 text-white duration-300`}
+      className={`fixed left-0 top-0 h-full ${
+        isCollapsed ? "w-16" : "w-64"
+      } transition-width overflow-y-auto overflow-x-hidden bg-transparent p-4 text-white duration-300`}
     >
       <div
         className="absolute left-1 top-0 flex w-full items-center space-x-4 p-4"
@@ -187,7 +225,7 @@ export default function Sidebar({
             </Link>
           </nav>
           <div className="mb-4 mt-16 flex items-center justify-between">
-            <h1 className="text-2xl font-bold">Sections</h1>
+            <h1 className="text-2xl font-bold">Semesters</h1>
             <button
               onClick={() => setIsDialogOpen(true)}
               className="flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-white hover:text-gray-300 focus:outline-none"
@@ -199,66 +237,95 @@ export default function Sidebar({
             </button>
           </div>
           <nav>
-            <div className="space-y-0">
-              {classes.map((classItem, index) => (
-                <div
-                  key={index}
-                  className={`relative ${classItem.class_name === selectedClass?.class_name ? "rounded-lg bg-[#217853]" : ""}`}
-                >
-                  <a
-                    onClick={() => handleClassClick(classItem)}
-                    className="flex w-full items-center justify-between rounded-lg bg-transparent p-1 pl-3 text-left hover:bg-[#217853]"
+            <div className="space-y-4">
+              {semesters.map((semester) => (
+                <div key={semester.semester_id}>
+                  <div
+                    className="flex justify-between cursor-pointer items-center"
+                    onClick={() =>
+                      setIsDropdownOpen((prevState) => ({
+                        ...prevState,
+                        [semester.semester_id]: !prevState[semester.semester_id],
+                      }))
+                    }
                   >
-                    {isCollapsed ? "" : classItem.class_name}
-
-                    <div className="relative">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevents the parent <a> tag from triggering
-                          setIsDropdownOpen((prevState) => ({
-                            ...prevState,
-                            [classItem.class_name]:
-                              !prevState[classItem.class_name],
-                          }));
-                        }}
-                        className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-transparent focus:outline-none"
-                      >
-                        <FaEllipsisV />
-                      </button>
-                      {isDropdownOpen[classItem.class_name] && (
+                    <h2 className="text-lg font-bold">{semester.semester_name}</h2>
+                    {isDropdownOpen[semester.semester_id] ? (
+                      <FaChevronUp />
+                    ) : (
+                      <FaChevronDown />
+                    )}
+                  </div>
+                  {isDropdownOpen[semester.semester_id] && (
+                    <div className="mt-2 space-y-1">
+                      {semester.classes.map((classItem, index) => (
                         <div
-                          ref={(ref) => {
-                            dropdownRefs.current[classItem.class_name] = ref;
-                          }}
-                          className="absolute right-0 z-10 mt-2 w-48 rounded-md bg-white shadow-xl"
+                          key={index}
+                          className={`relative ${
+                            classItem.class_name === selectedClass?.class_name
+                              ? "rounded-lg bg-[#217853]"
+                              : ""
+                          }`}
                         >
                           <a
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation(); // Prevents the parent <a> tag from triggering
-                              // Function to show all uploaded files from S3 (another API)
-                            }}
-                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-400 hover:text-white"
+                            onClick={() => handleClassClick(classItem)}
+                            className="flex w-full items-center justify-between rounded-lg bg-transparent p-1 pl-3 text-left hover:bg-[#217853]"
                           >
-                            See Files
-                          </a>
-                          <a
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation(); // Prevents the parent <a> tag from triggering
-                              setClassToDelete(classItem);
-                              setIsDropdownOpen({});
-                            }}
-                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-500 hover:text-white"
-                          >
-                            Delete Class
+                            {isCollapsed ? "" : classItem.class_name}
+
+                            <div className="relative">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevents the parent <a> tag from triggering
+                                  setIsDropdownOpen((prevState) => ({
+                                    ...prevState,
+                                    [classItem.class_name]:
+                                      !prevState[classItem.class_name],
+                                  }));
+                                }}
+                                className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-transparent focus:outline-none"
+                              >
+                                <FaEllipsisV />
+                              </button>
+                              {isDropdownOpen[classItem.class_name] && (
+                                <div
+                                  ref={(ref) => {
+                                    dropdownRefs.current[classItem.class_name] =
+                                      ref;
+                                  }}
+                                  className="absolute right-0 z-10 mt-2 w-48 rounded-md bg-white shadow-xl"
+                                >
+                                  <a
+                                    href="#"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation(); // Prevents the parent <a> tag from triggering
+                                      // Function to show all uploaded files from S3 (another API)
+                                    }}
+                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-400 hover:text-white"
+                                  >
+                                    See Files
+                                  </a>
+                                  <a
+                                    href="#"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation(); // Prevents the parent <a> tag from triggering
+                                      setClassToDelete(classItem);
+                                      setIsDropdownOpen({});
+                                    }}
+                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-500 hover:text-white"
+                                  >
+                                    Delete Class
+                                  </a>
+                                </div>
+                              )}
+                            </div>
                           </a>
                         </div>
-                      )}
+                      ))}
                     </div>
-                  </a>
+                  )}
                 </div>
               ))}
             </div>
@@ -267,7 +334,7 @@ export default function Sidebar({
             isOpen={isDialogOpen}
             onRequestClose={() => setIsDialogOpen(false)}
             onAddClass={handleAddClass}
-            classes={classes}
+            semesters={semesters} // Pass semesters to dialog
           />
           {classToDelete && (
             <ConfirmDeleteDialog
