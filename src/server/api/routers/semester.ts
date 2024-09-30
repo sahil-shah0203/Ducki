@@ -24,6 +24,9 @@ export const semesterRouter = createTRPCRouter({
             },
           },
         },
+        include: {
+          classes: true, // Include the related classes for each semester
+        },
       });
       return semesters;
     }),

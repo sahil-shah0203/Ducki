@@ -47,19 +47,15 @@ export default function Sidebar({
                                 }: SidebarProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [semesters, setSemesters] = useState<SemesterItem[]>([]);
-  const [isDropdownOpen, setIsDropdownOpen] = useState<Record<string, boolean>>(
-    {}
-  );
+  const [openSemesterId, setOpenSemesterId] = useState<number | null>(null);
   const [classToDelete, setClassToDelete] = useState<ClassItem | null>(null);
   const [selectedClass, setSelectedClass] = useState<ClassItem | null>(null);
 
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const { mutateAsync: addClassMutation } = api.class.addClass.useMutation();
-  const { mutateAsync: removeClassMutation } =
-    api.class.removeClass.useMutation();
-  const { mutateAsync: addSemesterMutation } =
-    api.semester.addSemester.useMutation();
+  const { mutateAsync: removeClassMutation } = api.class.removeClass.useMutation();
+  const { mutateAsync: addSemesterMutation } = api.semester.addSemester.useMutation();
 
   const { data, error, isLoading } = api.semester.getSemestersByUserId.useQuery(
     { user_id: userId! },
@@ -72,7 +68,11 @@ export default function Sidebar({
 
   useEffect(() => {
     if (data) {
-      setSemesters(data);
+      const formattedSemesters = data.map((semester) => ({
+        ...semester,
+        classes: semester.classes || [],
+      }));
+      setSemesters(formattedSemesters);
     }
   }, [data]);
 
@@ -87,7 +87,7 @@ export default function Sidebar({
         });
 
         if (isClickOutside) {
-          setIsDropdownOpen({});
+          setOpenSemesterId(null);
         }
       }
     };
@@ -98,9 +98,21 @@ export default function Sidebar({
     };
   }, [dropdownRefs]);
 
-  const handleClassClick = (classItem: ClassItem) => {
+  const handleSemesterClick = (semesterId: number) => {
+    setOpenSemesterId(prevId => prevId === semesterId ? null : semesterId);
+  };
+
+  const handleClassClick = (
+    e: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
+    classItem: ClassItem
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
     setSelectedClass(classItem);
+    // Prevent the dropdown from closing
+    setOpenSemesterId((prevId) => prevId);
     const url = `/classes/${classItem.class_id}?user=${user_id}&className=${classItem.class_name}&classID=${classItem.class_id}`;
+    console.log("Navigating to:", url);
     router.push(url);
   };
 
@@ -130,7 +142,6 @@ export default function Sidebar({
       }
 
       setClassToDelete(null);
-
       router.push("/dashboard");
     }
   };
@@ -144,40 +155,36 @@ export default function Sidebar({
 
     if (userId) {
       try {
-        // Ensure finalSemesterId is set either to the existing semesterId or the newly created semester
         let finalSemesterId = semesterId;
 
-        // Check if we need to create a new semester
         if (newSemesterName) {
           const newSemester = await addSemesterMutation({
             semester_name: newSemesterName,
-            start_date: new Date(), // Customize start and end dates as needed
+            start_date: new Date(),
             end_date: new Date(),
           });
-          finalSemesterId = newSemester.semester_id; // Assign the new semester ID
+          finalSemesterId = newSemester.semester_id;
         }
 
-        // Proceed with adding a new class to the correct semester
         const newClass = await addClassMutation({
           user_id: userId,
           class_name: className,
-          semester_id: finalSemesterId!, // Use the selected or newly created semester ID
+          semester_id: finalSemesterId!,
         });
         console.log("Added new class:", newClass);
 
-        // Update the semesters list with the newly added class
         setSemesters((prevSemesters) =>
           prevSemesters.map((semester) =>
             semester.semester_id === finalSemesterId
               ? {
                 ...semester,
-                classes: [...(semester.classes || []), newClass], // Ensure classes is always an array
+                classes: [...(semester.classes || []), newClass],
               }
               : semester
           )
         );
 
-        return true; // Success
+        return true;
       } catch (error) {
         console.error("Error adding class:", error);
       }
@@ -207,7 +214,7 @@ export default function Sidebar({
         <Link href="/">
           <img
             onClick={resetSelectedClass}
-            src="\duck.png"
+            src="/duck.png"
             alt="Ducki"
             className="h-7 w-7 cursor-pointer"
           />
@@ -250,89 +257,44 @@ export default function Sidebar({
               {semesters.map((semester) => (
                 <div key={semester.semester_id}>
                   <div
-                    className="flex justify-between cursor-pointer items-center"
-                    onClick={() =>
-                      setIsDropdownOpen((prevState) => ({
-                        ...prevState,
-                        [semester.semester_id]:
-                          !prevState[semester.semester_id],
-                      }))
-                    }
+                    className="flex justify-between items-center cursor-pointer"
+                    onClick={() => handleSemesterClick(semester.semester_id)}
                   >
-                    <h2 className="text-lg font-bold">{semester.semester_name}</h2>
-                    {isDropdownOpen[semester.semester_id] ? (
-                      <FaChevronUp />
-                    ) : (
-                      <FaChevronDown />
-                    )}
+                    <h2 className="text-lg font-bold">
+                      {semester.semester_name}
+                    </h2>
+                    <span>
+                      {openSemesterId === semester.semester_id ? <FaChevronUp /> : <FaChevronDown />}
+                    </span>
                   </div>
-                  {isDropdownOpen[semester.semester_id] && (
+                  {openSemesterId === semester.semester_id && (
                     <div className="mt-2 space-y-1">
                       {semester.classes?.length > 0 ? (
-                        semester.classes.map((classItem, index) => (
+                        semester.classes.map((classItem) => (
                           <div
-                            key={index}
+                            key={classItem.class_id}
                             className={`relative ${
-                              classItem.class_name ===
-                              selectedClass?.class_name
+                              classItem.class_name === selectedClass?.class_name
                                 ? "rounded-lg bg-[#217853]"
                                 : ""
                             }`}
                           >
                             <a
-                              onClick={() => handleClassClick(classItem)}
+                              href={`/classes/${classItem.class_id}`}
+                              onClick={(e) => handleClassClick(e, classItem)}
                               className="flex w-full items-center justify-between rounded-lg bg-transparent p-1 pl-3 text-left hover:bg-[#217853]"
                             >
-                              {isCollapsed ? "" : classItem.class_name}
-
+                              {classItem.class_name}
                               <div className="relative">
                                 <button
                                   onClick={(e) => {
-                                    e.stopPropagation(); // Prevents the parent <a> tag from triggering
-                                    setIsDropdownOpen((prevState) => ({
-                                      ...prevState,
-                                      [classItem.class_name]:
-                                        !prevState[classItem.class_name],
-                                    }));
+                                    e.stopPropagation();
+                                    setClassToDelete(classItem);
                                   }}
                                   className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-transparent focus:outline-none"
                                 >
                                   <FaEllipsisV />
                                 </button>
-                                {isDropdownOpen[classItem.class_name] && (
-                                  <div
-                                    ref={(ref) => {
-                                      dropdownRefs.current[
-                                        classItem.class_name
-                                        ] = ref;
-                                    }}
-                                    className="absolute right-0 z-10 mt-2 w-48 rounded-md bg-white shadow-xl"
-                                  >
-                                    <a
-                                      href="#"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation(); // Prevents the parent <a> tag from triggering
-                                        // Function to show all uploaded files from S3 (another API)
-                                      }}
-                                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-400 hover:text-white"
-                                    >
-                                      See Files
-                                    </a>
-                                    <a
-                                      href="#"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation(); // Prevents the parent <a> tag from triggering
-                                        setClassToDelete(classItem);
-                                        setIsDropdownOpen({});
-                                      }}
-                                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-500 hover:text-white"
-                                    >
-                                      Delete Class
-                                    </a>
-                                  </div>
-                                )}
                               </div>
                             </a>
                           </div>
@@ -350,7 +312,7 @@ export default function Sidebar({
             isOpen={isDialogOpen}
             onRequestClose={() => setIsDialogOpen(false)}
             onAddClass={handleAddClass}
-            semesters={semesters} // Pass semesters to dialog
+            semesters={semesters}
           />
           {classToDelete && (
             <ConfirmDeleteDialog
