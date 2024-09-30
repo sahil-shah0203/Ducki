@@ -48,7 +48,7 @@ export default function Sidebar({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [semesters, setSemesters] = useState<SemesterItem[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState<Record<string, boolean>>(
-    {},
+    {}
   );
   const [classToDelete, setClassToDelete] = useState<ClassItem | null>(null);
   const [selectedClass, setSelectedClass] = useState<ClassItem | null>(null);
@@ -56,14 +56,16 @@ export default function Sidebar({
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const { mutateAsync: addClassMutation } = api.class.addClass.useMutation();
-  const { mutateAsync: removeClassMutation } = api.class.removeClass.useMutation();
-  const { mutateAsync: addSemesterMutation } = api.semester.addSemester.useMutation();
+  const { mutateAsync: removeClassMutation } =
+    api.class.removeClass.useMutation();
+  const { mutateAsync: addSemesterMutation } =
+    api.semester.addSemester.useMutation();
 
   const { data, error, isLoading } = api.semester.getSemestersByUserId.useQuery(
     { user_id: userId! },
     {
       enabled: !!userId,
-    },
+    }
   );
 
   const router = useRouter();
@@ -119,9 +121,9 @@ export default function Sidebar({
           prevSemesters.map((semester) => ({
             ...semester,
             classes: semester.classes.filter(
-              (classItem) => classItem.class_id !== classToDelete.class_id,
+              (classItem) => classItem.class_id !== classToDelete.class_id
             ),
-          })),
+          }))
         );
       } catch (error) {
         console.error("Error deleting class:", error);
@@ -136,23 +138,26 @@ export default function Sidebar({
   const handleAddClass = async (
     classTemp: string,
     semesterId: number | null,
-    newSemesterName?: string,
+    newSemesterName?: string
   ): Promise<boolean> => {
     const className = classTemp.trim();
 
     if (userId) {
       try {
-        // Check if we need to create a new semester
+        // Ensure finalSemesterId is set either to the existing semesterId or the newly created semester
         let finalSemesterId = semesterId;
+
+        // Check if we need to create a new semester
         if (newSemesterName) {
           const newSemester = await addSemesterMutation({
             semester_name: newSemesterName,
             start_date: new Date(), // Customize start and end dates as needed
             end_date: new Date(),
           });
-          finalSemesterId = newSemester.semester_id;
+          finalSemesterId = newSemester.semester_id; // Assign the new semester ID
         }
 
+        // Proceed with adding a new class to the correct semester
         const newClass = await addClassMutation({
           user_id: userId,
           class_name: className,
@@ -160,15 +165,19 @@ export default function Sidebar({
         });
         console.log("Added new class:", newClass);
 
+        // Update the semesters list with the newly added class
         setSemesters((prevSemesters) =>
           prevSemesters.map((semester) =>
             semester.semester_id === finalSemesterId
-              ? { ...semester, classes: [...semester.classes, newClass] }
-              : semester,
-          ),
+              ? {
+                ...semester,
+                classes: [...(semester.classes || []), newClass], // Ensure classes is always an array
+              }
+              : semester
+          )
         );
 
-        return true;
+        return true; // Success
       } catch (error) {
         console.error("Error adding class:", error);
       }
@@ -245,7 +254,8 @@ export default function Sidebar({
                     onClick={() =>
                       setIsDropdownOpen((prevState) => ({
                         ...prevState,
-                        [semester.semester_id]: !prevState[semester.semester_id],
+                        [semester.semester_id]:
+                          !prevState[semester.semester_id],
                       }))
                     }
                   >
@@ -258,72 +268,78 @@ export default function Sidebar({
                   </div>
                   {isDropdownOpen[semester.semester_id] && (
                     <div className="mt-2 space-y-1">
-                      {semester.classes.map((classItem, index) => (
-                        <div
-                          key={index}
-                          className={`relative ${
-                            classItem.class_name === selectedClass?.class_name
-                              ? "rounded-lg bg-[#217853]"
-                              : ""
-                          }`}
-                        >
-                          <a
-                            onClick={() => handleClassClick(classItem)}
-                            className="flex w-full items-center justify-between rounded-lg bg-transparent p-1 pl-3 text-left hover:bg-[#217853]"
+                      {semester.classes?.length > 0 ? (
+                        semester.classes.map((classItem, index) => (
+                          <div
+                            key={index}
+                            className={`relative ${
+                              classItem.class_name ===
+                              selectedClass?.class_name
+                                ? "rounded-lg bg-[#217853]"
+                                : ""
+                            }`}
                           >
-                            {isCollapsed ? "" : classItem.class_name}
+                            <a
+                              onClick={() => handleClassClick(classItem)}
+                              className="flex w-full items-center justify-between rounded-lg bg-transparent p-1 pl-3 text-left hover:bg-[#217853]"
+                            >
+                              {isCollapsed ? "" : classItem.class_name}
 
-                            <div className="relative">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation(); // Prevents the parent <a> tag from triggering
-                                  setIsDropdownOpen((prevState) => ({
-                                    ...prevState,
-                                    [classItem.class_name]:
-                                      !prevState[classItem.class_name],
-                                  }));
-                                }}
-                                className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-transparent focus:outline-none"
-                              >
-                                <FaEllipsisV />
-                              </button>
-                              {isDropdownOpen[classItem.class_name] && (
-                                <div
-                                  ref={(ref) => {
-                                    dropdownRefs.current[classItem.class_name] =
-                                      ref;
+                              <div className="relative">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation(); // Prevents the parent <a> tag from triggering
+                                    setIsDropdownOpen((prevState) => ({
+                                      ...prevState,
+                                      [classItem.class_name]:
+                                        !prevState[classItem.class_name],
+                                    }));
                                   }}
-                                  className="absolute right-0 z-10 mt-2 w-48 rounded-md bg-white shadow-xl"
+                                  className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-transparent focus:outline-none"
                                 >
-                                  <a
-                                    href="#"
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      e.stopPropagation(); // Prevents the parent <a> tag from triggering
-                                      // Function to show all uploaded files from S3 (another API)
+                                  <FaEllipsisV />
+                                </button>
+                                {isDropdownOpen[classItem.class_name] && (
+                                  <div
+                                    ref={(ref) => {
+                                      dropdownRefs.current[
+                                        classItem.class_name
+                                        ] = ref;
                                     }}
-                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-400 hover:text-white"
+                                    className="absolute right-0 z-10 mt-2 w-48 rounded-md bg-white shadow-xl"
                                   >
-                                    See Files
-                                  </a>
-                                  <a
-                                    href="#"
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      e.stopPropagation(); // Prevents the parent <a> tag from triggering
-                                      setClassToDelete(classItem);
-                                      setIsDropdownOpen({});
-                                    }}
-                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-500 hover:text-white"
-                                  >
-                                    Delete Class
-                                  </a>
-                                </div>
-                              )}
-                            </div>
-                          </a>
-                        </div>
-                      ))}
+                                    <a
+                                      href="#"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation(); // Prevents the parent <a> tag from triggering
+                                        // Function to show all uploaded files from S3 (another API)
+                                      }}
+                                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-400 hover:text-white"
+                                    >
+                                      See Files
+                                    </a>
+                                    <a
+                                      href="#"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation(); // Prevents the parent <a> tag from triggering
+                                        setClassToDelete(classItem);
+                                        setIsDropdownOpen({});
+                                      }}
+                                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-500 hover:text-white"
+                                    >
+                                      Delete Class
+                                    </a>
+                                  </div>
+                                )}
+                              </div>
+                            </a>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-gray-400">No classes available.</p>
+                      )}
                     </div>
                   )}
                 </div>
