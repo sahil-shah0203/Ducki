@@ -239,7 +239,7 @@ export default function LLMInput({
         body: formData
       });
       const data = await response.json();
-      console.log(data);
+      console.log("H: ", data);
       // if (!data.result) throw new Error('No response body');
 
       const transcriptionText = data.transcription;

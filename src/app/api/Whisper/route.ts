@@ -21,7 +21,7 @@ export async function POST(request: Request) {
       response_format: 'json', // Or 'text' based on your needs
     });
 
-    if (!transcription || !transcription.text) {
+    if (!transcription?.text) {
       throw new Error('No valid transcription received');
     }
 
