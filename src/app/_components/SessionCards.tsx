@@ -35,14 +35,28 @@ const SessionCard: React.FC<SessionCardProps> = ({
 
   return (
     <div
-      className="relative mt-10 cursor-pointer rounded-lg bg-[#e2e9e5] p-4 shadow-md transition-shadow duration-200 hover:shadow-lg"
+      className="relative mt-10 cursor-pointer rounded-lg bg-[#eeeeee] p-4 shadow-md transition-shadow duration-200 hover:shadow-lg"
       style={{ width: "230px", height: "280px" }}
       onClick={handleClick}
     >
-      <div
-        className="mx-auto rounded-lg bg-white"
-        style={{ width: "85%", height: "100%" }}
-      ></div>
+        <div
+          className="mx-auto rounded-lg bg-white"
+          style={{ padding: "10px"}}
+        >
+        <p class="text-sm ...">Session #1</p><p class="text-gray-400 text-xs ...">Date last accessed here</p>
+        </div>
+        <div
+          className="mx-auto rounded-lg bg-white"
+          style={{ padding: "10px", marginTop: "10px" }}
+        >
+        <p class="text-sm ...">Session #2</p><p class="text-gray-400 text-xs ...">Date last accessed here</p>
+        </div>
+        <div
+          className="mx-auto rounded-lg bg-white"
+          style={{ padding: "10px", marginTop: "10px" }}
+        >
+        <p class="text-sm ...">Session #3</p><p class="text-gray-400 text-xs ...">Date last accessed here</p>
+        </div>
       <div className="absolute bottom-0 left-0 right-0">
         <div
           className="flex items-center justify-between rounded-b-lg rounded-t-none border border-gray-300 bg-white p-2"
