@@ -209,7 +209,7 @@ export default function Sidebar({
     >
       <div
         className="absolute left-1 top-0 flex w-full items-center space-x-4 p-4"
-        style={{ paddingLeft: isCollapsed ? "12px" : "" }}
+        style={{paddingLeft: isCollapsed ? "12px" : ""}}
       >
         <Link href="/">
           <img
@@ -234,10 +234,10 @@ export default function Sidebar({
         <>
           <nav className="mt-16 space-y-4">
             <Link href="/dashboard">
-              <DashboardButton onClick={resetSelectedClass} />
+              <DashboardButton onClick={resetSelectedClass}/>
             </Link>
-            <Link href={{ pathname: "/calendar", query: { userId } }}>
-              <CalendarButton onClick={resetSelectedClass} />
+            <Link href={{pathname: "/calendar", query: {userId}}}>
+              <CalendarButton onClick={resetSelectedClass}/>
             </Link>
           </nav>
           <div className="mb-4 mt-16 flex items-center justify-between">
@@ -247,62 +247,70 @@ export default function Sidebar({
               className="flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-white hover:text-gray-300 focus:outline-none"
               aria-label="Add"
             >
-              <span className="flex items-center group-active:[transform:translate3d(0,1px,0)]">
-                <FaPlus className="h-4 w-4" style={{ color: "white" }} />
-              </span>
+          <span className="flex items-center group-active:[transform:translate3d(0,1px,0)]">
+            <FaPlus className="h-4 w-4" style={{color: "white"}}/>
+          </span>
             </button>
           </div>
           <nav>
             <div className="space-y-4">
               {semesters.map((semester) => (
-                <div key={semester.semester_id}>
+                <div key={semester.semester_id} className="mb-4">
+                  {/* Semester Dropdown Toggle */}
                   <div
                     className="flex justify-between items-center cursor-pointer"
                     onClick={() => handleSemesterClick(semester.semester_id)}
                   >
-                    <h2 className="text-lg font-bold">
-                      {semester.semester_name}
-                    </h2>
+                    <h2 className="text-lg font-bold">{semester.semester_name}</h2>
                     <span>
-                      {openSemesterId === semester.semester_id ? <FaChevronUp /> : <FaChevronDown />}
-                    </span>
+                  {openSemesterId === semester.semester_id ? (
+                    <FaChevronUp/>
+                  ) : (
+                    <FaChevronDown/>
+                  )}
+                </span>
                   </div>
-                  {openSemesterId === semester.semester_id && (
-                    <div className="mt-2 space-y-1">
-                      {semester.classes?.length > 0 ? (
-                        semester.classes.map((classItem) => (
-                          <div
-                            key={classItem.class_id}
-                            className={`relative ${
-                              classItem.class_name === selectedClass?.class_name
-                                ? "rounded-lg bg-[#217853]"
-                                : ""
-                            }`}
-                          >
+
+                  {/* Class Buttons */}
+                  {semester.classes?.length > 0 &&
+                    semester.classes.map((classItem) => (
+                      <div
+                        key={classItem.class_id}
+                        className={`relative flex justify-between items-center p-2 mt-2 rounded-lg ${
+                          classItem.class_name === selectedClass?.class_name
+                            ? "bg-[#217853]"
+                            : "bg-transparent"
+                        }`}
+                      >
+                        {/* Conditionally render class name and delete button if sidebar is not collapsed */}
+                        {!isCollapsed && (
+                          <>
                             <a
                               href={`/classes/${classItem.class_id}`}
                               onClick={(e) => handleClassClick(e, classItem)}
-                              className="flex w-full items-center justify-between rounded-lg bg-transparent p-1 pl-3 text-left hover:bg-[#217853]"
+                              className="flex-grow text-left text-white hover:bg-[#217853] p-2 rounded-lg"
                             >
                               {classItem.class_name}
-                              <div className="relative">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setClassToDelete(classItem);
-                                  }}
-                                  className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-transparent focus:outline-none"
-                                >
-                                  <FaEllipsisV />
-                                </button>
-                              </div>
                             </a>
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-gray-400">No classes available.</p>
-                      )}
-                    </div>
+
+                            {/* Delete Button */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setClassToDelete(classItem);
+                              }}
+                              className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-transparent focus:outline-none"
+                            >
+                              <FaEllipsisV/>
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    ))}
+
+                  {/* Render a message if there are no classes */}
+                  {semester.classes?.length === 0 && (
+                    <p className="text-gray-400 mt-2">No classes available.</p>
                   )}
                 </div>
               ))}
@@ -327,11 +335,9 @@ export default function Sidebar({
         onClick={toggleSidebar}
         className="absolute bottom-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-transparent focus:outline-none"
       >
-        {isCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
+        {isCollapsed ? <FaChevronRight/> : <FaChevronLeft/>}
       </button>
-      {!isCollapsed && (
-        <ProfileDropdown userImage={userImage} userId={userId} />
-      )}
+      {!isCollapsed && <ProfileDropdown userImage={userImage} userId={userId}/>}
     </aside>
   );
 }
