@@ -29,6 +29,10 @@ export default function FileUpload({
   const { mutateAsync: addDocument } = api.documents.addDocument.useMutation();
 
   const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
+  const redirecteTypes = [
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  ];
 
   const router = useRouter();
 
@@ -132,7 +136,13 @@ export default function FileUpload({
       setSessionId(session_id);
 
       for (const file of files) {
+        if( redirecteTypes.includes(file.type) ){
+          console.log("Redirecting file...");
+          //api call goes here
+          return;
+        }
         if (!allowedTypes.includes(file.type)) {
+          console.log("Invalid file type");
           onError("Invalid file type");
           return;
         }
