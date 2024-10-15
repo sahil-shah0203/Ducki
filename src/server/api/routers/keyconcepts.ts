@@ -47,6 +47,13 @@ export const keyConceptRouter = createTRPCRouter({
 
       const parsedObject = JSON.parse(data.concepts);
 
+      console.log("44444");
+      console.log(parsedObject);
+      for (const key in parsedObject.key_concepts) {
+        const subconcepts = parsedObject.key_concepts[key].subconcepts;
+        console.log(`${key}: ${subconcepts.join(", ")}`);
+      }
+
       let parsedData: Array<{
         concept_id: number | null;
         description: string;

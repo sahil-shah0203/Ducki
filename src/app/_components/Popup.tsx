@@ -137,7 +137,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     } else {
       fetchKeyConcepts();
     }
-  }, [uniqueSessionId, isLoading, keyConceptData, queryError]); // Fetch key concepts when the uniqueSessionId changes
+  }, [uniqueSessionId, isLoading, keyConceptData, queryError]);
 
   const handleAddKeyConcept = async (description: string) => {
     try {
@@ -421,7 +421,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         key={num}
                         className={`flex-grow rounded bg-blue-500 font-bold text-white hover:bg-blue-700 ${
                           selectedButtons[concept.concept_id!] === num
-                            ? "bg-blue-500"
+                            ? "bg-blue-700"
                             : "bg-blue-100"
                         }`}
                         onClick={() =>
