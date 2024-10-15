@@ -25,6 +25,8 @@ export default function FileUpload({
   const [processing, setProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [sessionTitle, setSessionTitle] = useState<string>("");
+
+  const { mutateAsync: addGroup } = api.group.addGroup.useMutation();
   const { mutateAsync: addSession } = api.session.addSession.useMutation();
   const { mutateAsync: addDocument } = api.documents.addDocument.useMutation();
 
@@ -32,13 +34,15 @@ export default function FileUpload({
 
   const router = useRouter();
 
+  // Handle file selection
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
-      setFiles([...files, ...Array.from(event.target.files)]);
+      setFiles((prevFiles) => [...prevFiles, ...Array.from(event.target.files ?? [])]);
     }
   };
 
-  const uploadFile = async (file: File, session_id: string) => {
+  // Upload file to S3
+  const uploadFile = async (file: File, class_id: string) => {
     setUploading(true);
     const S3_BUCKET = "ducki-documents";
     const REGION = "us-east-1";
@@ -51,7 +55,6 @@ export default function FileUpload({
       },
     });
 
-
     const uuid_file_name = uuid(); // Generate UUID
     const file_extension = file.name.split('.').pop();
     const file_key = `${uuid_file_name}.${file_extension}`;
@@ -63,7 +66,7 @@ export default function FileUpload({
       ContentDisposition: "inline",
       ContentType: file.type,
       Metadata: {
-        index: session_id,
+        class_id: class_id,
       },
     };
 
@@ -85,7 +88,8 @@ export default function FileUpload({
     }
   };
 
-  const processFile = async (file_key: string, session_id: string) => {
+  // Invoke Lambda function to process the file
+  const processFile = async (file_key: string, group_id: string) => {
     setProcessing(true);
     const LAMBDA_FUNCTION = "process_document";
     const REGION = "us-east-1";
@@ -103,7 +107,7 @@ export default function FileUpload({
       Payload: JSON.stringify({
         document_name: file_key,
         class_id: class_id,
-        session_id: session_id,
+        group_id: group_id,
       }),
     };
 
@@ -111,7 +115,6 @@ export default function FileUpload({
       await lambdaClient.send(new InvokeCommand(params));
       setProcessing(false);
       setSuccessMessage("File processed successfully.");
-      setSessionId(session_id);
     } catch (error) {
       console.error(error);
       setProcessing(false);
@@ -124,53 +127,68 @@ export default function FileUpload({
     }
   };
 
+  // Handle file upload and session/group creation
   const handleFileUpload = async () => {
     if (files.length > 0) {
       setSuccessMessage(null);
 
-      const session_id = uuid();
-      setSessionId(session_id);
+      const group_id = uuid();
+      const sessionIds = [uuid(), uuid(), uuid()];
+      setSessionId(sessionIds[0] ?? '');
 
-      for (const file of files) {
-        if (!allowedTypes.includes(file.type)) {
-          onError("Invalid file type");
-          return;
+      try {
+        // Create the group
+        await addGroup({
+          group_id: group_id,
+          group_title: sessionTitle || "New Group",
+          class_id: class_id,
+        });
+
+        // Create the sessions
+        for (let i = 0; i < sessionIds.length; i++) {
+          await addSession({
+            user_id,
+            session_id: sessionIds[i] ?? '',
+            session_title: `${sessionTitle} - Session ${i + 1}`,
+            group_id: group_id,
+          });
         }
-        const result = await uploadFile(file, session_id);
-        if (result != null) {
-          const { uuid_file_name, original_file_name, file_key } = result;
-          await processFile(file_key, session_id);
-          try {
-            const newSession = await addSession({
-              user_id,
-              class_id: class_id,
-              session_id: session_id,
-              session_title: sessionTitle,
-            });
+
+        // Upload and process files
+        for (const file of files) {
+          if (!allowedTypes.includes(file.type)) {
+            onError("Invalid file type");
+            return;
+          }
+
+          const result = await uploadFile(file, group_id);
+          if (result != null) {
+            const { uuid_file_name, original_file_name, file_key } = result;
+            await processFile(file_key, group_id);
 
             const S3_BUCKET = "ducki-documents";
             const REGION = "us-east-1";
-
-            // Add the document to the Prisma database with both UUID and original file name
             const documentUrl = `https://${S3_BUCKET}.s3.${REGION}.amazonaws.com/${file_key}`;
             await addDocument({
-              document_id: uuid_file_name, // UUID
+              document_id: uuid_file_name,
               url: documentUrl,
-              name: original_file_name, // Original file name
+              name: original_file_name,
               userId: user_id,
               classId: class_id,
-              sessionId: session_id,
+              group_id: group_id,
             });
-          } catch (error) {
-            console.error("Failed to start session", error);
+          } else {
+            onError("Failed to upload file");
           }
-        } else {
-          onError("Failed to upload file");
         }
-      }
 
-      const url = `/classes/${class_id}/sessions/${session_id}?user=${user_id}&className=${selectedClassName}&classID=${class_id}&sessionID=${session_id}`;
-      router.push(url);
+        // Redirect to the first session
+        const url = `/classes/${class_id}/sessions/${sessionIds[0]}?user=${user_id}&className=${selectedClassName}&classID=${class_id}&sessionID=${sessionIds[0]}`;
+        router.push(url);
+      } catch (error) {
+        console.error("Failed to start session", error);
+        onError("Failed to start session");
+      }
     } else {
       onError("Select a file to begin.");
     }

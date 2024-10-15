@@ -3,15 +3,15 @@ import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
 
 export const sessionRouter = createTRPCRouter({
-  getSessionsByClassId: publicProcedure
-    .input(z.object({ class_id: z.number() }))
+  getSessionsByGroupId: publicProcedure
+    .input(z.object({ group_id: z.string() }))
     .query(async ({ ctx, input }) => {
       const sessions = await db.session.findMany({
         where: {
-          class_id: input.class_id,
+          group_id: input.group_id,
         },
         include: {
-          class: true,
+          group: true,
         },
       });
 
@@ -29,7 +29,7 @@ export const sessionRouter = createTRPCRouter({
   addSession: publicProcedure
     .input(z.object({
       user_id: z.number(),
-      class_id: z.number(),
+      group_id: z.string(),
       session_id: z.string(),
       session_title: z.string(),
     }))
@@ -38,12 +38,12 @@ export const sessionRouter = createTRPCRouter({
         data: {
           session_id: input.session_id,
           user_id: input.user_id,
-          class_id: input.class_id,
+          group_id: input.group_id,
           session_title: input.session_title,
           createdAt: new Date(),
         },
       });
-      return { session_id: newSession.session_id, class_id: newSession.class_id, createdAt: newSession.createdAt };
+      return { session_id: newSession.session_id, class_id: newSession.group_id, createdAt: newSession.createdAt };
     }),
   getChatHistoryBySessionId: publicProcedure
     .input(z.object({ session_id: z.string() }))
