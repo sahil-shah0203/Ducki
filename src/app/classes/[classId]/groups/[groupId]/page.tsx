@@ -14,6 +14,8 @@ export default function ClassPage() {
   const user_id = searchParams.get("user");
   const selectedClassName = searchParams.get("className");
   const selectedClassID = searchParams.get("classID");
+  const selectedGroupID = searchParams.get("groupID");
+  const selectedGroupName = searchParams.get("groupName");
 
   const [sessionStarted, setSessionStarted] = useState(false);
   const [sessionId, setSessionId] = useState<string>("");
@@ -63,11 +65,11 @@ export default function ClassPage() {
           />
         )}
         <SessionCards
-          classId={selectedClassID_number}
+          groupId={selectedGroupID}
           onSessionSelect={handleSessionSelect}
           user_id={user_id_number}
-          selectedClassName={selectedClassName}
-          selectedClassID={selectedClassID_number}
+          selectedGroupName={selectedGroupName}
+          selectedGroupID={selectedGroupID}
         />
       </div>
     </div>

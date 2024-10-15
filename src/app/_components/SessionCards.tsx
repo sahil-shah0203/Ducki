@@ -16,11 +16,11 @@ interface SessionCardProps {
 }
 
 interface SessionCardsProps {
-  groupId: string;
+  groupId: string | null;
   onSessionSelect: (sessionId: string) => void;
   user_id: number | undefined;
   selectedGroupName: string | null;
-  selectedGroupID: number | undefined;
+  selectedGroupID: string | null;
 }
 
 const SessionCard: React.FC<SessionCardProps> = ({
@@ -80,13 +80,17 @@ const SessionCards: React.FC<SessionCardsProps> = ({
   selectedGroupID,
   selectedGroupName,
 }) => {
+  if (!groupId) {
+    return <div>Error: Group ID is missing.</div>;
+  }
+
   const [sessions, setSessions] = useState<Session[]>([]);
 
   const { data, error, isLoading } = api.session.getSessionsByGroupId.useQuery(
     { group_id: groupId },
     {
-      enabled: !!groupId,
-    },
+      enabled: true,
+    }
   );
 
   useEffect(() => {
