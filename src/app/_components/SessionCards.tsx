@@ -43,19 +43,19 @@ const SessionCard: React.FC<SessionCardProps> = ({
           className="mx-auto rounded-lg bg-white"
           style={{ padding: "10px"}}
         >
-        <p class="text-sm ...">Session #1</p><p class="text-gray-400 text-xs ...">Date last accessed here</p>
+        <p className="text-sm ...">Session #1</p><p className="text-gray-400 text-xs ...">Date last accessed here</p>
         </div>
         <div
           className="mx-auto rounded-lg bg-white"
           style={{ padding: "10px", marginTop: "10px" }}
         >
-        <p class="text-sm ...">Session #2</p><p class="text-gray-400 text-xs ...">Date last accessed here</p>
+        <p className="text-sm ...">Session #2</p><p className="text-gray-400 text-xs ...">Date last accessed here</p>
         </div>
         <div
           className="mx-auto rounded-lg bg-white"
           style={{ padding: "10px", marginTop: "10px" }}
         >
-        <p class="text-sm ...">Session #3</p><p class="text-gray-400 text-xs ...">Date last accessed here</p>
+        <p className="text-sm ...">Session #3</p><p className="text-gray-400 text-xs ...">Date last accessed here</p>
         </div>
       <div className="absolute bottom-0 left-0 right-0">
         <div
