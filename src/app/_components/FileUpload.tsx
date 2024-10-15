@@ -142,6 +142,8 @@ export default function FileUpload({
           group_id: group_id,
           group_title: sessionTitle || "New Group",
           class_id: class_id,
+          user_id: user_id,
+          class_name: selectedClassName ?? "",
         });
 
         // Create the sessions
@@ -183,7 +185,7 @@ export default function FileUpload({
         }
 
         // Redirect to the first session
-        const url = `/classes/${class_id}/sessions/${sessionIds[0]}?user=${user_id}&className=${selectedClassName}&classID=${class_id}&sessionID=${sessionIds[0]}`;
+        const url = `/classes/${class_id}/groups/${group_id}?user=${user_id}&className=${selectedClassName}&classID=${class_id}&sessionID=${sessionIds[0]}`;
         router.push(url);
       } catch (error) {
         console.error("Failed to start session", error);

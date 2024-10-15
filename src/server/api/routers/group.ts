@@ -31,7 +31,7 @@ export const groupRouter = createTRPCRouter({
             user_id: z.number(),
             class_id: z.number(),
             class_name: z.string(),
-            group_id: z.string(),
+            group_id: z.string(), // Group ID is a string as per your schema
             group_title: z.string(),
         }))
         .mutation(async ({ input }) => {

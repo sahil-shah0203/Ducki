@@ -16,7 +16,7 @@ interface GroupCardProps {
 }
 
 interface GroupCardsProps {
-  user_id: number | undefined;
+  class_id: number | undefined;
   onGroupSelect: (groupId: string) => void;
 }
 
@@ -60,16 +60,16 @@ const GroupCard: React.FC<GroupCardProps> = ({
 };
 
 const GroupCards: React.FC<GroupCardsProps> = ({
-                                                 user_id,
+                                                 class_id,
                                                  onGroupSelect,
                                                }) => {
   const [groups, setGroups] = useState<Group[]>([]);
 
   // Replace the API call with a query to fetch groups instead of sessions
-  const { data, error, isLoading } = api.group.getGroupsByUserId.useQuery(
-    { user_id: user_id },
+  const { data, error, isLoading } = api.group.getGroupsByClassId.useQuery(
+    { class_id: class_id },
     {
-      enabled: !!user_id,
+      enabled: !! class_id,
     }
   );
 
@@ -88,7 +88,7 @@ const GroupCards: React.FC<GroupCardsProps> = ({
     <div className="grid grid-cols-1 overflow-auto md:grid-cols-2 lg:grid-cols-4">
       {groups.map((group: Group) => (
         <Link
-          href={`/groups/${group.id}?user=${user_id}`}
+          href={`/groups/${group.id}?user=${class_id}`}
           key={group.id}
         >
           <GroupCard
