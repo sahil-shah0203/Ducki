@@ -148,7 +148,6 @@ export default function FileUpload({
         for (let i = 0; i < sessionIds.length; i++) {
           await addSession({
             user_id,
-            class_id: class_id,
             session_id: sessionIds[i] ?? '',
             session_title: `${sessionTitle} - Session ${i + 1}`,
             group_id: group_id,
@@ -176,7 +175,7 @@ export default function FileUpload({
               name: original_file_name,
               userId: user_id,
               classId: class_id,
-              groupId: group_id,
+              group_id: group_id,
             });
           } else {
             onError("Failed to upload file");

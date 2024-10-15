@@ -16,11 +16,11 @@ interface SessionCardProps {
 }
 
 interface SessionCardsProps {
-  classId: number;
+  groupId: string;
   onSessionSelect: (sessionId: string) => void;
   user_id: number | undefined;
-  selectedClassName: string | null;
-  selectedClassID: number | undefined;
+  selectedGroupName: string | null;
+  selectedGroupID: number | undefined;
 }
 
 const SessionCard: React.FC<SessionCardProps> = ({
@@ -74,18 +74,18 @@ const SessionCard: React.FC<SessionCardProps> = ({
 };
 
 const SessionCards: React.FC<SessionCardsProps> = ({
-  classId,
+  groupId,
   onSessionSelect,
   user_id,
-  selectedClassID,
-  selectedClassName,
+  selectedGroupID,
+  selectedGroupName,
 }) => {
   const [sessions, setSessions] = useState<Session[]>([]);
 
-  const { data, error, isLoading } = api.session.getSessionsByClassId.useQuery(
-    { class_id: classId },
+  const { data, error, isLoading } = api.session.getSessionsByGroupId.useQuery(
+    { group_id: groupId },
     {
-      enabled: !!classId,
+      enabled: !!groupId,
     },
   );
 
@@ -104,7 +104,7 @@ const SessionCards: React.FC<SessionCardsProps> = ({
     <div className="grid grid-cols-1 overflow-auto md:grid-cols-2 lg:grid-cols-4">
       {sessions.map((session: Session) => (
         <Link
-          href={`/classes/${selectedClassID}/sessions/${session.id}?user=${user_id}&className=${selectedClassName}&classID=${selectedClassID}&sessionID=${session.id}`}
+          href={`/classes/${selectedGroupID}/sessions/${session.id}?user=${user_id}&className=${selectedGroupName}&classID=${selectedGroupID}&sessionID=${session.id}`}
           key={session.id}
         >
           <SessionCard

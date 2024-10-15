@@ -14,13 +14,13 @@ export const documentsRouter = createTRPCRouter({
   getDocumentsBySessionId: publicProcedure
     .input(
       z.object({
-        sessionId: z.string(), 
+        group_id: z.string(), 
       }),
     )
     .query(async ({ ctx, input }) => {
       const documents = await ctx.db.document.findMany({
         where: {
-          session_id: input.sessionId, 
+          group_id: input.group_id, 
         },
       });
 
@@ -39,7 +39,7 @@ export const documentsRouter = createTRPCRouter({
       name: z.string(), // Original file name
       userId: z.number(),
       classId: z.number(),
-      sessionId: z.string(),
+      group_id: z.string(),
     }))
     .mutation(async ({ ctx, input }) => {
       const document = await ctx.db.document.create({
@@ -49,7 +49,7 @@ export const documentsRouter = createTRPCRouter({
           name: input.name, // Original file name
           user_id: input.userId,
           class_id: input.classId,
-          session_id: input.sessionId,
+          group_id: input.group_id,
         },
       });
 
