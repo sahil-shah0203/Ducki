@@ -5,6 +5,7 @@ import MainPage from "~/app/page";
 import { useState } from "react";
 import GroupCards from "~/app/_components/GroupCards";
 import FileUpload from "~/app/_components/FileUpload";
+import { v4 as uuidv4 } from 'uuid';
 
 export default function ClassPage() {
   const { user } = useUser();
@@ -17,8 +18,9 @@ export default function ClassPage() {
   console.log("User ID:", user_id);
 
   const [error, setError] = useState<string | null>(null);
-  const [sessionStarted, setSessionStarted] = useState(false); // New state for session start
-  const [sessionId, setSessionId] = useState<string>(""); // New state for session ID
+  const [sessionStarted, setSessionStarted] = useState(false);
+  const [sessionId, setSessionId] = useState<string>("");
+  const [groupId, setGroupId] = useState<string>("");
 
   if (!user) {
     router.push("/");
@@ -28,8 +30,14 @@ export default function ClassPage() {
   const class_id_number = Number(class_id);
 
   const handleGroupSelect = (groupId: string) => {
-    // Navigate to the group page when a group is selected
     router.push(`/group/${groupId}`);
+  };
+
+  const startNewSession = () => {
+    setSessionStarted(true);
+    const newGroupId = uuidv4(); // Generate a new unique group ID
+    setGroupId(newGroupId); // Store the new group ID
+    console.log("New Group ID:", newGroupId);
   };
 
   return (
@@ -38,7 +46,7 @@ export default function ClassPage() {
       <div className="w-full max-w-8xl p-4 z-10">
         {!sessionStarted ? (
           <button
-            onClick={() => setSessionStarted(true)}
+            onClick={startNewSession}
             className="flex w-full items-center justify-center space-x-3 rounded-xl border-2 border-dashed border-[#FFE072] bg-[#FFF0CB] px-2 py-4 shadow-md bg-opacity-50"
           >
             <div className="flex items-center justify-center rounded-full bg-[#325B46] p-2">
@@ -61,12 +69,14 @@ export default function ClassPage() {
             setSessionId={setSessionId}
             user_id={user_id_number}
             class_id={class_id_number}
-            selectedClassName={""} // Optional: Adjust this if class name is available
+            selectedClassName={""}
           />
         )}
-        
+
+        {/* Pass groupId to GroupCards */}
         <GroupCards
           class_id={class_id_number}
+          group_id={groupId} // Pass the new group ID to GroupCards
           onGroupSelect={handleGroupSelect}
         />
       </div>
