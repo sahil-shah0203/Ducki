@@ -2,7 +2,7 @@
 import { useUser } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import MainPage from "~/app/page";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FileUpload from "~/app/_components/FileUpload";
 import SessionCards from "~/app/_components/SessionCards";
 
@@ -11,6 +11,7 @@ export default function ClassPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  // Extract parameters from the URL query
   const user_id = searchParams.get("user");
   const selectedClassName = searchParams.get("className");
   const selectedClassID = searchParams.get("classID");
@@ -21,20 +22,29 @@ export default function ClassPage() {
   const [sessionId, setSessionId] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
-  if (!user) {
-    router.push("/");
-  }
+  // Redirect to the homepage if the user is not authenticated
+  useEffect(() => {
+    if (!user) {
+      router.push("/");
+    }
+  }, [user, router]);
 
-  const user_id_number = Number(user_id);
-  const selectedClassID_number = Number(selectedClassID);
+  // Convert the user_id and classID to numbers for further usage
+  const user_id_number = user_id ? Number(user_id) : null;
+  const selectedClassID_number = selectedClassID ? Number(selectedClassID) : null;
 
   const handleSessionSelect = (sessionId: string) => {
     setSessionId(sessionId);
   };
 
+  // Check if required data is missing or invalid
+  if (!selectedClassID_number || !selectedGroupID) {
+    return <div>Error: Missing class or group information.</div>;
+  }
+
   return (
     <div className="flex flex-row w-full h-screen">
-      <MainPage/>
+      <MainPage />
       <div className="w-full max-w-8xl p-4 z-10">
         {!sessionStarted ? (
           <button
@@ -59,17 +69,16 @@ export default function ClassPage() {
           <FileUpload
             onError={setError}
             setSessionId={setSessionId}
-            user_id={user_id_number}
-            class_id={selectedClassID_number}
-            selectedClassName={selectedClassName}
+            user_id={user_id_number || 0}
+            class_id={selectedClassID_number || 0}
+            selectedClassName={selectedClassName || ""}
           />
         )}
         <SessionCards
-          groupId={selectedGroupID}
           onSessionSelect={handleSessionSelect}
-          user_id={user_id_number}
-          selectedGroupName={selectedGroupName}
-          selectedGroupID={selectedGroupID}
+          user_id={user_id_number || 0}
+          selectedGroupName={selectedGroupName || ""}
+          selectedGroupID={selectedGroupID || ""}
         />
       </div>
     </div>

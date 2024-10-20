@@ -67,6 +67,8 @@ export default function ClassPage() {
         
         <GroupCards
           class_id={class_id_number}
+          user={user_id_number}
+          selectedClassName={""} // Optional: Adjust this if class name is available
           onGroupSelect={handleGroupSelect}
         />
       </div>

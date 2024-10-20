@@ -4,8 +4,8 @@ import Link from "next/link";
 
 interface Group {
   id: string;
-  name: string;
-  dateCreated: string;
+  title: string;
+  date: string; 
 }
 
 interface GroupCardProps {
@@ -17,15 +17,17 @@ interface GroupCardProps {
 
 interface GroupCardsProps {
   class_id: number | undefined;
+  user: number | undefined;
+  selectedClassName: string | null;
   onGroupSelect: (groupId: string) => void;
 }
 
 const GroupCard: React.FC<GroupCardProps> = ({
-                                               groupId,
-                                               name,
-                                               dateCreated,
-                                               onClick,
-                                             }) => {
+  groupId,
+  name,
+  dateCreated,
+  onClick,
+}) => {
   const handleClick = () => {
     onClick(groupId);
   };
@@ -60,16 +62,18 @@ const GroupCard: React.FC<GroupCardProps> = ({
 };
 
 const GroupCards: React.FC<GroupCardsProps> = ({
-                                                 class_id,
-                                                 onGroupSelect,
-                                               }) => {
+  class_id,
+  user,
+  selectedClassName,
+  onGroupSelect,
+}) => {
   const [groups, setGroups] = useState<Group[]>([]);
 
-  // Replace the API call with a query to fetch groups instead of sessions
+  // Fetch groups by class ID
   const { data, error, isLoading } = api.group.getGroupsByClassId.useQuery(
-    { class_id: class_id },
+    { class_id: class_id || 0 },
     {
-      enabled: !! class_id,
+      enabled: !!class_id,
     }
   );
 
@@ -88,14 +92,14 @@ const GroupCards: React.FC<GroupCardsProps> = ({
     <div className="grid grid-cols-1 overflow-auto md:grid-cols-2 lg:grid-cols-4">
       {groups.map((group: Group) => (
         <Link
-          href={`/groups/${group.id}?user=${class_id}`}
+          href={`/classes/${class_id}/groups/${group.id}?user=${user}&className=${selectedClassName}&classID=${class_id}&groupID=${group.id}`}
           key={group.id}
         >
           <GroupCard
             key={group.id}
             groupId={group.id}
-            name={group.name}
-            dateCreated={group.dateCreated}
+            name={group.title}
+            dateCreated={group.date}
             onClick={onGroupSelect}
           />
         </Link>

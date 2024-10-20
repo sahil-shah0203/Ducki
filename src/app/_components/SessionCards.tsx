@@ -16,11 +16,12 @@ interface SessionCardProps {
 }
 
 interface SessionCardsProps {
-  groupId: string | null;
   onSessionSelect: (sessionId: string) => void;
   user_id: number | undefined;
   selectedGroupName: string | null;
   selectedGroupID: string | null;
+  selectedClassName: string | null;
+  selectedClassID: number | 0;
 }
 
 const SessionCard: React.FC<SessionCardProps> = ({
@@ -74,20 +75,22 @@ const SessionCard: React.FC<SessionCardProps> = ({
 };
 
 const SessionCards: React.FC<SessionCardsProps> = ({
-  groupId,
   onSessionSelect,
   user_id,
   selectedGroupID,
   selectedGroupName,
 }) => {
-  if (!groupId) {
+  if (!selectedGroupID) {
+    console.log(selectedGroupID)
     return <div>Error: Group ID is missing.</div>;
   }
 
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [selectedClassID, setSelectedClassID] = useState<string | null>(null);
+  const [selectedClassName, setSelectedClassName] = useState<string | null>(null);
 
   const { data, error, isLoading } = api.session.getSessionsByGroupId.useQuery(
-    { group_id: groupId },
+    { group_id: selectedGroupID },
     {
       enabled: true,
     }
@@ -108,17 +111,16 @@ const SessionCards: React.FC<SessionCardsProps> = ({
     <div className="grid grid-cols-1 overflow-auto md:grid-cols-2 lg:grid-cols-4">
       {sessions.map((session: Session) => (
         <Link
-          href={`/classes/${selectedGroupID}/sessions/${session.id}?user=${user_id}&className=${selectedGroupName}&classID=${selectedGroupID}&sessionID=${session.id}`}
+          href={`/classes/${selectedClassID}/groups/${selectedGroupID}/sessions/${session.id}?user=${user_id}&className=${selectedClassName}&classID=${selectedClassID}&groupID=${selectedGroupID}&sessionID=${session.id}`}
           key={session.id}
         >
           <SessionCard
-            key={session.id}
             sessionId={session.id}
             title={session.title}
             date={session.date}
             onClick={onSessionSelect}
           />
-        </Link>
+        </Link>      
       ))}
     </div>
   );
