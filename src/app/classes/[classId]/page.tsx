@@ -14,8 +14,7 @@ export default function ClassPage() {
 
   const user_id = searchParams.get("user");
   const class_id = searchParams.get("classID");
-  console.log("Class ID:", class_id);
-  console.log("User ID:", user_id);
+  const selectedClassName = searchParams.get("className");
 
   const [error, setError] = useState<string | null>(null);
   const [sessionStarted, setSessionStarted] = useState(false);
@@ -30,7 +29,7 @@ export default function ClassPage() {
   const class_id_number = Number(class_id);
 
   const handleGroupSelect = (groupId: string) => {
-    router.push(`/group/${groupId}`);
+    router.push(`/classes/${class_id}/groups/${groupId}/?user=${user_id}&className=${selectedClassName}&classID=${class_id}`);
   };
 
   const startNewSession = () => {
@@ -64,21 +63,24 @@ export default function ClassPage() {
             </div>
           </button>
         ) : (
-          <FileUpload
-            onError={setError}
-            setSessionId={setSessionId}
-            user_id={user_id_number}
-            class_id={class_id_number}
-            selectedClassName={""}
-          />
+          <>
+            <FileUpload
+              onError={setError}
+              setSessionId={setSessionId}
+              user_id={user_id_number}
+              class_id={class_id_number}
+              group_id={groupId}
+              selectedClassName={selectedClassName}
+            />
+            {groupId && (
+              <GroupCards
+                class_id={class_id_number}
+                group_id={groupId} // Pass the new group ID to GroupCards
+                onGroupSelect={handleGroupSelect}
+              />
+            )}
+          </>
         )}
-
-        {/* Pass groupId to GroupCards */}
-        <GroupCards
-          class_id={class_id_number}
-          group_id={groupId} // Pass the new group ID to GroupCards
-          onGroupSelect={handleGroupSelect}
-        />
       </div>
     </div>
   );

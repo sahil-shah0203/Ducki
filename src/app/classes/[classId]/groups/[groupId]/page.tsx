@@ -61,6 +61,7 @@ export default function ClassPage() {
             setSessionId={setSessionId}
             user_id={user_id_number}
             class_id={selectedClassID_number}
+            group_id={selectedGroupID}
             selectedClassName={selectedClassName}
           />
         )}

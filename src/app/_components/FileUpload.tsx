@@ -10,6 +10,7 @@ interface FileUploadProps {
   setSessionId: (sessionId: string) => void;
   user_id: number;
   class_id: number;
+  group_id: string;
   selectedClassName: string | null;
 }
 
@@ -18,6 +19,7 @@ export default function FileUpload({
   setSessionId,
   user_id,
   class_id,
+  group_id,
   selectedClassName,
 }: FileUploadProps) {
   const [files, setFiles] = useState<File[]>([]);
