@@ -12,31 +12,24 @@ interface GroupCardProps {
   groupId: string;
   name: string;
   dateCreated: string;
-  onClick: (groupId: string) => void;
 }
 
 interface GroupCardsProps {
   class_id: number | undefined;
   user: number | undefined;
   selectedClassName: string | null;
-  onGroupSelect: (groupId: string) => void;
 }
 
 const GroupCard: React.FC<GroupCardProps> = ({
   groupId,
   name,
   dateCreated,
-  onClick,
 }) => {
-  const handleClick = () => {
-    onClick(groupId);
-  };
 
   return (
     <div
       className="relative mt-10 cursor-pointer rounded-lg bg-[#eeeeee] p-4 shadow-md transition-shadow duration-200 hover:shadow-lg"
       style={{ width: "230px", height: "280px" }}
-      onClick={handleClick}
     >
       <div
         className="mx-auto rounded-lg bg-white"
@@ -65,13 +58,12 @@ const GroupCards: React.FC<GroupCardsProps> = ({
   class_id,
   user,
   selectedClassName,
-  onGroupSelect,
 }) => {
   const [groups, setGroups] = useState<Group[]>([]);
 
   // Fetch groups by class ID
   const { data, error, isLoading } = api.group.getGroupsByClassId.useQuery(
-    { class_id: class_id || 0 },
+    { class_id: class_id ?? 0 },
     {
       enabled: !!class_id,
     }
@@ -100,7 +92,6 @@ const GroupCards: React.FC<GroupCardsProps> = ({
             groupId={group.id}
             name={group.title}
             dateCreated={group.date}
-            onClick={onGroupSelect}
           />
         </Link>
       ))}

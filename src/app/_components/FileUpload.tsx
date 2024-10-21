@@ -184,7 +184,7 @@ export default function FileUpload({
           }
         }
 
-      const url = `/classes/${class_id}/groups/${group_id}?user=${user_id}&className=${selectedClassName}`;
+      const url = `/classes/${class_id}/groups/${group_id}/sessions/${sessionIds[0]}?user=${user_id}&className=${selectedClassName}&classID=${class_id}&groupID=${group_id}&sessionID=${sessionIds[0]}`
       router.push(url);
       } catch (error) {
         console.error("Failed to start session", error);

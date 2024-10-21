@@ -18,10 +18,9 @@ interface SessionCardProps {
 interface SessionCardsProps {
   onSessionSelect: (sessionId: string) => void;
   user_id: number | undefined;
-  selectedGroupName: string | null;
   selectedGroupID: string | null;
   selectedClassName: string | null;
-  selectedClassID: number | 0;
+  selectedClassID: string | null;
 }
 
 const SessionCard: React.FC<SessionCardProps> = ({
@@ -78,23 +77,21 @@ const SessionCards: React.FC<SessionCardsProps> = ({
   onSessionSelect,
   user_id,
   selectedGroupID,
-  selectedGroupName,
+  selectedClassID,
+  selectedClassName
 }) => {
-  if (!selectedGroupID) {
-    console.log(selectedGroupID)
-    return <div>Error: Group ID is missing.</div>;
-  }
-
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [selectedClassID, setSelectedClassID] = useState<string | null>(null);
-  const [selectedClassName, setSelectedClassName] = useState<string | null>(null);
+
+  const groupID = selectedGroupID ?? "";
 
   const { data, error, isLoading } = api.session.getSessionsByGroupId.useQuery(
-    { group_id: selectedGroupID },
+    { group_id: groupID },
     {
-      enabled: true,
+      enabled: !!selectedGroupID,
     }
   );
+
+  console.log(data);
 
   useEffect(() => {
     if (data) {
@@ -111,7 +108,7 @@ const SessionCards: React.FC<SessionCardsProps> = ({
     <div className="grid grid-cols-1 overflow-auto md:grid-cols-2 lg:grid-cols-4">
       {sessions.map((session: Session) => (
         <Link
-          href={`/classes/${selectedClassID}/groups/${selectedGroupID}/sessions/${session.id}?user=${user_id}&className=${selectedClassName}&classID=${selectedClassID}&groupID=${selectedGroupID}&sessionID=${session.id}`}
+          href={`/classes/${selectedClassID}/groups/${groupID}/sessions/${session.id}?user=${user_id}&className=${selectedClassName}&classID=${selectedClassID}&groupID=${selectedGroupID}&sessionID=${session.id}`}
           key={session.id}
         >
           <SessionCard

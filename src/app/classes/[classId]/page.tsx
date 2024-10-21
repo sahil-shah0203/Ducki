@@ -13,8 +13,6 @@ export default function ClassPage() {
 
   const user_id = searchParams.get("user");
   const class_id = searchParams.get("classID");
-  console.log("Class ID:", class_id);
-  console.log("User ID:", user_id);
 
   const [error, setError] = useState<string | null>(null);
   const [sessionStarted, setSessionStarted] = useState(false); // New state for session start
@@ -26,11 +24,6 @@ export default function ClassPage() {
 
   const user_id_number = Number(user_id);
   const class_id_number = Number(class_id);
-
-  const handleGroupSelect = (groupId: string) => {
-    // Navigate to the group page when a group is selected
-    router.push(`/group/${groupId}`);
-  };
 
   return (
     <div className="flex flex-row w-full h-screen">
@@ -69,7 +62,6 @@ export default function ClassPage() {
           class_id={class_id_number}
           user={user_id_number}
           selectedClassName={""} // Optional: Adjust this if class name is available
-          onGroupSelect={handleGroupSelect}
         />
       </div>
     </div>

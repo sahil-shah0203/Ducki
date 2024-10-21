@@ -25,7 +25,9 @@ export default function SessionPage() {
   const utils = api.useContext();
   const addEventMutation = api.events.addEvent.useMutation({
     onSuccess: async () => {
-      await utils.events.getEventsByUserId.invalidate({ user_id: Number(user_id) });
+      await utils.events.getEventsByUserId.invalidate({
+        user_id: Number(user_id),
+      });
       alert("Review sessions have been scheduled!");
     },
     onError: (error) => {
@@ -59,8 +61,12 @@ export default function SessionPage() {
         title: "Review Session",
         description: "Scheduled review session",
         place: "Online",
-        start: new Date(now.getTime() + day * 24 * 60 * 60 * 1000).toISOString(),
-        end: new Date(now.getTime() + day * 24 * 60 * 60 * 1000 + 60 * 60 * 1000).toISOString(), // 1 hour later
+        start: new Date(
+          now.getTime() + day * 24 * 60 * 60 * 1000,
+        ).toISOString(),
+        end: new Date(
+          now.getTime() + day * 24 * 60 * 60 * 1000 + 60 * 60 * 1000,
+        ).toISOString(), // 1 hour later
       }));
       console.log("Fetched Events from session:", newEvents);
       try {
@@ -72,14 +78,16 @@ export default function SessionPage() {
       }
 
       // Only redirect if events were scheduled
-      router.push(`/classes/${selectedClassID}/?user=${user_id}&className=${selectedClassName}&classID=${selectedClassID}`);
+      router.push(
+        `/classes/${selectedClassID}/?user=${user_id}&className=${selectedClassName}&classID=${selectedClassID}`,
+      );
     }
   };
 
   return (
-    <div className="flex flex-row w-full h-screen">
-      <MainPage/>
-      <div className="w-full max-w-8xl p-4 z-10">
+    <div className="flex h-screen w-full flex-row">
+      <MainPage />
+      <div className="max-w-8xl z-10 w-full p-4">
         <LLMInput
           onFetchResults={(choices) => console.log(choices)}
           onError={(error) => console.log(error)}
@@ -99,7 +107,7 @@ export default function SessionPage() {
         onEndSession={sessionBack}
       />
 
-      <SessionEndDialog isOpen={isDialogOpen} onClose={handleDialogClose}/>
+      <SessionEndDialog isOpen={isDialogOpen} onClose={handleDialogClose} />
     </div>
   );
 }

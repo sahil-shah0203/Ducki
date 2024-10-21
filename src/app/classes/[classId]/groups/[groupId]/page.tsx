@@ -16,7 +16,6 @@ export default function ClassPage() {
   const selectedClassName = searchParams.get("className");
   const selectedClassID = searchParams.get("classID");
   const selectedGroupID = searchParams.get("groupID");
-  const selectedGroupName = searchParams.get("groupName");
 
   const [sessionStarted, setSessionStarted] = useState(false);
   const [sessionId, setSessionId] = useState<string>("");
@@ -69,16 +68,17 @@ export default function ClassPage() {
           <FileUpload
             onError={setError}
             setSessionId={setSessionId}
-            user_id={user_id_number || 0}
-            class_id={selectedClassID_number || 0}
-            selectedClassName={selectedClassName || ""}
+            user_id={user_id_number ?? 0}
+            class_id={selectedClassID_number ?? 0}
+            selectedClassName={selectedClassName ?? ""}
           />
         )}
         <SessionCards
           onSessionSelect={handleSessionSelect}
-          user_id={user_id_number || 0}
-          selectedGroupName={selectedGroupName || ""}
+          user_id={user_id_number ?? 0}
           selectedGroupID={selectedGroupID || ""}
+          selectedClassID={selectedClassID}
+          selectedClassName={selectedClassName}
         />
       </div>
     </div>

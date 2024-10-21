@@ -26,6 +26,7 @@ export const sessionRouter = createTRPCRouter({
         date: formatDate(session.createdAt), 
       }));
     }),
+    
   addSession: publicProcedure
     .input(z.object({
       user_id: z.number(),
