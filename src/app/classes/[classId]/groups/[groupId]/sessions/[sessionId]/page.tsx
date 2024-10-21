@@ -17,7 +17,7 @@ export default function SessionPage() {
   const user_id = searchParams.get("user");
   const selectedClassName = searchParams.get("className");
   const selectedClassID = searchParams.get("classID");
-  const session_id = searchParams.get("sessionID");
+  const groupID = searchParams.get("groupID");
 
   const [isPopupCollapsed, setIsPopupCollapsed] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -36,8 +36,8 @@ export default function SessionPage() {
     },
   });
 
-  if (!session_id) {
-    throw new Error("Session ID is needed");
+  if (!groupID) {
+    throw new Error("Group ID is needed");
   }
 
   const user_id_number = Number(user_id);
@@ -84,6 +84,8 @@ export default function SessionPage() {
     }
   };
 
+  console.log("!!", groupID)
+
   return (
     <div className="flex h-screen w-full flex-row">
       <MainPage />
@@ -94,7 +96,7 @@ export default function SessionPage() {
           user_id={user_id_number}
           selectedClassName={selectedClassName}
           selectedClassID={selectedClassID_number}
-          uniqueSessionId={session_id}
+          uniqueSessionId={groupID}
           firstName={user?.firstName ?? ""}
         />
       </div>
@@ -103,7 +105,7 @@ export default function SessionPage() {
         userId={user_id?.toString() ?? ""}
         classId={selectedClassID_number ?? 0}
         isCollapsed={isPopupCollapsed}
-        uniqueSessionId={session_id}
+        groupID={groupID}
         onEndSession={sessionBack}
       />
 

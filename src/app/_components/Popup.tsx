@@ -10,7 +10,7 @@ type SidebarProps = {
   userId: string;
   classId: number;
   isCollapsed: boolean;
-  uniqueSessionId: string;
+  groupID: string;
   onEndSession: () => void; // Function to handle the end session
 };
 
@@ -30,7 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   userId,
   classId,
   isCollapsed,
-  uniqueSessionId,
+  groupID,
   onEndSession,
 }) => {
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(
@@ -58,8 +58,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     error,
     isLoading,
     refetch: refetchDocuments,
-  } = api.documents.getDocumentsBySessionId.useQuery({
-    sessionId: uniqueSessionId,
+  } = api.documents.getDocumentsByGroupId.useQuery({
+    group_id: groupID,
   });
 
   const { mutateAsync: deleteDocument } =
@@ -70,7 +70,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     error: queryError,
     isLoading: keyConceptsLoading,
   } = api.keyconcepts.getKeyConcepts.useQuery({
-    session_id: uniqueSessionId,
+    session_id: groupID,
     class_id: classId,
     user_id: Number(userId),
   });
@@ -137,7 +137,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     } else {
       fetchKeyConcepts();
     }
-  }, [uniqueSessionId, isLoading, keyConceptData, queryError]); // Fetch key concepts when the uniqueSessionId changes
+  }, [groupID, isLoading, keyConceptData, queryError]); // Fetch key concepts when the uniqueSessionId changes
 
   const handleAddKeyConcept = async (description: string) => {
     try {
@@ -145,7 +145,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         description,
         user_id: Number(userId),
         class_id: classId,
-        session_id: uniqueSessionId,
+        session_id: groupID,
       });
 
       setKeyConcepts((prevKeyConcepts) => [

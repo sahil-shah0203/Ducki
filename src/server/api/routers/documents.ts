@@ -11,7 +11,7 @@ const s3 = new S3Client({
 });
 
 export const documentsRouter = createTRPCRouter({
-  getDocumentsBySessionId: publicProcedure
+  getDocumentsByGroupId: publicProcedure
     .input(
       z.object({
         group_id: z.string(), 

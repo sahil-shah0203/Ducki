@@ -1,6 +1,6 @@
-import React, { useState, useRef, RefObject } from 'react';
-import AWS, { CostExplorer } from 'aws-sdk';
-import uuid from 'react-uuid';
+import React, { useState, useRef, RefObject } from "react";
+import AWS, { CostExplorer } from "aws-sdk";
+import uuid from "react-uuid";
 
 interface InputFieldProps {
   inputRef: RefObject<HTMLInputElement>;
@@ -14,18 +14,17 @@ interface InputFieldProps {
 }
 
 export default function InputField({
-                                     inputRef,
-                                     inputText,
-                                     isGenerating,
-                                     handleInputChange,
-                                     handleKeyPress,
-                                     handleSubmit,
-                                     handleStopGeneration,
-                                     uniqueSessionId
-                                   }: InputFieldProps) {
-
-  const [uploading, setUploading] = useState(false)
-  const [processing, setProcessing] = useState(false)
+  inputRef,
+  inputText,
+  isGenerating,
+  handleInputChange,
+  handleKeyPress,
+  handleSubmit,
+  handleStopGeneration,
+  uniqueSessionId,
+}: InputFieldProps) {
+  const [uploading, setUploading] = useState(false);
+  const [processing, setProcessing] = useState(false);
 
   const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
 
@@ -51,6 +50,8 @@ export default function InputField({
         index: uniqueSessionId,
       },
     };
+
+    console.log("444", uniqueSessionId)
 
     try {
       const upload = await s3.putObject(params).promise();
@@ -81,7 +82,7 @@ export default function InputField({
       FunctionName: LAMBDA_FUNCTION,
       Payload: JSON.stringify({
         document_name: file_name,
-        index: uniqueSessionId
+        index: uniqueSessionId,
       }),
     };
 
@@ -125,7 +126,7 @@ export default function InputField({
   };
 
   return (
-    <div className="w-full flex items-center bg-transparent p-14 border-12 mb-14">
+    <div className="border-12 mb-14 flex w-full items-center bg-transparent p-14">
       {/*below is the old + button next to LLM Input for uploading documents, it still functions for future testing*/}
       {/* <div>
         <input
@@ -142,21 +143,25 @@ export default function InputField({
           +
         </label>
       </div> */}
-      {(uploading == processing) && <input
-        ref={inputRef}
-        type="text"
-        className="border rounded py-1 px-2 flex-grow text-black text-sm mr-2"
-        value={inputText}
-        onChange={handleInputChange}
-        onKeyPress={handleKeyPress}
-        placeholder="Enter your prompt here..."
-        aria-label="Text input for LLM prompt"
-        disabled={isGenerating}
-      />}
-      {(uploading != processing) && <div className="border rounded py-1 px-2 flex-grow text-black text-sm mr-2">
-        {uploading && <p>Uploading Document</p>}
-        {processing && <p>Processing Document</p>}
-      </div>}
+      {uploading == processing && (
+        <input
+          ref={inputRef}
+          type="text"
+          className="mr-2 flex-grow rounded border px-2 py-1 text-sm text-black"
+          value={inputText}
+          onChange={handleInputChange}
+          onKeyPress={handleKeyPress}
+          placeholder="Enter your prompt here..."
+          aria-label="Text input for LLM prompt"
+          disabled={isGenerating}
+        />
+      )}
+      {uploading != processing && (
+        <div className="mr-2 flex-grow rounded border px-2 py-1 text-sm text-black">
+          {uploading && <p>Uploading Document</p>}
+          {processing && <p>Processing Document</p>}
+        </div>
+      )}
       <button
         className="group relative inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-[#3a5e4d]"
         onClick={isGenerating ? handleStopGeneration : (e) => handleSubmit(e)}
