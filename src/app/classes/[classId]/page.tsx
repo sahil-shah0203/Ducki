@@ -30,24 +30,12 @@ export default function ClassPage() {
       <MainPage />
       <div className="w-full max-w-8xl p-4 z-10">
         {!sessionStarted ? (
-          <button
+            <button
             onClick={() => setSessionStarted(true)}
-            className="flex w-full items-center justify-center space-x-3 rounded-xl border-2 border-dashed border-[#FFE072] bg-[#FFF0CB] px-2 py-4 shadow-md bg-opacity-50"
-          >
-            <div className="flex items-center justify-center rounded-full bg-[#325B46] p-2">
-              <img
-                src="/Group 10.png"
-                alt="Paperclip Icon"
-                className="h-4 w-4"
-              />
-            </div>
-            <div className="flex flex-col items-start py-4">
-              <span className="font-bold">Start Session</span>
-              <span className="text-gray-500">
-                Click to add lecture files, presentations, or notes to begin
-              </span>
-            </div>
-          </button>
+            className="h-[37px] p-2 bg-[#85ac9a]/20 rounded-sm justify-center items-center gap-1.5 inline-flex"
+            >
+            <div className="text-[#669880] text-base font-bold font-['DM Sans']">New Session</div>
+            </button>
         ) : (
           <FileUpload
             onError={setError}

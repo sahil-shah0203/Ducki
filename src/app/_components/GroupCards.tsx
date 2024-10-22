@@ -26,29 +26,65 @@ const GroupCard: React.FC<GroupCardProps> = ({
   dateCreated,
 }) => {
   return (
-    <div
-      className="relative mt-10 cursor-pointer rounded-lg bg-[#eeeeee] p-4 shadow-md transition-shadow duration-200 hover:shadow-lg"
-      style={{ width: "230px", height: "280px" }}
-    >
-      <div
-        className="mx-auto rounded-lg bg-white"
-        style={{ padding: "10px" }}
-      >
-        <p className="text-sm">Group: {name}</p>
-        <p className="text-gray-400 text-xs">Created on: {dateCreated}</p>
-      </div>
-      <div className="absolute bottom-0 left-0 right-0">
-        <div
-          className="flex items-center justify-between rounded-b-lg rounded-t-none border border-gray-300 bg-white p-2"
-          style={{ borderTopLeftRadius: "0", borderTopRightRadius: "0" }}
-        >
-          <div>
-            <div className="text-lg font-semibold">{name}</div>
-            <div className="text-gray-600">{dateCreated}</div>
+    <div className="w-[367.67px] h-[351.62px] relative shadow">
+      <div className="w-[367.67px] h-[257px] px-5 py-6 left-0 top-[-2px] absolute bg-[#f9faf9] rounded-tl-sm rounded-tr-sm border-[#e5eae8] flex-col justify-center items-center gap-1 inline-flex">
+        <div className="self-stretch p-3 rounded-sm justify-start items-center gap-5 inline-flex">
+          <div className="w-10 h-10 relative">
+            <div className="w-10 h-10 left-0 top-0 absolute bg-[#e5eae8] rounded-[3.13px]" />
+            <div className="w-[24.42px] h-[18.88px] left-[8px] top-[10.50px] absolute">
+              <div className="w-[24.42px] h-[3.50px] left-0 top-0 absolute bg-[#bcc7c1] rounded-sm" />
+              <div className="w-[24.42px] h-[3.50px] left-0 top-[7.69px] absolute bg-[#bcc7c1] rounded-sm" />
+              <div className="w-[24.42px] h-[3.50px] left-0 top-[15.38px] absolute bg-[#bcc7c1] rounded-sm" />
+            </div>
           </div>
-          <div className="text-gray-400"></div>
+          <div className="grow shrink basis-0 opacity-75 flex-col justify-start items-start gap-0.5 inline-flex">
+            <div className="self-stretch text-[#84988e] text-lg font-medium font-['DM Sans'] leading-tight">Session #1</div>
+            <div className="self-stretch text-black/30 text-xs font-medium font-['DM Sans']">{dateCreated}</div>
+          </div>
+        </div>
+        <div className="self-stretch p-3 rounded-sm justify-start items-center gap-5 inline-flex">
+          <div className="w-10 h-10 relative">
+            <div className="w-10 h-10 left-0 top-0 absolute bg-[#e5eae8] rounded-[3.13px]" />
+            <div className="w-[24.42px] h-[18.88px] left-[8px] top-[10.50px] absolute">
+              <div className="w-[24.42px] h-[3.50px] left-0 top-0 absolute bg-[#bcc7c1] rounded-sm" />
+              <div className="w-[24.42px] h-[3.50px] left-0 top-[7.69px] absolute bg-[#bcc7c1] rounded-sm" />
+              <div className="w-[24.42px] h-[3.50px] left-0 top-[15.38px] absolute bg-[#bcc7c1] rounded-sm" />
+            </div>
+          </div>
+          <div className="grow shrink basis-0 opacity-75 flex-col justify-start items-start gap-0.5 inline-flex">
+            <div className="self-stretch text-[#84988e] text-lg font-medium font-['DM Sans'] leading-tight">Session #2</div>
+            <div className="self-stretch text-black/30 text-xs font-medium font-['DM Sans']">{dateCreated}</div>
+          </div>
+        </div>
+        <div className="w-[301px] h-0.5 bg-[#e5eae8]" />
+        <div className="self-stretch p-3 rounded-sm justify-start items-center gap-5 inline-flex">
+          <div className="w-10 h-10 relative">
+            <div className="w-10 h-10 left-0 top-0 absolute bg-[#e5eae8] rounded-[3.13px]" />
+            <div className="w-[24.42px] h-[18.88px] left-[8px] top-[10.50px] absolute">
+              <div className="w-[24.42px] h-[3.50px] left-0 top-0 absolute bg-[#bcc7c1] rounded-sm" />
+              <div className="w-[24.42px] h-[3.50px] left-0 top-[7.69px] absolute bg-[#bcc7c1] rounded-sm" />
+              <div className="w-[24.42px] h-[3.50px] left-0 top-[15.38px] absolute bg-[#bcc7c1] rounded-sm" />
+            </div>
+          </div>
+          <div className="grow shrink basis-0 opacity-75 flex-col justify-start items-start gap-0.5 inline-flex">
+            <div className="self-stretch text-[#84988e] text-lg font-medium font-['DM Sans'] leading-tight">Session #3</div>
+            <div className="self-stretch text-black/30 text-xs font-medium font-['DM Sans']">{dateCreated}</div>
+          </div>
         </div>
       </div>
+      <div className="h-[100.21px] px-4 py-5 left-0 top-[255.41px] absolute bg-white border-t-2 border-[#e5eae8] flex-col justify-start items-start gap-[9px] inline-flex">
+        <div className="self-stretch h-[25.60px] text-black text-[22.76px] font-medium font-['DM Sans'] leading-relaxed">{name}</div>
+        <div className="self-stretch h-[25.60px] text-black/50 text-[15.17px] font-medium font-['DM Sans']">Last opened {dateCreated}</div>
+      </div>
+      <div className="px-[6.61px] py-[2.64px] left-[291px] top-[9.46px] absolute opacity-0 bg-[#e5ab00]/0 rounded-sm justify-center items-center gap-[6.61px] inline-flex" />
+      <div className="w-[29.37px] h-6 pr-[4.37px] left-[280.74px] top-[12px] absolute opacity-0 bg-[#4f715f]/0 rounded-sm justify-start items-center inline-flex">
+        <div className="h-[24.34px] px-0.5 py-2.5 rounded-sm justify-center items-center gap-[3px] inline-flex">
+          <div className="w-[4.34px] h-[4.34px] bg-[#4f715f] rounded-full" />
+          <div className="w-[4.34px] h-[4.34px] bg-[#4f715f] rounded-full" />
+          <div className="w-[4.34px] h-[4.34px] bg-[#4f715f] rounded-full" />
+        </div>
+      </div>
+      <div className="w-[301px] h-0.5 left-[33.01px] top-[90px] absolute bg-[#e5eae8]" />
     </div>
   );
 };
