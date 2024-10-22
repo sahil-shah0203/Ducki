@@ -60,13 +60,15 @@ const GroupCards: React.FC<GroupCardsProps> = ({
 }) => {
   const [groups, setGroups] = useState<Group[]>([]);
 
-  // Fetch groups by class ID only when class_id is defined
-  const { data, error, isLoading } = api.group.getGroupsByClassId.useQuery(
-    { class_id: class_id as number }, // Assert that class_id is defined
-    {
-      enabled: !!class_id, // Only run the query if class_id is truthy (not undefined or null)
-    }
-  );
+  // Only fetch data when class_id is defined
+  const { data, error, isLoading } = class_id
+    ? api.group.getGroupsByClassId.useQuery(
+        { class_id }, // Ensure class_id is a number at this point
+        {
+          enabled: !!class_id,
+        }
+      )
+    : { data: undefined, error: undefined, isLoading: false };
 
   useEffect(() => {
     if (data) {
@@ -77,7 +79,7 @@ const GroupCards: React.FC<GroupCardsProps> = ({
   }, [data, error]);
 
   if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error loading groups: {error.message}</div>;
+  if (error) return <div>Error loading groups: {error?.message}</div>;
 
   return (
     <div className="grid grid-cols-1 overflow-auto md:grid-cols-2 lg:grid-cols-4">
