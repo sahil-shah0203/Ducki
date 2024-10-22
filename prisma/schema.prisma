@@ -75,7 +75,6 @@ model Session {
   chatHistories ChatHistory[]
   createdAt     DateTime      @default(now())
   session_title String
-  keyConcepts   KeyConcept[]
 }
 
 model Event {
@@ -108,10 +107,9 @@ model KeyConcept {
   description        String
   user_id            Int
   group_id           String
-  session_id         String
+  class_id           Int
   understanding_level Int     // (1-5)
   subconcepts        Json     // Array of strings
   user               User     @relation(fields: [user_id], references: [user_id])
   group              Group    @relation(fields: [group_id], references: [group_id])
-  session            Session  @relation(fields: [session_id], references: [session_id])
 }

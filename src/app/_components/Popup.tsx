@@ -24,6 +24,7 @@ type KeyConcept = {
   concept_id: number | null;
   description: string;
   understanding_level: number;
+  subconcepts: string[];
 };
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -70,7 +71,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     error: queryError,
     isLoading: keyConceptsLoading,
   } = api.keyconcepts.getKeyConcepts.useQuery({
-    session_id: groupID,
+    group_id: groupID,
     class_id: classId,
     user_id: Number(userId),
   });
@@ -145,7 +146,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         description,
         user_id: Number(userId),
         class_id: classId,
-        session_id: groupID,
+        group_id: groupID,
       });
 
       setKeyConcepts((prevKeyConcepts) => [
@@ -154,6 +155,11 @@ const Sidebar: React.FC<SidebarProps> = ({
           concept_id: result.newConcept.concept_id,
           description: result.newConcept.description,
           understanding_level: result.newConcept.understanding_level,
+          subconcepts: Array.isArray(result.newConcept.subconcepts)
+            ? result.newConcept.subconcepts.filter(
+                (subconcept) => typeof subconcept === "string",
+              ) // Ensure it's an array of strings
+            : [], // Default to an empty array if subconcepts are not valid
         },
       ]);
 
@@ -383,9 +389,16 @@ const Sidebar: React.FC<SidebarProps> = ({
                         onChange={handleDescriptionChange}
                       />
                     ) : (
-                      <p className="text-sm font-medium text-white">
-                        {concept.description}
-                      </p>
+                      <div>
+                        <p className="text-sm font-medium text-white">
+                          {concept.description}
+                        </p>
+                        <div>
+                          {concept.subconcepts?.map((subconcept, index) => (
+                            <p key={index}>{subconcept}</p>
+                          ))}
+                        </div>
+                      </div>
                     )}
                     <div className="ml-4 flex space-x-2">
                       {editConceptId === concept.concept_id ? (
@@ -415,7 +428,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   </div>
 
                   {/* Understanding buttons */}
-                  <div className="mt-2 flex space-x-4">
+                  {/* {<div className="mt-2 flex space-x-4">
                     {[1, 2, 3, 4].map((num) => (
                       <button
                         key={num}
@@ -431,7 +444,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         {num}
                       </button>
                     ))}
-                  </div>
+                  </div>} */}
                 </div>
               ))}
             </div>
