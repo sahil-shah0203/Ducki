@@ -45,24 +45,33 @@ export const keyConceptRouter = createTRPCRouter({
 
       const data = await response.json();
 
+      console.log("6666", data);
+
       const parsedObject = JSON.parse(data.concepts);
+
+      console.log("555", parsedObject);
 
       let parsedData: Array<{
         concept_id: number | null;
         description: string;
         understanding_level: number;
+        subconcepts: string[];
       }> = [];
 
-      if (Array.isArray(parsedObject.main_topics)) {
-        parsedData = parsedObject.main_topics.map(
-          (topic: { description: string; understanding_level: number }) => ({
+      if (Array.isArray(parsedObject.key_concepts)) {
+        parsedData = parsedObject.key_concepts.map(
+          (topic: { key_concept: string; subconcepts: string[] }) => ({
             concept_id: null,
-            description: topic,
+            description: topic.key_concept,
+            understanding_level: 1,
+            subconcepts: topic.subconcepts,
           }),
         );
       } else {
-        throw new Error("Unexpected format of main_topics data");
+        throw new Error("Unexpected format of key_concepts data");
       }
+
+      console.log(parsedData);
 
       for (const item of parsedData) {
         const createdConcept = await ctx.db.keyConcept.create({
