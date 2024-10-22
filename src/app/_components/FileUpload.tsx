@@ -66,7 +66,7 @@ export default function FileUpload({
       ContentDisposition: "inline",
       ContentType: file.type,
       Metadata: {
-        group_id: group_id,
+        index: group_id,
       },
     };
 
@@ -107,7 +107,7 @@ export default function FileUpload({
       Payload: JSON.stringify({
         document_name: file_key,
         class_id: class_id,
-        group_id: group_id,
+        session_id: group_id,
       }),
     };
 
