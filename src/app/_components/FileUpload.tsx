@@ -162,7 +162,7 @@ export default function FileUpload({
       setSessionId(session_id);
 
       for (const fileList of files) {
-        var file = fileList;
+        let file = fileList;
         if (redirectedTypes.includes(file.type)) {
           try {
             console.log("Converting file...");
