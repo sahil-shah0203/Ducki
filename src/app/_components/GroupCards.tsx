@@ -25,7 +25,6 @@ const GroupCard: React.FC<GroupCardProps> = ({
   name,
   dateCreated,
 }) => {
-
   return (
     <div
       className="relative mt-10 cursor-pointer rounded-lg bg-[#eeeeee] p-4 shadow-md transition-shadow duration-200 hover:shadow-lg"
@@ -61,11 +60,11 @@ const GroupCards: React.FC<GroupCardsProps> = ({
 }) => {
   const [groups, setGroups] = useState<Group[]>([]);
 
-  // Fetch groups by class ID
+  // Fetch groups by class ID only when class_id is defined
   const { data, error, isLoading } = api.group.getGroupsByClassId.useQuery(
-    { class_id: class_id ?? 0 },
+    { class_id: class_id as number }, // Assert that class_id is defined
     {
-      enabled: !!class_id,
+      enabled: !!class_id, // Only run the query if class_id is truthy (not undefined or null)
     }
   );
 
