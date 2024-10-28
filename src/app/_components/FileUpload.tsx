@@ -11,6 +11,8 @@ interface FileUploadProps {
   user_id: number;
   class_id: number;
   selectedClassName: string | null;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 export default function FileUpload({
@@ -19,6 +21,8 @@ export default function FileUpload({
   user_id,
   class_id,
   selectedClassName,
+  isOpen,
+  onClose,
 }: FileUploadProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -31,17 +35,14 @@ export default function FileUpload({
   const { mutateAsync: addDocument } = api.documents.addDocument.useMutation();
 
   const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
-
   const router = useRouter();
 
-  // Handle file selection
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       setFiles((prevFiles) => [...prevFiles, ...Array.from(event.target.files ?? [])]);
     }
   };
 
-  // Upload file to S3
   const uploadFile = async (file: File, group_id: string) => {
     setUploading(true);
     const S3_BUCKET = "ducki-documents";
@@ -55,7 +56,7 @@ export default function FileUpload({
       },
     });
 
-    const uuid_file_name = uuid(); // Generate UUID
+    const uuid_file_name = uuid();
     const file_extension = file.name.split('.').pop();
     const file_key = `${uuid_file_name}.${file_extension}`;
 
@@ -88,7 +89,6 @@ export default function FileUpload({
     }
   };
 
-  // Invoke Lambda function to process the file
   const processFile = async (file_key: string, group_id: string) => {
     setProcessing(true);
     const LAMBDA_FUNCTION = "process_document";
@@ -127,7 +127,6 @@ export default function FileUpload({
     }
   };
 
-  // Handle file upload and session/group creation
   const handleFileUpload = async () => {
     if (files.length > 0) {
       setSuccessMessage(null);
@@ -137,7 +136,6 @@ export default function FileUpload({
       setSessionId(sessionIds[0] ?? '');
 
       try {
-        // Create the group
         await addGroup({
           group_id: group_id,
           group_title: sessionTitle || "New Group",
@@ -146,7 +144,6 @@ export default function FileUpload({
           class_name: selectedClassName ?? "",
         });
 
-        // Create the sessions
         for (let i = 0; i < sessionIds.length; i++) {
           await addSession({
             user_id,
@@ -156,7 +153,6 @@ export default function FileUpload({
           });
         }
 
-        // Upload and process files
         for (const file of files) {
           if (!allowedTypes.includes(file.type)) {
             onError("Invalid file type");
@@ -184,8 +180,8 @@ export default function FileUpload({
           }
         }
 
-      const url = `/classes/${class_id}/groups/${group_id}/sessions/${sessionIds[0]}?user=${user_id}&className=${selectedClassName}&classID=${class_id}&groupID=${group_id}&sessionID=${sessionIds[0]}`
-      router.push(url);
+        const url = `/classes/${class_id}/groups/${group_id}/sessions/${sessionIds[0]}?user=${user_id}&className=${selectedClassName}&classID=${class_id}&groupID=${group_id}&sessionID=${sessionIds[0]}`
+        router.push(url);
       } catch (error) {
         console.error("Failed to start session", error);
         onError("Failed to start session");
@@ -196,9 +192,16 @@ export default function FileUpload({
   };
 
   return (
-    <div className="flex w-full items-center justify-center rounded bg-gray-200 p-4 shadow-md">
-      <div className="w-full max-w-lg">
-        <div className="mb-4">
+    isOpen ? (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="w-full max-w-lg rounded bg-white p-6 shadow-lg">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-700">Upload and Start Session</h2>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+              &times;
+            </button>
+          </div>
+
           <input
             type="file"
             multiple
@@ -208,51 +211,53 @@ export default function FileUpload({
           />
           <label
             htmlFor="fileInput"
-            className="mr-4 mt-4 rounded border-2 border-[#437557] bg-white px-4 py-2 text-[#437557] hover:bg-[#CCCCCC]"
+            className="block w-full rounded border-2 border-[#437557] bg-white px-4 py-2 text-center text-[#437557] hover:bg-[#CCCCCC] cursor-pointer"
           >
             Add File
           </label>
-        </div>
-        <div>
-          {files.length > 0 ? (
-            <ul className="mb-4">
-              {files.map((file, index) => (
-                <li key={index} className="text-gray-700">
-                  {file.name}
-                </li>
-              ))}
-            </ul>
+
+          <div className="mt-4">
+            {files.length > 0 ? (
+              <ul className="mb-4">
+                {files.map((file, index) => (
+                  <li key={index} className="text-gray-700">
+                    {file.name}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-700">Select a file to begin.</p>
+            )}
+          </div>
+
+          {uploading || processing ? (
+            <div className="mt-2 text-sm text-black">
+              {uploading && <p>Uploading...</p>}
+              {processing && <p>Processing...</p>}
+            </div>
           ) : (
-            <p className="text-gray-700">Select a file to begin.</p>
+            <>
+              <input
+                type="text"
+                value={sessionTitle}
+                onChange={(e) => setSessionTitle(e.target.value)}
+                placeholder="Enter session title"
+                className="mb-4 w-full rounded border px-3 py-2"
+              />
+              <button
+                onClick={handleFileUpload}
+                className="w-full rounded bg-[#407855] px-4 py-2 text-white hover:bg-[#7C9C87]"
+              >
+                Start Session
+              </button>
+            </>
+          )}
+
+          {successMessage && (
+            <p className="mt-4 text-green-500">{successMessage}</p>
           )}
         </div>
-        {uploading || processing ? (
-          <div className="mr-2 flex-grow rounded border px-2 py-1 text-sm text-black">
-            {uploading && <p>Uploading</p>}
-            {processing && <p>Processing</p>}
-          </div>
-        ) : (
-          <>
-            <input
-              type="text"
-              value={sessionTitle}
-              onChange={(e) => setSessionTitle(e.target.value)}
-              placeholder="Enter session title"
-              className="mb-4 w-full rounded border px-3 py-2"
-            />
-            <button
-              onClick={handleFileUpload}
-              className="rounded bg-[#407855] px-4 py-2 text-white hover:bg-[#7C9C87]"
-            >
-              Start Session
-            </button>
-          </>
-        )}
-        {successMessage && (
-          <p className="mt-4 text-green-500">{successMessage}</p>
-        )}
       </div>
-    </div>
+    ) : null
   );
 }
-

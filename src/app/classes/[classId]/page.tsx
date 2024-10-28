@@ -15,8 +15,8 @@ export default function ClassPage() {
   const class_id = searchParams.get("classID");
 
   const [error, setError] = useState<string | null>(null);
-  const [sessionStarted, setSessionStarted] = useState(false); // New state for session start
-  const [sessionId, setSessionId] = useState<string>(""); // New state for session ID
+  const [sessionStarted, setSessionStarted] = useState(false); // State to control dialog visibility
+  const [sessionId, setSessionId] = useState<string>("");
 
   if (!user) {
     router.push("/");
@@ -24,6 +24,9 @@ export default function ClassPage() {
 
   const user_id_number = Number(user_id);
   const class_id_number = Number(class_id);
+
+  // Function to close the dialog
+  const handleCloseDialog = () => setSessionStarted(false);
 
   return (
     <div className="flex flex-row w-full h-screen">
@@ -35,12 +38,10 @@ export default function ClassPage() {
 
           {/* Top section */}
           <div className="pl-4">
-            {/* 'Fall 2024' text */}
             <div className="w-[400px] text-black/30 text-lg font-medium font-['DM Sans'] leading-tight">
               Fall 2024
             </div>
 
-            {/* 'English' text */}
             <div className="text-black text-[42px] font-semibold font-['DM Sans'] mb-2">
               English
             </div>
@@ -61,7 +62,9 @@ export default function ClassPage() {
                 setSessionId={setSessionId}
                 user_id={user_id_number}
                 class_id={class_id_number}
-                selectedClassName={""} // Optional: Adjust this if class name is available
+                selectedClassName={""}
+                isOpen={sessionStarted} // Pass dialog open state
+                onClose={handleCloseDialog} // Pass dialog close function
               />
             )}
           </div>
@@ -78,7 +81,7 @@ export default function ClassPage() {
         <GroupCards
           class_id={class_id_number}
           user={user_id_number}
-          selectedClassName={""} // Optional: Adjust this if class name is available
+          selectedClassName={""}
         />
       </div>
     </div>
