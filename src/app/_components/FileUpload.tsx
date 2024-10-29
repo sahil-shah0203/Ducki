@@ -39,7 +39,7 @@ export default function FileUpload({
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
-      setFiles((prevFiles) => [...prevFiles, ...Array.from(event.target.files ?? [])]);
+      setFiles(Array.from(event.target.files));
     }
   };
 
@@ -57,7 +57,7 @@ export default function FileUpload({
     });
 
     const uuid_file_name = uuid();
-    const file_extension = file.name.split('.').pop();
+    const file_extension = file.name.split(".").pop();
     const file_key = `${uuid_file_name}.${file_extension}`;
 
     const params = {
@@ -76,15 +76,8 @@ export default function FileUpload({
       setUploading(false);
       return { uuid_file_name, original_file_name: file.name, file_key };
     } catch (error) {
-      console.error(error);
       setUploading(false);
-
-      if (error instanceof Error) {
-        onError("Error uploading file: " + error.message);
-      } else {
-        onError("Error uploading file: An unknown error occurred");
-      }
-
+      onError("Error uploading file: " + (error instanceof Error ? error.message : "An unknown error occurred"));
       return null;
     }
   };
@@ -116,14 +109,8 @@ export default function FileUpload({
       setProcessing(false);
       setSuccessMessage("File processed successfully.");
     } catch (error) {
-      console.error(error);
       setProcessing(false);
-
-      if (error instanceof Error) {
-        onError("Error processing file: " + error.message);
-      } else {
-        onError("Error processing file: An unknown error occurred");
-      }
+      onError("Error processing file: " + (error instanceof Error ? error.message : "An unknown error occurred"));
     }
   };
 
@@ -133,7 +120,7 @@ export default function FileUpload({
 
       const group_id = uuid();
       const sessionIds = [uuid(), uuid(), uuid()];
-      setSessionId(sessionIds[0] ?? '');
+      setSessionId(sessionIds[0] ?? "");
 
       try {
         await addGroup({
@@ -147,7 +134,7 @@ export default function FileUpload({
         for (let i = 0; i < sessionIds.length; i++) {
           await addSession({
             user_id,
-            session_id: sessionIds[i] ?? '',
+            session_id: sessionIds[i] ?? "",
             session_title: `${sessionTitle} - Session ${i + 1}`,
             group_id: group_id,
           });
@@ -180,10 +167,9 @@ export default function FileUpload({
           }
         }
 
-        const url = `/classes/${class_id}/groups/${group_id}/sessions/${sessionIds[0]}?user=${user_id}&className=${selectedClassName}&classID=${class_id}&groupID=${group_id}&sessionID=${sessionIds[0]}`
+        const url = `/classes/${class_id}/groups/${group_id}/sessions/${sessionIds[0]}?user=${user_id}&className=${selectedClassName}&classID=${class_id}&groupID=${group_id}&sessionID=${sessionIds[0]}`;
         router.push(url);
       } catch (error) {
-        console.error("Failed to start session", error);
         onError("Failed to start session");
       }
     } else {
@@ -194,67 +180,84 @@ export default function FileUpload({
   return (
     isOpen ? (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-        <div className="w-full max-w-lg rounded bg-white p-6 shadow-lg">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-700">Upload and Start Session</h2>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-              &times;
-            </button>
-          </div>
-
-          <input
-            type="file"
-            multiple
-            onChange={handleFileChange}
-            className="hidden"
-            id="fileInput"
-          />
-          <label
-            htmlFor="fileInput"
-            className="block w-full rounded border-2 border-[#437557] bg-white px-4 py-2 text-center text-[#437557] hover:bg-[#CCCCCC] cursor-pointer"
-          >
-            Add File
-          </label>
-
-          <div className="mt-4">
-            {files.length > 0 ? (
-              <ul className="mb-4">
-                {files.map((file, index) => (
-                  <li key={index} className="text-gray-700">
-                    {file.name}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-gray-700">Select a file to begin.</p>
+        <div className="w-[534px] h-[526px] flex flex-col items-center gap-6 bg-white p-6 shadow-lg px-20">
+          {/* Uploaded File Display */}
+          <div className="w-[534px] h-[297px] relative">
+            <div className="w-full h-full bg-[#f9faf9] opacity-50 rounded-[5px] border border-dashed border-[#84988e] absolute"></div>
+            {files.length > 0 && (
+              <div className="absolute top-[25px] left-[18px] w-[498px] h-14 bg-black/5 rounded flex items-center px-5 gap-8">
+                <div className="flex items-center gap-5">
+                  <div className="relative w-[29.31px] h-[34px]">
+                    <div className="absolute left-[5.86px] top-[7.91px] text-black/30 text-xs font-bold font-['Poppins']">Aa</div>
+                  </div>
+                  <div className="relative">
+                    <div className="text-black/50 text-lg font-semibold font-['DM Sans']">
+                      {files[0]?.name}
+                    </div>
+                    <div className="text-black/20 text-base font-medium font-['DM Sans']">
+                      {files[0] && (files[0].size / 1024).toFixed(2)} KB
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            {!files.length && (
+              <div className="absolute top-[21px] left-[134.7px] flex flex-col items-center gap-4">
+                <input
+                  type="file"
+                  id="fileInput"
+                  multiple
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <label
+                  htmlFor="fileInput"
+                  className="px-4 py-1 bg-[#669880]/10 text-lg font-medium text-[#669880] rounded cursor-pointer font-['DM Sans']"
+                >
+                  Drag and drop or Browse files
+                </label>
+              </div>
             )}
           </div>
 
-          {uploading || processing ? (
-            <div className="mt-2 text-sm text-black">
-              {uploading && <p>Uploading...</p>}
-              {processing && <p>Processing...</p>}
+          {/* Session Naming Section */}
+          <div className="w-[508px] flex flex-col items-start gap-8">
+            <div className="text-center w-full text-[#000d02] text-2xl font-bold font-['DM Sans']">
+              Name your session
             </div>
-          ) : (
-            <>
+            <div className="w-[462px] h-[43px] bg-[#f9faf9] rounded-[44px] border border-[#d8dedb] flex items-center px-3">
               <input
                 type="text"
                 value={sessionTitle}
                 onChange={(e) => setSessionTitle(e.target.value)}
                 placeholder="Enter session title"
-                className="mb-4 w-full rounded border px-3 py-2"
+                className="w-full text-black/20 text-base font-medium font-['DM Sans'] outline-none"
               />
-              <button
-                onClick={handleFileUpload}
-                className="w-full rounded bg-[#407855] px-4 py-2 text-white hover:bg-[#7C9C87]"
-              >
-                Start Session
-              </button>
-            </>
-          )}
+            </div>
+          </div>
 
+          {/* Buttons */}
+          <div className="flex flex-col items-center gap-2.5">
+            <button
+              onClick={handleFileUpload}
+              className="px-10 py-2 bg-[#669880] text-xl font-bold text-white rounded-[5px] font-['DM Sans']"
+            >
+              Go to my session!
+            </button>
+            <button onClick={onClose} className="text-sm font-medium text-[#a0b0a8] font-['DM Sans']">
+              Cancel
+            </button>
+          </div>
+
+          {/* Uploading/Processing Messages */}
+          {(uploading || processing) && (
+            <div className="mt-4 text-center text-sm font-medium text-black">
+              {uploading && <p>Uploading...</p>}
+              {processing && <p>Processing...</p>}
+            </div>
+          )}
           {successMessage && (
-            <p className="mt-4 text-green-500">{successMessage}</p>
+            <p className="mt-4 text-center text-green-500">{successMessage}</p>
           )}
         </div>
       </div>
