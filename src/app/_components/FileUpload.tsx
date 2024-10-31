@@ -34,7 +34,12 @@ export default function FileUpload({
   const { mutateAsync: addSession } = api.session.addSession.useMutation();
   const { mutateAsync: addDocument } = api.documents.addDocument.useMutation();
 
-  const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
+  const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+  const redirectedTypes = [
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  ];
+
   const router = useRouter();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -110,9 +115,41 @@ export default function FileUpload({
       setSuccessMessage("File processed successfully.");
     } catch (error) {
       setProcessing(false);
-      onError("Error processing file: " + (error instanceof Error ? error.message : "An unknown error occurred"));
+
+      if (error instanceof Error) {
+        onError('Error processing file: ' + error.message);
+      } else {
+        onError('Error processing file: An unknown error occurred');
+      }
     }
   };
+
+  // Client-side code to call the API
+  const convertToPdf = async (file: File): Promise<File> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch('/api/FileConvert', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Conversion failed');
+    }
+
+    // Convert the response to a File object
+    const pdfBlob = await response.blob();
+    const fileName = file.name.replace(/\.(docx|pptx)$/, '.pdf');
+
+    const url = URL.createObjectURL(pdfBlob);
+    console.log("Converted file URL:", url);
+    window.open(url, "_blank");
+    
+    return new File([pdfBlob], fileName, { type: 'application/pdf' });
+  };
+
 
   const handleFileUpload = async () => {
     if (files.length > 0) {
@@ -140,8 +177,20 @@ export default function FileUpload({
           });
         }
 
-        for (const file of files) {
+        for (const fileList of files) {
+          let file = fileList;
+          if (redirectedTypes.includes(file.type)) {
+            try {
+              console.log("Converting file...");
+              file = await convertToPdf(file);
+              console.log("File converted successfully");
+            } catch (error) {
+              console.error("Conversion failed:", error);
+              // Handle error appropriately
+            }
+          }
           if (!allowedTypes.includes(file.type)) {
+            console.log("Invalid file type", file.type);
             onError("Invalid file type");
             return;
           }
@@ -176,6 +225,8 @@ export default function FileUpload({
       onError("Select a file to begin.");
     }
   };
+
+
 
   return (
     isOpen ? (
