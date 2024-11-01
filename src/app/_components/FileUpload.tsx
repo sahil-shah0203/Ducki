@@ -114,13 +114,10 @@ export default function FileUpload({
       setProcessing(false);
       setSuccessMessage("File processed successfully.");
     } catch (error) {
+      //Returned this section back to previous in frontWork
       setProcessing(false);
-
-      if (error instanceof Error) {
-        onError('Error processing file: ' + error.message);
-      } else {
-        onError('Error processing file: An unknown error occurred');
-      }
+      onError("Error processing file: " + (error instanceof Error ? error.message : "An unknown error occurred"));
+      return null;
     }
   };
 
