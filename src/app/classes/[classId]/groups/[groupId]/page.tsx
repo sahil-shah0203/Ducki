@@ -83,9 +83,9 @@ export default function ClassPage() {
         <SessionCards
           onSessionSelect={setSessionId}
           user_id={user_id_number}
-          selectedGroupID={searchParams.get("groupID") || ""}
+          selectedGroupID={searchParams.get("groupID") ?? ""}
           selectedClassID={class_id}
-          selectedClassName={searchParams.get("className") || ""}
+          selectedClassName={searchParams.get("className") ?? ""}
         />
       </div>
     </div>
