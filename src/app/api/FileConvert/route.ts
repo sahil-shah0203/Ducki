@@ -105,7 +105,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   } finally {
     // Clean up the temporary files
-    await unlink(inputPath).catch(() => {});
-    await unlink(outputPath).catch(() => {});
+    await unlink(inputPath).catch((err) => {
+      console.error(`Failed to delete input file: ${err.message}`);
+    });
+    await unlink(outputPath).catch((err) => {
+      console.error(`Failed to delete output file: ${err.message}`);
+    });
   }
 }
