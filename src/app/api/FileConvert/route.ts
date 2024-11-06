@@ -48,6 +48,8 @@ async function convertDocxToPdf(inputPath: string, outputPath: string): Promise<
     // Convert .docx to HTML
     const { value: htmlContent } = await mammoth.convertToHtml({ path: inputPath });
 
+
+    console.log(htmlContent);
     // Create a new PDF document
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage();
