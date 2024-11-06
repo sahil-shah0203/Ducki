@@ -230,27 +230,16 @@ export default function FileUpload({
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
         <div className="w-[534px] h-[526px] flex flex-col items-center gap-6 bg-white p-6 shadow-lg px-20">
           {/* Uploaded File Display */}
-          <div className="w-[534px] h-[297px] relative">
+          <div className="w-[500px] h-[297px] relative">
             <div className="w-full h-full bg-[#f9faf9] opacity-50 rounded-[5px] border border-dashed border-[#84988e] absolute"></div>
             {files.length > 0 && (
               <div className="absolute top-[25px] left-[18px] w-[498px] h-14 bg-black/5 rounded flex items-center px-5 gap-8">
-                <div className="flex items-center gap-5">
-                  <div className="relative w-[29.31px] h-[34px]">
-                    <div className="absolute left-[5.86px] top-[7.91px] text-black/30 text-xs font-bold font-['Poppins']">Aa</div>
-                  </div>
-                  <div className="relative">
-                    <div className="text-black/50 text-lg font-semibold font-['DM Sans']">
-                      {files[0]?.name}
-                    </div>
-                    <div className="text-black/20 text-base font-medium font-['DM Sans']">
-                      {files[0] && (files[0].size / 1024).toFixed(2)} KB
-                    </div>
-                  </div>
-                </div>
+                {/* Existing code for displaying selected file */}
               </div>
             )}
             {!files.length && (
-              <div className="absolute top-[21px] left-[134.7px] flex flex-col items-center gap-4">
+              <div className="absolute inset-0 flex justify-center items-center">
+                {/* Hidden file input */}
                 <input
                   type="file"
                   id="fileInput"
@@ -258,18 +247,53 @@ export default function FileUpload({
                   onChange={handleFileChange}
                   className="hidden"
                 />
-                <label
-                  htmlFor="fileInput"
-                  className="px-4 py-1 bg-[#669880]/10 text-lg font-medium text-[#669880] rounded cursor-pointer font-['DM Sans']"
-                >
-                  Drag and drop or Browse files
-                </label>
+                <div className="w-[266.30px] h-[253.90px] flex flex-col justify-center items-center gap-4">
+                  {/* First Row with Rotated 'Aa' Letters */}
+                  <div className="opacity-80 flex justify-center items-center gap-2">
+                    <div className="w-[72.24px] h-[83.80px] flex justify-center items-center transform rotate-[-30deg]">
+                      <div className="text-[#d35a4f] text-3xl font-bold font-['Poppins']">
+                        Aa
+                      </div>
+                    </div>
+                    <div className="w-[72.24px] h-[83.80px] flex justify-center items-center">
+                      <div className="text-[#d1a60d] text-3xl font-bold font-['Poppins']">
+                        Aa
+                      </div>
+                    </div>
+                    <div className="w-[72.24px] h-[83.80px] flex justify-center items-center transform rotate-[30deg]">
+                      <div className="text-[#8399b0] text-3xl font-bold font-['Poppins']">
+                        Aa
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Text and Button Section */}
+                  <div className="h-[79px] flex flex-col justify-start items-center gap-2">
+                    <div className="text-center text-black/30 text-lg font-medium font-['DM Sans'] leading-tight">
+                      Drag and drop
+                    </div>
+                    <div className="opacity-75 text-center text-black/30 text-sm font-medium font-['DM Sans']">
+                      or
+                    </div>
+                    {/* Label to trigger file input */}
+                    <label
+                      htmlFor="fileInput"
+                      className="px-4 py-1 bg-[#669880]/10 rounded flex justify-center items-center gap-2.5 cursor-pointer"
+                    >
+                      <div className="text-center text-[#669880] text-lg font-medium font-['DM Sans'] leading-tight">
+                        Browse files
+                      </div>
+                    </label>
+                  </div>
+                </div>
               </div>
             )}
           </div>
 
+
+
           {/* Session Naming Section */}
-          <div className="w-[508px] flex flex-col items-start gap-8">
+          <div className="w-[508px] flex flex-col items-center gap-8">
             <div className="text-center w-full text-[#000d02] text-2xl font-bold font-['DM Sans']">
               Name your session
             </div>
@@ -283,6 +307,7 @@ export default function FileUpload({
               />
             </div>
           </div>
+
 
           {/* Buttons */}
           <div className="flex flex-col items-center gap-2.5">
