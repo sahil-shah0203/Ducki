@@ -15,17 +15,19 @@ model User {
   email         String        @unique
   chatHistories ChatHistory[]
   classes       Class[]
+  groups        Group[]
   sessions      Session[]
   events        Event[]
-  documents     Document[]    // Added relation for documents
+  documents     Document[]
+  keyConcepts   KeyConcept[]
 }
+
 
 model ChatHistory {
   chat_id      Int           @id @default(autoincrement())
   timestamp    DateTime      @default(now())
   user         User          @relation(fields: [user_id], references: [user_id])
   user_id      Int
-  class        Class         @relation(fields: [class_id], references: [class_id])
   class_id     Int
   session      Session?      @relation(fields: [session_id], references: [session_id])
   session_id   String?
@@ -46,21 +48,33 @@ model Class {
   class_name    String
   user          User          @relation(fields: [user_id], references: [user_id])
   user_id       Int
-  chatHistories ChatHistory[]
-  sessions      Session[]
+  groups        Group[]
   documents     Document[]
+}
+
+model Group {
+  group_id      String        @id
+  class_id      Int
+  class_name    String
+  class         Class         @relation(fields: [class_id], references: [class_id])
+  user          User          @relation(fields: [user_id], references: [user_id])
+  user_id       Int
+  sessions      Session[]
+  keyConcepts   KeyConcept[]
+  documents     Document[]
+  createdAt     DateTime      @default(now())
+  group_title   String
 }
 
 model Session {
   session_id    String        @id
   user          User          @relation(fields: [user_id], references: [user_id])
   user_id       Int
-  class         Class         @relation(fields: [class_id], references: [class_id])
-  class_id      Int
+  group_id      String
+  group         Group         @relation(fields: [group_id], references: [group_id])
   chatHistories ChatHistory[]
   createdAt     DateTime      @default(now())
   session_title String
-  documents     Document[]
 }
 
 model Event {
@@ -80,10 +94,22 @@ model Document {
   name        String   // Original file name
   user_id     Int
   class_id    Int
-  session_id  String   // Added session_id field
+  group_id    String   // Added session_id field
   user        User     @relation(fields: [user_id], references: [user_id])
   class       Class    @relation(fields: [class_id], references: [class_id])
-  session     Session  @relation(fields: [session_id], references: [session_id]) // Added relation to Session
+  group       Group  @relation(fields: [group_id], references: [group_id]) // Added relation to Session
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model KeyConcept {
+  concept_id         Int      @id @default(autoincrement())
+  description        String
+  user_id            Int
+  group_id           String
+  class_id           Int
+  understanding_level Int     // (1-5)
+  subconcepts        Json     // Array of strings
+  user               User     @relation(fields: [user_id], references: [user_id])
+  group              Group    @relation(fields: [group_id], references: [group_id])
 }

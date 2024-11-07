@@ -122,7 +122,7 @@ export default function Landing() {
         className="mb-4 w-64 rounded border px-2 py-1"
         placeholder="Enter password for beta use..."
       />
-      {inputValue.includes("beta0Yay!") && (
+      {inputValue.includes("quackquack") && (
         <div className="mx-auto max-w-md rounded-lg bg-white p-8 shadow-lg">
           <div className="mb-6 flex justify-center">
             <SignInButton>

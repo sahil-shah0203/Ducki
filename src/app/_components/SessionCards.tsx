@@ -16,11 +16,11 @@ interface SessionCardProps {
 }
 
 interface SessionCardsProps {
-  classId: number;
   onSessionSelect: (sessionId: string) => void;
   user_id: number | undefined;
+  selectedGroupID: string | null;
   selectedClassName: string | null;
-  selectedClassID: number | undefined;
+  selectedClassID: string | null;
 }
 
 const SessionCard: React.FC<SessionCardProps> = ({
@@ -35,24 +35,30 @@ const SessionCard: React.FC<SessionCardProps> = ({
 
   return (
     <div
-      className="relative mt-10 cursor-pointer rounded-lg bg-[#e2e9e5] p-4 shadow-md transition-shadow duration-200 hover:shadow-lg"
-      style={{ width: "230px", height: "280px" }}
+      className="w-[325px] h-[206.14px] justify-center items-center inline-flex cursor-pointer"
       onClick={handleClick}
     >
-      <div
-        className="mx-auto rounded-lg bg-white"
-        style={{ width: "85%", height: "100%" }}
-      ></div>
-      <div className="absolute bottom-0 left-0 right-0">
-        <div
-          className="flex items-center justify-between rounded-b-lg rounded-t-none border border-gray-300 bg-white p-2"
-          style={{ borderTopLeftRadius: "0", borderTopRightRadius: "0" }}
-        >
-          <div>
-            <div className="text-lg font-semibold">{title}</div>
-            <div className="text-gray-600">{date}</div>
+      <div className="w-[325px] h-[206.28px] relative">
+        <div className="w-[325px] h-[206px] left-0 top-0 absolute bg-white rounded" />
+        <div className="w-[325px] h-[199.28px] left-0 top-[7px] absolute">
+          <div className="w-[307px] h-[110px] left-[9px] top-[110px] absolute opacity-50 bg-[#f3f5f4] rounded-[10px]" />
+          <div className="w-[325px] h-[81.28px] left-[-0px] top-[118px] absolute bg-white rounded-bl rounded-br" />
+          <div className="w-[293.90px] h-[55.60px] left-[16px] top-[128px] absolute flex-col justify-start items-start gap-1 inline-flex">
+            <div className="self-stretch justify-start items-center gap-1 inline-flex">
+              <div className="w-[261px] h-[26px] text-[#669880] text-2xl font-medium font-['DM Sans'] leading-[27px]">
+                {title}
+              </div>
+            </div>
+            <div className="self-stretch h-[25.60px] text-[#bcc7c1] text-base font-medium font-['DM Sans']">
+              {date}
+            </div>
           </div>
-          <div className="text-gray-400"></div>
+        </div>
+        <div className="w-[293px] h-[101px] left-[16px] top-[7px] absolute opacity-50 justify-center items-center gap-1 inline-flex">
+          <div className="w-[19px] h-[22px] origin-top-left -rotate-90 bg-[#d8dedb] rounded-md" />
+          <div className="w-[19px] h-[71px] origin-top-left rotate-90 bg-[#d8dedb] rounded-md" />
+          <div className="w-[19px] h-[22px] origin-top-left rotate-90 bg-[#d8dedb] rounded-md" />
+          <div className="w-[19px] h-14 origin-top-left rotate-90 bg-[#d8dedb] rounded-md" />
         </div>
       </div>
     </div>
@@ -60,24 +66,27 @@ const SessionCard: React.FC<SessionCardProps> = ({
 };
 
 const SessionCards: React.FC<SessionCardsProps> = ({
-  classId,
   onSessionSelect,
   user_id,
+  selectedGroupID,
   selectedClassID,
-  selectedClassName,
+  selectedClassName
 }) => {
   const [sessions, setSessions] = useState<Session[]>([]);
 
-  const { data, error, isLoading } = api.session.getSessionsByClassId.useQuery(
-    { class_id: classId },
+  const groupID = selectedGroupID ?? "";
+
+  const { data, error, isLoading } = api.session.getSessionsByGroupId.useQuery(
+    { group_id: groupID },
     {
-      enabled: !!classId,
-    },
+      enabled: !!selectedGroupID,
+    }
   );
+
+  console.log(data);
 
   useEffect(() => {
     if (data) {
-      console.log("Fetched sessions:", data);
       setSessions(data);
     } else if (error) {
       console.error("Error fetching sessions:", error);
@@ -91,17 +100,16 @@ const SessionCards: React.FC<SessionCardsProps> = ({
     <div className="grid grid-cols-1 overflow-auto md:grid-cols-2 lg:grid-cols-4">
       {sessions.map((session: Session) => (
         <Link
-          href={`/classes/${selectedClassID}/sessions/${session.id}?user=${user_id}&className=${selectedClassName}&classID=${selectedClassID}&sessionID=${session.id}`}
+          href={`/classes/${selectedClassID}/groups/${groupID}/sessions/${session.id}?user=${user_id}&className=${selectedClassName}&classID=${selectedClassID}&groupID=${selectedGroupID}&sessionID=${session.id}`}
           key={session.id}
         >
           <SessionCard
-            key={session.id}
             sessionId={session.id}
             title={session.title}
             date={session.date}
             onClick={onSessionSelect}
           />
-        </Link>
+        </Link>      
       ))}
     </div>
   );

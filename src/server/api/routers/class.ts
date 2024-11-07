@@ -23,10 +23,12 @@ export const classRouter = createTRPCRouter({
     }),
 
   addClass: publicProcedure
-    .input(z.object({
-      user_id: z.number(),
-      class_name: z.string().min(1),
-    }))
+    .input(
+      z.object({
+        user_id: z.number(),
+        class_name: z.string().min(1),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       const newClass = await ctx.db.class.create({
         data: {
@@ -37,74 +39,101 @@ export const classRouter = createTRPCRouter({
       return { class_id: newClass.class_id, class_name: newClass.class_name };
     }),
 
-  removeClass: publicProcedure
-    .input(z.object({
-      user_id: z.number(),
-      class_id: z.number(),
-    }))
-    .mutation(async ({ ctx, input }) => {
-      const classToDelete = await ctx.db.class.findFirst({
-        where: {
-          user_id: input.user_id,
-          class_id: input.class_id,
-        },
-      });
-
-      if (!classToDelete) {
-        throw new Error("Class not found or not owned by user");
-      }
-
-      // Find and delete related documents from S3
-      const documents = await ctx.db.document.findMany({
-        where: {
-          class_id: input.class_id,
-        },
-      });
-
-      for (const document of documents) {
-        const s3Params = {
-          Bucket: process.env.AWS_BUCKET_NAME!,
-          Key: document.url.split('/').pop(), // Assuming URL contains the file key at the end
-        };
-        const command = new DeleteObjectCommand(s3Params);
-        await s3.send(command);
-      }
-
-      // Delete related documents from the database
-      await ctx.db.document.deleteMany({
-        where: {
-          class_id: input.class_id,
-        },
-      });
-
-      // Delete related chat messages
-      await ctx.db.chatMessage.deleteMany({
-        where: {
-          chatHistory: {
+    removeClass: publicProcedure
+      .input(
+        z.object({
+          user_id: z.number(),
+          class_id: z.number(),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const classToDelete = await ctx.db.class.findFirst({
+          where: {
+            user_id: input.user_id,
             class_id: input.class_id,
           },
-        },
-      });
-
-      // Delete related chat histories
-      await ctx.db.chatHistory.deleteMany({
-        where: {
-          class_id: input.class_id,
-        },
-      });
-
-      await ctx.db.session.deleteMany({
-        where: {
-          class_id: input.class_id,
-        },
-      });
-
-      await ctx.db.class.delete({
-        where: {
-          class_id: input.class_id,
-        },
-      });
-
-      return { success: true };
-    }),
+        });
+    
+        if (!classToDelete) {
+          throw new Error("Class not found or not owned by user");
+        }
+    
+        // Find and delete related documents from S3
+        const documents = await ctx.db.document.findMany({
+          where: {
+            class_id: input.class_id,
+          },
+        });
+    
+        for (const document of documents) {
+          const s3Params = {
+            Bucket: process.env.AWS_BUCKET_NAME!,
+            Key: document.url.split("/").pop(), // Assuming URL contains the file key at the end
+          };
+          const command = new DeleteObjectCommand(s3Params);
+          await s3.send(command);
+        }
+    
+        // Delete related documents from the database
+        await ctx.db.document.deleteMany({
+          where: {
+            class_id: input.class_id,
+          },
+        });
+    
+        // Retrieve all groups associated with the class to delete related dependencies
+        const groups = await ctx.db.group.findMany({
+          where: {
+            class_id: input.class_id,
+          },
+        });
+    
+        // Extract group IDs for deletion queries
+        const groupIds = groups.map(group => group.group_id);
+    
+        // Delete KeyConcepts associated with each group
+        await ctx.db.keyConcept.deleteMany({
+          where: {
+            group_id: { in: groupIds },
+          },
+        });
+    
+        // Delete Sessions associated with each group
+        await ctx.db.session.deleteMany({
+          where: {
+            group_id: { in: groupIds },
+          },
+        });
+    
+        // Now delete related groups
+        await ctx.db.group.deleteMany({
+          where: {
+            class_id: input.class_id,
+          },
+        });
+    
+        // Delete related chat messages and chat histories
+        await ctx.db.chatMessage.deleteMany({
+          where: {
+            chatHistory: {
+              class_id: input.class_id,
+            },
+          },
+        });
+    
+        await ctx.db.chatHistory.deleteMany({
+          where: {
+            class_id: input.class_id,
+          },
+        });
+    
+        // Delete the class itself
+        await ctx.db.class.delete({
+          where: {
+            class_id: input.class_id,
+          },
+        });
+    
+        return { success: true };
+      }),    
 });

@@ -2,13 +2,9 @@
 import { useUser } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import MainPage from "~/app/page";
-import LLMInput from "~/app/_components/llm_input_components/LLMInput";
-import Link from "next/link";
-
 import { useState } from "react";
+import GroupCards from "~/app/_components/GroupCards";
 import FileUpload from "~/app/_components/FileUpload";
-import { api } from "~/trpc/react";
-import SessionCards from "~/app/_components/SessionCards";
 
 export default function ClassPage() {
   const { user } = useUser();
@@ -16,63 +12,76 @@ export default function ClassPage() {
   const searchParams = useSearchParams();
 
   const user_id = searchParams.get("user");
-  const selectedClassName = searchParams.get("className");
-  const selectedClassID = searchParams.get("classID");
+  const class_id = searchParams.get("classID");
 
-  const [sessionStarted, setSessionStarted] = useState(false);
-  const [sessionId, setSessionId] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+  const [sessionStarted, setSessionStarted] = useState(false); // State to control dialog visibility
+  const [sessionId, setSessionId] = useState<string>("");
 
   if (!user) {
     router.push("/");
   }
 
   const user_id_number = Number(user_id);
-  const selectedClassID_number = Number(selectedClassID);
+  const class_id_number = Number(class_id);
 
-  const handleSessionSelect = (sessionId: string) => {
-    setSessionId(sessionId);
-
-  };
+  // Function to close the dialog
+  const handleCloseDialog = () => setSessionStarted(false);
 
   return (
     <div className="flex flex-row w-full h-screen">
-      <MainPage/>
+      <MainPage />
       <div className="w-full max-w-8xl p-4 z-10">
-        {!sessionStarted ? (
-          <button
-            onClick={() => setSessionStarted(true)}
-            className="flex w-full items-center justify-center space-x-3 rounded-xl border-2 border-dashed border-[#FFE072] bg-[#FFF0CB] px-2 py-4 shadow-md bg-opacity-50"
-          >
-            <div className="flex items-center justify-center rounded-full bg-[#325B46] p-2">
-              <img
-                src="/Group 10.png"
-                alt="Paperclip Icon"
-                className="h-4 w-4"
+
+        {/* Adjusted container to position elements with flexbox */}
+        <div className="w-full h-[225px] bg-white border-b-2 border-gray-300 flex flex-col justify-between px-0 mt-0">
+
+          {/* Top section */}
+          <div className="pl-4">
+            <div className="w-[400px] text-black/30 text-lg font-medium font-['DM Sans'] leading-tight">
+              Fall 2024
+            </div>
+
+            <div className="text-black text-[42px] font-semibold font-['DM Sans'] mb-2">
+              English
+            </div>
+
+            {/* New session button */}
+            {!sessionStarted ? (
+              <button
+                onClick={() => setSessionStarted(true)}
+                className="h-[37px] p-2 bg-[#85ac9a]/20 rounded-sm justify-center items-center gap-1.5 inline-flex"
+              >
+                <div className="text-[#669880] text-base font-bold font-['DM Sans']">
+                  New Session
+                </div>
+              </button>
+            ) : (
+              <FileUpload
+                onError={setError}
+                setSessionId={setSessionId}
+                user_id={user_id_number}
+                class_id={class_id_number}
+                selectedClassName={""}
+                isOpen={sessionStarted} // Pass dialog open state
+                onClose={handleCloseDialog} // Pass dialog close function
               />
-            </div>
-            <div className="flex flex-col items-start py-4">
-              <span className="font-bold">Start Session</span>
-              <span className="text-gray-500">
-                Click to add lecture files, presentations, or notes to begin
-              </span>
-            </div>
-          </button>
-        ) : (
-          <FileUpload
-            onError={setError}
-            setSessionId={setSessionId}
-            user_id={user_id_number}
-            class_id={selectedClassID_number}
-            selectedClassName={selectedClassName}
-          />
-        )}
-        <SessionCards
-          classId={selectedClassID_number}
-          onSessionSelect={handleSessionSelect}
-          user_id={user_id_number}
-          selectedClassName={selectedClassName}
-          selectedClassID={selectedClassID_number}
+            )}
+          </div>
+
+          {/* Bottom section with the links */}
+          <div className="w-[437px] h-[22px] px-1 justify-start items-center gap-8 inline-flex mb-4">
+            <div className="text-[#669880] text-base font-bold font-['DM Sans']">Lectures</div>
+            <div className="text-black/50 text-base font-medium font-['DM Sans']">Favorites</div>
+            <div className="text-black/50 text-base font-medium font-['DM Sans']">Mosaic</div>
+          </div>
+        </div>
+
+        {/* Group Cards */}
+        <GroupCards
+          class_id={class_id_number}
+          user={user_id_number}
+          selectedClassName={""}
         />
       </div>
     </div>

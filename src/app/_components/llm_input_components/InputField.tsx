@@ -55,6 +55,8 @@ export default function InputField({
       },
     };
 
+    console.log("444", uniqueSessionId)
+
     try {
       const upload = await s3.putObject(params).promise();
       console.log(upload);
@@ -84,7 +86,7 @@ export default function InputField({
       FunctionName: LAMBDA_FUNCTION,
       Payload: JSON.stringify({
         document_name: file_name,
-        index: uniqueSessionId
+        index: uniqueSessionId,
       }),
     };
 
@@ -128,7 +130,7 @@ export default function InputField({
   };
 
   return (
-    <div className="w-full flex items-center bg-transparent p-14 border-12 mb-14 mr-2">
+    <div className="border-12 mb-14 flex w-full items-center bg-transparent p-14">
       
       {/*below is the old + button next to LLM Input for uploading documents, it still functions for future testing*/}
       {/* <div>
