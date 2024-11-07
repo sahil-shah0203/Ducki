@@ -249,19 +249,34 @@ export default function FileUpload({
                 />
                 <div className="w-[266.30px] h-[253.90px] flex flex-col justify-center items-center gap-4">
                   {/* First Row with Rotated 'Aa' Letters */}
-                  <div className="opacity-80 flex justify-center items-center gap-2">
+                  <div className="opacity-80 flex justify-center items-center gap-0">
                     <div className="w-[72.24px] h-[83.80px] flex justify-center items-center transform rotate-[-30deg]">
-                      <div className="text-[#d35a4f] text-3xl font-bold font-['Poppins']">
+                      <img
+                        src="\leftFileIcon.svg"
+                        alt="LeftFile"
+                        className="absolute w-[72.24] h-[83.80] object-cover"
+                      />
+                      <div className="text-[#d35a4f] text-3xl font-bold font-['Poppins'] z-10">
                         Aa
                       </div>
                     </div>
                     <div className="w-[72.24px] h-[83.80px] flex justify-center items-center">
-                      <div className="text-[#d1a60d] text-3xl font-bold font-['Poppins']">
+                      <img
+                        src="\middleFileIcon.svg"
+                        alt="MiddleFile"
+                        className="absolute w-[72.24] h-[83.80] object-cover"
+                      />
+                      <div className="text-[#d1a60d] text-3xl font-bold font-['Poppins'] z-10">
                         Aa
                       </div>
                     </div>
                     <div className="w-[72.24px] h-[83.80px] flex justify-center items-center transform rotate-[30deg]">
-                      <div className="text-[#8399b0] text-3xl font-bold font-['Poppins']">
+                      <img
+                        src="\rightFileIcon.svg"
+                        alt="RightFile"
+                        className="absolute w-[72.24] h-[83.80] object-cover"
+                      />
+                      <div className="text-[#8399b0] text-3xl font-bold font-['Poppins'] z-10">
                         Aa
                       </div>
                     </div>
@@ -303,7 +318,7 @@ export default function FileUpload({
                 value={sessionTitle}
                 onChange={(e) => setSessionTitle(e.target.value)}
                 placeholder="Enter session title"
-                className="w-full text-black/20 text-base font-medium font-['DM Sans'] outline-none"
+                className="w-full bg-transparent text-black/20 text-base font-medium font-['DM Sans'] outline-none"
               />
             </div>
           </div>
