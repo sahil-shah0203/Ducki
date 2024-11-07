@@ -26,4 +26,5 @@ RUN mkdir -p /tmp/convert && \
 RUN npm install
 
 # Keep the container running
-CMD ["tail", "-f", "/dev/null"]
+# CMD ["tail", "-f", "/dev/null"]
+CMD ["npm", "run", "dev"]

@@ -388,7 +388,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           )}
 
           {activeTab === "keyConcepts" && (
-            <div className="space-y-4">
+            <div className="space-y-4 max-h-96 overflow-y-auto">
               {isLoadingConcepts && <div>Loading key concepts...</div>}
               {conceptsError && <div>Error: {conceptsError}</div>}
               {keyConcepts.length === 0 && !isLoadingConcepts && (

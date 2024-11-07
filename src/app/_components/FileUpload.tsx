@@ -114,7 +114,6 @@ export default function FileUpload({
       setProcessing(false);
       setSuccessMessage("File processed successfully.");
     } catch (error) {
-      //Returned this section back to previous in frontWork
       setProcessing(false);
       onError("Error processing file: " + (error instanceof Error ? error.message : "An unknown error occurred"));
       return null;
@@ -234,7 +233,12 @@ export default function FileUpload({
             <div className="w-full h-full bg-[#f9faf9] opacity-50 rounded-[5px] border border-dashed border-[#84988e] absolute"></div>
             {files.length > 0 && (
               <div className="absolute top-[25px] left-[18px] w-[498px] h-14 bg-black/5 rounded flex items-center px-5 gap-8">
-                {/* Existing code for displaying selected file */}
+                {files.map((file, index) => (
+                  <div key={index} className="flex flex-col">
+                    <span className="text-black text-sm">{file.name}</span>
+                    <span className="text-gray-500 text-xs">{(file.size / 1024).toFixed(2)} KB</span>
+                  </div>
+                ))}
               </div>
             )}
             {!files.length && (
