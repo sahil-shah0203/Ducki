@@ -142,7 +142,7 @@ export default function FileUpload({
 
     const url = URL.createObjectURL(pdfBlob);
     console.log("Converted file URL:", url);
-    //window.open(url, "_blank");
+    window.open(url, "_blank");
     
     return new File([pdfBlob], fileName, { type: 'application/pdf' });
   };
