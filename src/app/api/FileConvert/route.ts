@@ -1,13 +1,12 @@
-// app/api/convert/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, readFile, unlink, mkdir } from 'fs/promises';
-import { exec } from 'child_process';
-import { promisify } from 'util';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { existsSync } from 'fs';
+import mammoth from 'mammoth';
+import { jsPDF } from 'jspdf';
+import { PDFDocument } from 'pdf-lib';
 
-// Custom error types
 class ConversionError extends Error {
   constructor(message: string, public readonly cause?: Error) {
     super(message);
@@ -29,7 +28,6 @@ class ValidationError extends Error {
   }
 }
 
-const execAsync = promisify(exec);
 const UPLOAD_DIR = '/tmp/convert';
 
 async function ensureUploadDirectory(): Promise<void> {
@@ -45,125 +43,73 @@ async function ensureUploadDirectory(): Promise<void> {
   }
 }
 
-async function convertToPdf(inputPath: string, outputDir: string): Promise<void> {
+async function convertDocxToPdf(inputPath: string, outputPath: string): Promise<void> {
   try {
-    const command = `libreoffice --headless --convert-to pdf --outdir "${outputDir}" "${inputPath}"`;
-    const { stdout, stderr } = await execAsync(command);
-    
-    if (stderr) {
-      console.error('Conversion stderr:', stderr);
-    }
-    console.log('Conversion output:', stdout);
+    // Convert .docx to HTML
+    const { value: htmlContent } = await mammoth.convertToHtml({ path: inputPath });
+
+
+    console.log(htmlContent);
+    // Create a new PDF document
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage();
+    page.drawText(htmlContent);
+
+    // Save the PDF to the output path
+    const pdfBytes = await pdfDoc.save();
+    await writeFile(outputPath, pdfBytes);
   } catch (err) {
     throw new ConversionError(
-      'PDF conversion failed',
+      'Failed to convert DOCX to PDF',
       err instanceof Error ? err : undefined
     );
   }
 }
 
-async function cleanupFiles(files: string[]): Promise<void> {
-  await Promise.all(
-    files.map(file =>
-      unlink(file).catch(err => {
-        console.error(`Failed to delete file ${file}:`, err);
-      })
-    )
-  );
-}
+export async function POST(request: NextRequest): Promise<NextResponse> {
+  await ensureUploadDirectory();
 
-export async function POST(req: NextRequest) {
-  let inputPath = '';
-  let outputPath = '';
+  const formData = await request.formData();
+  const file = formData.get('file') as File;
+
+  if (!file) {
+    throw new ValidationError('No file uploaded');
+  }
+
+  const fileId = uuidv4();
+  const inputPath = path.join(UPLOAD_DIR, `${fileId}.docx`);
+  const outputPath = path.join(UPLOAD_DIR, `${fileId}.pdf`);
 
   try {
-    await ensureUploadDirectory();
+    // Save the uploaded file to the input path
+    const fileBuffer = Buffer.from(await file.arrayBuffer());
+    await writeFile(inputPath, fileBuffer);
 
-    const formData = await req.formData();
-    const file = formData.get('file') as File | null;
+    // Convert the DOCX file to PDF
+    await convertDocxToPdf(inputPath, outputPath);
 
-    if (!file) {
-      throw new ValidationError('No file provided');
-    }
+    // Read the converted PDF file
+    const pdfBuffer = await readFile(outputPath);
 
-    const uniqueId = uuidv4();
-    const originalExtension = path.extname(file.name);
-    const inputFileName = `${uniqueId}${originalExtension}`;
-    const outputFileName = `${uniqueId}.pdf`;
-    
-    inputPath = path.join(UPLOAD_DIR, inputFileName);
-    outputPath = path.join(UPLOAD_DIR, outputFileName);
-
-    // Write input file
-    const buffer = Buffer.from(await file.arrayBuffer());
-    await writeFile(inputPath, buffer).catch(err => {
-      throw new FileSystemError(
-        'Failed to write input file',
-        err instanceof Error ? err : undefined
-      );
-    });
-
-    // Convert to PDF
-    await convertToPdf(inputPath, UPLOAD_DIR);
-
-    // Verify output file exists
-    if (!existsSync(outputPath)) {
-      throw new ConversionError('PDF file was not created');
-    }
-
-    // Read the generated PDF
-    const pdfBuffer = await readFile(outputPath).catch(err => {
-      throw new FileSystemError(
-        'Failed to read converted PDF',
-        err instanceof Error ? err : undefined
-      );
-    });
-
-    // Clean up files
-    await cleanupFiles([inputPath, outputPath]);
-
+    // Return the PDF file as a response
     return new NextResponse(pdfBuffer, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${file.name.replace(originalExtension, '.pdf')}"`,
+        'Content-Disposition': `attachment; filename="${fileId}.pdf"`,
       },
     });
-
   } catch (err) {
-    // Clean up files if they exist
-    if (inputPath || outputPath) {
-      await cleanupFiles([inputPath, outputPath]);
-    }
-
-    // Handle different types of errors
-    if (err instanceof ValidationError) {
-      return NextResponse.json(
-        { error: err.message },
-        { status: 400 }
-      );
-    }
-
-    if (err instanceof ConversionError) {
-      console.error('Conversion error:', err);
-      return NextResponse.json(
-        { error: err.message },
-        { status: 500 }
-      );
-    }
-
-    if (err instanceof FileSystemError) {
-      console.error('File system error:', err);
-      return NextResponse.json(
-        { error: err.message },
-        { status: 500 }
-      );
-    }
-
-    // Handle unexpected errors
-    console.error('Unexpected error:', err);
-    return NextResponse.json(
-      { error: 'An unexpected error occurred' },
-      { status: 500 }
+    throw new FileSystemError(
+      'Failed to process the file',
+      err instanceof Error ? err : undefined
     );
+  } finally {
+    // Clean up the temporary files
+    await unlink(inputPath).catch((err) => {
+      console.error(`Failed to delete input file: ${err.message}`);
+    });
+    await unlink(outputPath).catch((err) => {
+      console.error(`Failed to delete output file: ${err.message}`);
+    });
   }
 }
