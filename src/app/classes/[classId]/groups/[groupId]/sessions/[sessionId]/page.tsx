@@ -18,6 +18,7 @@ export default function SessionPage() {
   const selectedClassName = searchParams.get("className");
   const selectedClassID = searchParams.get("classID");
   const groupID = searchParams.get("groupID");
+  const sessionID = searchParams.get("sessionID");
 
   const [isPopupCollapsed, setIsPopupCollapsed] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -96,7 +97,7 @@ export default function SessionPage() {
           user_id={user_id_number}
           selectedClassName={selectedClassName}
           selectedClassID={selectedClassID_number}
-          uniqueSessionId={groupID}
+          uniqueSessionId={sessionID ?? ""}
           firstName={user?.firstName ?? ""}
         />
       </div>
