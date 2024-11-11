@@ -24,7 +24,7 @@ type KeyConcept = {
   concept_id: number | null;
   description: string;
   understanding_level: number;
-  subconcepts: string[];
+  subconcepts: (string | null)[]; // Allow null values
 };
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -123,7 +123,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         if ("subconcepts" in concept) {
           return {
             ...concept,
-            subconcepts: concept.subconcepts || [],
+            subconcepts: concept.subconcepts ?? [],
           };
         } else {
           return {
@@ -138,7 +138,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       const initialSliderValues = keyConceptsWithSubconcepts.reduce(
         (acc, concept) => {
           if (concept.concept_id !== null) {
-            acc[concept.concept_id] = concept.understanding_level || 1;
+            acc[concept.concept_id] = concept.understanding_level ?? 1;
           }
           return acc;
         },
@@ -166,7 +166,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         class_id: classId,
         group_id: groupID,
       });
-
+  
       setKeyConcepts((prevKeyConcepts) => [
         ...prevKeyConcepts,
         {
@@ -175,12 +175,13 @@ const Sidebar: React.FC<SidebarProps> = ({
           understanding_level: result.newConcept.understanding_level,
           subconcepts: Array.isArray(result.newConcept.subconcepts)
             ? result.newConcept.subconcepts.filter(
-                (subconcept) => typeof subconcept === "string",
-              ) // Ensure it's an array of strings
+                (subconcept): subconcept is string | null =>
+                  typeof subconcept === "string" || subconcept === null
+              )
             : [], // Default to an empty array if subconcepts are not valid
         },
       ]);
-
+  
       setSelectedButtons((prevSelectedButtons) => ({
         ...prevSelectedButtons,
         [result.newConcept.concept_id]: 1,
@@ -188,7 +189,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     } catch (error) {
       console.error("Failed to create key concept:", error);
     }
-  };
+  };  
 
   const editKeyConcept = (concept: KeyConcept) => {
     setEditConceptId(concept.concept_id);
@@ -452,7 +453,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                       min="1"
                       max="4"
                       step="1"
-                      value={selectedButtons[concept.concept_id!] || 1}
+                      value={selectedButtons[concept.concept_id!] ?? 1}
                       onChange={(e) =>
                         handleUnderstandingChange(concept.concept_id!, Number(e.target.value))
                       }
