@@ -91,6 +91,29 @@ export default function SessionPage() {
     <div className="flex h-screen w-full flex-row">
       <MainPage />
       <div className="max-w-8xl z-10 w-full p-4">
+      <button
+          className="flex items-center px-4 py-2 text-white rounded-full hover:bg-gray-100"
+          onClick={() =>
+        router.push(
+          `/classes/${selectedClassID}/groups/${groupID}?user=${user_id}&className=${selectedClassName}&classID=${selectedClassID}&groupID=${groupID}`
+        )
+          }
+        >
+          <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={1.5}
+        stroke="#679881"
+        className="w-5 h-5 mr-2"
+          >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M15.75 19.5L8.25 12l7.5-7.5"
+        />
+          </svg>
+        </button>
         <LLMInput
           onFetchResults={(choices) => console.log(choices)}
           onError={(error) => console.log(error)}
