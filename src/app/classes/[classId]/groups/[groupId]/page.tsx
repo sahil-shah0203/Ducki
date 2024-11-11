@@ -79,14 +79,17 @@ export default function ClassPage() {
           </div>
         </div>
 
-        {/* Session Cards */}
-        <SessionCards
-          onSessionSelect={setSessionId}
-          user_id={user_id_number}
-          selectedGroupID={searchParams.get("groupID") ?? ""}
-          selectedClassID={class_id}
-          selectedClassName={searchParams.get("className") ?? ""}
-        />
+        {/* Container for Session Cards with background color and horizontal line */}
+        <div className="bg-[#fafafa] w-full h-full p-4">
+          <hr className="border-t-2 border-gray-300 mb-4" />
+          <SessionCards
+            onSessionSelect={setSessionId}
+            user_id={user_id_number}
+            selectedGroupID={searchParams.get("groupID") ?? ""}
+            selectedClassID={class_id}
+            selectedClassName={searchParams.get("className") ?? ""}
+          />
+        </div>
       </div>
     </div>
   );

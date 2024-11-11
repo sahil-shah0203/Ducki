@@ -158,37 +158,37 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   }, [groupID, isLoading, keyConceptData, queryError]); // Fetch key concepts when the uniqueSessionId changes
 
-  // const handleAddKeyConcept = async (description: string) => {
-  //   try {
-  //     const result = await createKeyConcept({
-  //       description,
-  //       user_id: Number(userId),
-  //       class_id: classId,
-  //       group_id: groupID,
-  //     });
+  const handleAddKeyConcept = async (description: string) => {
+    try {
+      const result = await createKeyConcept({
+        description,
+        user_id: Number(userId),
+        class_id: classId,
+        group_id: groupID,
+      });
 
-  //     setKeyConcepts((prevKeyConcepts) => [
-  //       ...prevKeyConcepts,
-  //       {
-  //         concept_id: result.newConcept.concept_id,
-  //         description: result.newConcept.description,
-  //         understanding_level: result.newConcept.understanding_level,
-  //         subconcepts: Array.isArray(result.newConcept.subconcepts)
-  //           ? result.newConcept.subconcepts.filter(
-  //               (subconcept) => typeof subconcept === "string",
-  //             ) // Ensure it's an array of strings
-  //           : [], // Default to an empty array if subconcepts are not valid
-  //       },
-  //     ]);
+      setKeyConcepts((prevKeyConcepts) => [
+        ...prevKeyConcepts,
+        {
+          concept_id: result.newConcept.concept_id,
+          description: result.newConcept.description,
+          understanding_level: result.newConcept.understanding_level,
+          subconcepts: Array.isArray(result.newConcept.subconcepts)
+            ? result.newConcept.subconcepts.filter(
+                (subconcept) => typeof subconcept === "string",
+              ) // Ensure it's an array of strings
+            : [], // Default to an empty array if subconcepts are not valid
+        },
+      ]);
 
-  //     setSelectedButtons((prevSelectedButtons) => ({
-  //       ...prevSelectedButtons,
-  //       [result.newConcept.concept_id]: 1,
-  //     }));
-  //   } catch (error) {
-  //     console.error("Failed to create key concept:", error);
-  //   }
-  // };
+      setSelectedButtons((prevSelectedButtons) => ({
+        ...prevSelectedButtons,
+        [result.newConcept.concept_id]: 1,
+      }));
+    } catch (error) {
+      console.error("Failed to create key concept:", error);
+    }
+  };
 
   const editKeyConcept = (concept: KeyConcept) => {
     setEditConceptId(concept.concept_id);
@@ -239,7 +239,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       {
         onSuccess: (data) => {
           console.log(data.message);
-          // refetch key concepts????
+          // refetch key concepts?????
         },
         onError: (error) => {
           console.error(`Error deleting key concept: ${error.message}`);
@@ -446,7 +446,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   </div>
 
                   {/* Understanding buttons */}
-                  {/* {<div className="mt-2 flex space-x-4">
+                  <div className="mt-2 flex space-x-4">
                     {[1, 2, 3, 4].map((num) => (
                       <button
                         key={num}
@@ -462,7 +462,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         {num}
                       </button>
                     ))}
-                  </div>} */}
+                  </div>
                 </div>
               ))}
             </div>
@@ -470,13 +470,13 @@ const Sidebar: React.FC<SidebarProps> = ({
 
           {activeTab === "keyConcepts" && (
             <div className="mt-4 flex space-x-2">
-              {/* <button
+              <button
                 onClick={() => setIsModalOpen(true)}
                 className="flex w-1/2 items-center justify-center space-x-2 rounded bg-[#407855] p-2 text-white transition-colors hover:bg-[#7c9c87]"
               >
                 Add Key Concept
-              </button> */}
-              {/* <button
+              </button>
+              <button
                 onClick={saveUnderstandingChange}
                 className="flex w-1/2 items-center justify-center space-x-2 rounded bg-green-500 p-2 text-white transition-colors hover:bg-green-700"
               >
@@ -487,7 +487,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSave={handleAddKeyConcept}
-              /> */}
+              />
             </div>
           )}
         </aside>
