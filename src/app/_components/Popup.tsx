@@ -239,7 +239,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       {
         onSuccess: (data) => {
           console.log(data.message);
-          // refetch key concepts?????
+          // refetch key concepts????
         },
         onError: (error) => {
           console.error(`Error deleting key concept: ${error.message}`);
@@ -446,23 +446,26 @@ const Sidebar: React.FC<SidebarProps> = ({
                   </div>
 
                   {/* Understanding buttons */}
-                  <div className="mt-2 flex space-x-4">
-                    {[1, 2, 3, 4].map((num) => (
-                      <button
-                        key={num}
-                        className={`flex-grow rounded bg-blue-500 font-bold text-white hover:bg-blue-700 ${
-                          selectedButtons[concept.concept_id!] === num
-                            ? "bg-blue-500"
-                            : "bg-blue-100"
-                        }`}
-                        onClick={() =>
-                          handleUnderstandingChange(concept.concept_id!, num)
-                        }
-                      >
-                        {num}
-                      </button>
-                    ))}
+                  {<div className="mt-2">
+                    <input
+                      type="range"
+                      min="1"
+                      max="4"
+                      step="1"
+                      value={selectedButtons[concept.concept_id!] || 1}
+                      onChange={(e) =>
+                        handleUnderstandingChange(concept.concept_id!, Number(e.target.value))
+                      }
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                    />
+                    <div className="flex justify-between mt-1 text-sm text-gray-600">
+                      <span>1</span>
+                      <span>2</span>
+                      <span>3</span>
+                      <span>4</span>
+                    </div>
                   </div>
+                  }
                 </div>
               ))}
             </div>

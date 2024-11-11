@@ -30,16 +30,37 @@ const SessionCard: React.FC<SessionCardProps> = ({
     onClick(sessionId);
   };
 
-  // Calculate the ratios for the colored bar
   const total = understandingLevels.length;
-  const redCount = understandingLevels.filter((level) => level >= 1 && level <= 2).length;
-  const yellowCount = understandingLevels.filter((level) => level >= 3 && level <= 4).length;
-  const greenCount = understandingLevels.filter((level) => level === 5).length;
-
-  const redRatio = (redCount / total) * 100 || 0;
-  const yellowRatio = (yellowCount / total) * 100 || 0;
-  const greenRatio = (greenCount / total) * 100 || 0;
-
+  const counts = {
+    red: understandingLevels.filter((level) => level === 1).length, // Struggling
+    yellow: understandingLevels.filter((level) => level === 2).length, // Comfortable
+    orange: understandingLevels.filter((level) => level === 3).length, // Developing
+    green: understandingLevels.filter((level) => level === 4).length, // Mastered
+  };
+  
+  // Calculate percentages for the colored bar
+  const redRatio = (counts.red / total) * 100 || 0;
+  const yellowRatio = (counts.yellow / total) * 100 || 0;
+  const orangeRatio = (counts.orange / total) * 100 || 0;
+  const greenRatio = (counts.green / total) * 100 || 0;
+  
+  // Determine the category with the highest count
+  const maxCategory = Object.entries(counts).reduce(
+    (max, [key, count]) => (count > max.count ? { key, count } : max),
+    { key: "red", count: 0 }
+  );
+  
+  const categoryLabels: Record<string, string> = {
+    red: "Struggling",
+    yellow: "Comfortable",
+    orange: "Developing",
+    green: "Mastered",
+  };
+  
+  // Get the corresponding label and count
+  const highestCountLabel = categoryLabels[maxCategory.key];
+  const highestCount = maxCategory.count;
+  
   return (
     <div className="w-[325px] h-[235px] relative hover:shadow-xl transition-shadow duration-200" onClick={handleClick}>
       <div className="w-[325px] h-[150px] left-0 top-0 absolute">
@@ -59,29 +80,48 @@ const SessionCard: React.FC<SessionCardProps> = ({
         </div>
         <div className="w-[307px] h-[110px] left-[9px] top-[120.86px] absolute opacity-0 bg-[#f3f5f4] rounded-[10px]"></div>
         <div className="w-[273px] h-[49px] left-[26px] top-[32.86px] absolute justify-start items-center gap-1 inline-flex">
-          {/* Colored bar */}
+          {/* Colored Bar */}
           <div className="flex w-full h-full rounded-sm overflow-hidden">
             <div style={{ width: `${redRatio}%` }} className="bg-[#ee5a36]"></div>
             <div style={{ width: `${yellowRatio}%` }} className="bg-[#f5ab54]"></div>
+            <div style={{ width: `${orangeRatio}%` }} className="bg-[#ee7f4c]"></div>
             <div style={{ width: `${greenRatio}%` }} className="bg-[#1a9461]"></div>
           </div>
         </div>
         <div className="w-[307px] h-0.5 left-[9px] top-[127.28px] absolute bg-[#f3f5f4] rounded-[20px]"></div>
       </div>
-      <div className="h-[45.43px] p-1.5 left-[239.86px] top-[5px] absolute bg-[#e5ab00]/0 rounded justify-end items-center gap-[9.29px] inline-flex">
-        <div className="w-[25px] h-6 bg-[#4f715f]/0 rounded-sm justify-center items-center flex">
-          <div className="h-[24.34px] px-0.5 py-2.5 rounded-sm justify-center items-center gap-[3px] inline-flex">
-            <div className="w-[4.34px] h-[4.34px] bg-[#4f715f] rounded-full"></div>
-            <div className="w-[4.34px] h-[4.34px] bg-[#4f715f] rounded-full"></div>
-            <div className="w-[4.34px] h-[4.34px] bg-[#4f715f] rounded-full"></div>
-          </div>
+      <div className="p-1 left-[112px] top-[90px] absolute rounded justify-center items-center gap-2.5 inline-flex">
+        {/* Dynamic Highest Category Label */}
+        <div
+          className={`p-1 rounded inline-flex justify-center items-center gap-2.5`}
+          style={{
+            backgroundColor: `${
+              maxCategory.key === "red"
+                ? "#ee5a36"
+                : maxCategory.key === "yellow"
+                ? "#f5ab54"
+                : maxCategory.key === "orange"
+                ? "#ee7f4c"
+                : "#1a9461"
+            }20`, // Add opacity for the background color (e.g., #ee5a3620 is 12.5% opacity)
+            color: `${
+              maxCategory.key === "red"
+                ? "#ee5a36"
+                : maxCategory.key === "yellow"
+                ? "#f5ab54"
+                : maxCategory.key === "orange"
+                ? "#ee7f4c"
+                : "#1a9461"
+            }`,
+          }}
+        >
+          <span className="text-xs font-bold font-['DM Sans']">
+            {highestCount} {highestCountLabel}
+          </span>
         </div>
       </div>
-      <div className="p-1 left-[197px] top-[90px] absolute bg-[#ee5a36]/10 rounded justify-center items-center gap-2.5 inline-flex">
-        <div className="text-[#ee5a36] text-xs font-bold font-['DM Sans']">9 Struggling</div>
-      </div>
     </div>
-  );
+  );  
 };
 
 // SessionCards Component
