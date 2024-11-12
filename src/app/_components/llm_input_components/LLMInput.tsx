@@ -12,6 +12,7 @@ interface LLMInputProps {
   selectedClassName: string | null;
   selectedClassID: number | null;
   uniqueSessionId: string;
+  groupID: string;
   firstName: string; // Add userName prop
 }
 
@@ -22,6 +23,7 @@ export default function LLMInput({
   selectedClassName,
   selectedClassID,
   uniqueSessionId,
+  groupID,
   firstName,
 }: LLMInputProps) {
   const [inputText, setInputText] = useState<string>("");
@@ -162,7 +164,7 @@ export default function LLMInput({
         body: JSON.stringify({
           chatHistory: [],
           prompt: initialMessage,
-          session: uniqueSessionId,
+          session: groupID,
           class_id: selectedClassID,
         }),
       });
@@ -175,7 +177,7 @@ export default function LLMInput({
       const llmResponseMessage: ChatMessageType = {
         type: false, // LLM message
         text: modelResponse,
-        session: uniqueSessionId,
+        session: groupID,
         timestamp: llmTimestamp,
       };
 
@@ -212,7 +214,7 @@ export default function LLMInput({
         body: JSON.stringify({
           chatHistory: chatHistory,
           prompt: inputText,
-          session: uniqueSessionId,
+          session: groupID,
           class_id: selectedClassID,
         }),
       });
