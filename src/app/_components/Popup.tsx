@@ -5,6 +5,7 @@ import { api } from "~/trpc/react";
 import { useDrag } from "../api/hooks/useDrag"; // Custom hook for dragging functionality
 import logo from "../../../public/duck.png";
 import { AddKeyConceptModal } from "./AddKeyConceptModal";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type SidebarProps = {
   userId: string;
@@ -53,6 +54,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [selectedButtons, setSelectedButtons] = useState<
     Record<number, number>
   >({});
+  const searchParams = useSearchParams();
+  const sessionId = searchParams.get("sessionID");
 
   const {
     data: documentsData = [],
@@ -71,7 +74,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     error: queryError,
     isLoading: keyConceptsLoading,
   } = api.keyconcepts.getKeyConcepts.useQuery({
-    group_id: groupID,
+    group_id: sessionId,
     class_id: classId,
     user_id: Number(userId),
   });
