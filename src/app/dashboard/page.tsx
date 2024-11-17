@@ -1,12 +1,16 @@
 "use client";
 import { useUser } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
 import MainPage from "~/app/page";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function DashboardPage() {
   const { user } = useUser();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
+  const user_id = searchParams.get("user");
+
+  console.log(user_id);
   if (!user) {
     router.push("/");
   }

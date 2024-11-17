@@ -13,6 +13,7 @@ export default function ClassPage() {
 
   const user_id = searchParams.get("user");
   const class_id = searchParams.get("classID");
+  const class_name = searchParams.get("className");
 
   const [error, setError] = useState<string | null>(null);
   const [sessionStarted, setSessionStarted] = useState(false); // State to control dialog visibility
@@ -43,7 +44,7 @@ export default function ClassPage() {
             </div>
 
             <div className="text-black text-[42px] font-semibold font-['DM Sans'] mb-2">
-              English
+              {class_name}
             </div>
 
             {/* New session button */}
