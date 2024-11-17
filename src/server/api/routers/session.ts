@@ -31,6 +31,43 @@ export const sessionRouter = createTRPCRouter({
       }));
     }),
 
+  getSessionsByUserId: publicProcedure
+    .input(z.object({ user_id: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const sessions = await db.session.findMany({
+        where: {
+          user_id: input.user_id,
+        },
+        include: {
+          user: true,
+        },
+      });
+
+      const formatDate = (date: Date) => {
+        const options: Intl.DateTimeFormatOptions = {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        };
+        return new Intl.DateTimeFormat("en-US", options).format(date);
+      };
+      const formatDue = (due: Date) => {
+        const options: Intl.DateTimeFormatOptions = {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        };
+        return new Intl.DateTimeFormat("en-US", options).format(due);
+      };
+
+      return sessions.map((session: { session_id: string; session_title: string; createdAt: Date; dueDate: Date }) => ({
+        id: session.session_id,
+        title: session.session_title,
+        date: formatDate(session.createdAt),
+        due: formatDue(session.dueDate),
+      }));
+    }),
+
     getSessionsWithConcepts: publicProcedure
   .input(
     z.object({
@@ -94,7 +131,7 @@ export const sessionRouter = createTRPCRouter({
         group_id: z.string(),
         session_id: z.string(),
         session_title: z.string(),
-        dueDate: z.string(),
+        dueDate: z.date(),
       })
     )
     .mutation(async ({ input }) => {
