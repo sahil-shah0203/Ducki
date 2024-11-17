@@ -174,6 +174,7 @@ export default function FileUpload({
             dueDate: currDate,
           });
           currDate.setDate(currDate.getDate() + 1);
+          console.log("Session created:", sessionIds[i]);
         }
 
         for (const file of files) {
