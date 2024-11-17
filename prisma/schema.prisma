@@ -75,6 +75,7 @@ model Session {
   chatHistories ChatHistory[]
   createdAt     DateTime      @default(now())
   session_title String
+  dueDate       DateTime      @default(now())
 }
 
 model Event {

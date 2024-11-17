@@ -154,6 +154,7 @@ export default function FileUpload({
       const group_id = uuid();
       const sessionIds = [uuid(), uuid(), uuid()];
       setSessionId(sessionIds[0] ?? "");
+      const currDate = new Date();
 
       try {
         await addGroup({
@@ -170,7 +171,9 @@ export default function FileUpload({
             session_id: sessionIds[i] ?? "",
             session_title: `${sessionTitle} - Session ${i + 1}`,
             group_id: group_id,
+            dueDate: currDate,
           });
+          currDate.setDate(currDate.getDate() + 1);
         }
 
         for (const file of files) {

@@ -94,6 +94,7 @@ export const sessionRouter = createTRPCRouter({
         group_id: z.string(),
         session_id: z.string(),
         session_title: z.string(),
+        dueDate: z.string(),
       })
     )
     .mutation(async ({ input }) => {
@@ -104,6 +105,7 @@ export const sessionRouter = createTRPCRouter({
           group_id: input.group_id,
           session_title: input.session_title,
           createdAt: new Date(),
+          dueDate: new Date(input.dueDate),
         },
       });
       return {
