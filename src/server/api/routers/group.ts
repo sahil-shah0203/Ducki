@@ -64,11 +64,12 @@ export const groupRouter = createTRPCRouter({
             return new Intl.DateTimeFormat("en-US", options).format(date);
           };
     
-          return sessions.map((session: { session_id: string; session_title: string; createdAt: Date; dueDate: Date }) => ({
+          return sessions.map((session: { session_id: string; session_title: string; createdAt: Date; dueDate: Date; class_name: string}) => ({
             id: session.session_id,
             title: session.session_title,
             date: formatDate(session.createdAt),
             due: formatDate(session.dueDate),
+            class_name: session.class_name
           }));
         }),
     });

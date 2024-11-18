@@ -29,6 +29,12 @@ export default function DashboardPage() {
     return dateA - dateB;
   });
 
+  const today = new Date().toISOString().split("T")[0]; // Today's date in YYYY-MM-DD format
+  const todaySessions = sortedSessions?.filter((session) => session.due === today) || [];
+  const upcomingSessions = sortedSessions || [];
+
+  console.log("Today's Sessions:", sortedSessions);
+
   return (
     <div className="flex flex-row w-full h-screen">
       <MainPage/>

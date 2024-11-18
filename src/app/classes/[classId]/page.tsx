@@ -63,7 +63,7 @@ export default function ClassPage() {
                 setSessionId={setSessionId}
                 user_id={user_id_number}
                 class_id={class_id_number}
-                selectedClassName={""}
+                selectedClassName={class_name}
                 isOpen={sessionStarted} // Pass dialog open state
                 onClose={handleCloseDialog} // Pass dialog close function
               />
@@ -82,7 +82,7 @@ export default function ClassPage() {
         <GroupCards
           class_id={class_id_number}
           user={user_id_number}
-          selectedClassName={""}
+          selectedClassName={class_name}
         />
       </div>
     </div>

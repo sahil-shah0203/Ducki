@@ -76,6 +76,7 @@ model Session {
   createdAt     DateTime      @default(now())
   session_title String
   dueDate       DateTime      @default(now())
+  class_name    String
 }
 
 model Event {

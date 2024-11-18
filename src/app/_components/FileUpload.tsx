@@ -172,9 +172,11 @@ export default function FileUpload({
             session_title: `${sessionTitle} - Session ${i + 1}`,
             group_id: group_id,
             dueDate: currDate,
+            class_name: selectedClassName ?? "",
           });
           currDate.setDate(currDate.getDate() + 1);
           console.log("Session created:", sessionIds[i]);
+          console.log("class_name:", selectedClassName ?? "");
         }
 
         for (const file of files) {

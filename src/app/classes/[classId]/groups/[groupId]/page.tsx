@@ -13,6 +13,8 @@ export default function ClassPage() {
 
   const user_id = searchParams.get("user");
   const class_id = searchParams.get("classID");
+  const class_name = searchParams.get("className");
+  console.log("class_name", class_name);
 
   const [error, setError] = useState<string | null>(null);
   const [sessionStarted, setSessionStarted] = useState(false); // State to control dialog visibility
@@ -64,7 +66,7 @@ export default function ClassPage() {
                 setSessionId={setSessionId}
                 user_id={user_id_number}
                 class_id={class_id_number}
-                selectedClassName={""}
+                selectedClassName={class_name}
                 isOpen={sessionStarted} // Pass dialog open state
                 onClose={handleCloseDialog} // Pass dialog close function
               />

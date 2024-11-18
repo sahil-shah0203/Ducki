@@ -60,11 +60,12 @@ export const sessionRouter = createTRPCRouter({
         return new Intl.DateTimeFormat("en-US", options).format(due);
       };
 
-      return sessions.map((session: { session_id: string; session_title: string; createdAt: Date; dueDate: Date }) => ({
+      return sessions.map((session: { session_id: string; session_title: string; createdAt: Date; dueDate: Date; class_name: string }) => ({
         id: session.session_id,
         title: session.session_title,
         date: formatDate(session.createdAt),
         due: formatDue(session.dueDate),
+        class_name: session.class_name,
       }));
     }),
 
@@ -132,6 +133,7 @@ export const sessionRouter = createTRPCRouter({
         session_id: z.string(),
         session_title: z.string(),
         dueDate: z.date(),
+        class_name: z.string(),
       })
     )
     .mutation(async ({ input }) => {
@@ -143,6 +145,7 @@ export const sessionRouter = createTRPCRouter({
           session_title: input.session_title,
           createdAt: new Date(),
           dueDate: new Date(input.dueDate),
+          class_name: input.class_name,
         },
       });
       return {
