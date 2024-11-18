@@ -116,8 +116,8 @@ export default function Sidebar({
       }
 
       setClassToDelete(null);
-
-      router.push("/dashboard");
+      console.log("user ID:", userId);
+      router.push(`/dashboard?user=${userId}`);
     }
   };
 
@@ -179,7 +179,7 @@ export default function Sidebar({
       {!isCollapsed && (
         <>
           <nav className="mt-16 space-y-4">
-            <Link href="/dashboard">
+            <Link href={`/dashboard?user=${user_id}`} key={user_id}>
               <DashboardButton onClick={resetSelectedClass} />
             </Link>
             <Link href={{ pathname: "/calendar", query: { userId } }}>

@@ -5,17 +5,17 @@ export const keyConceptRouter = createTRPCRouter({
   getKeyConcepts: publicProcedure
     .input(
       z.object({
-        session_id: z.string(),
+        group_id: z.string(),
         class_id: z.number(),
         user_id: z.number(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { session_id, class_id, user_id } = input;
+      const { group_id, class_id, user_id } = input;
 
       const keyConcepts = await ctx.db.keyConcept.findMany({
         where: {
-          session_id,
+          group_id,
         },
         select: {
           concept_id: true,
@@ -35,7 +35,7 @@ export const keyConceptRouter = createTRPCRouter({
         },
         body: JSON.stringify({
           class_id: class_id,
-          session: session_id,
+          session: group_id,
         }),
       });
 
@@ -47,38 +47,50 @@ export const keyConceptRouter = createTRPCRouter({
 
       const parsedObject = JSON.parse(data.concepts);
 
-      let parsedData: Array<{
+      if (!parsedObject.concepts) {
+        throw new Error(`Error fetching key concepts:`);
+      }
+
+      const parsedData = parsedObject.concepts;
+
+      let content: Array<{
         concept_id: number | null;
         description: string;
         understanding_level: number;
+        subconcepts: string[];
       }> = [];
 
-      if (Array.isArray(parsedObject.main_topics)) {
-        parsedData = parsedObject.main_topics.map(
-          (topic: { description: string; understanding_level: number }) => ({
+      if (Array.isArray(parsedData)) {
+        content = parsedData.map(
+          (topic: { concept: string; subconcepts: string[] }) => ({
             concept_id: null,
-            description: topic,
+            description: topic.concept,
+            understanding_level: 1,
+            subconcepts: topic.subconcepts,
           }),
         );
       } else {
-        throw new Error("Unexpected format of main_topics data");
+        throw new Error("Unexpected format of key_concepts data");
       }
 
-      for (const item of parsedData) {
+      for (const item of content) {
         const createdConcept = await ctx.db.keyConcept.create({
           data: {
             description: item.description,
-            session_id: session_id,
+            group_id: group_id,
             class_id: class_id,
             user_id: user_id,
             understanding_level: 1,
+            subconcepts: item.subconcepts,
           },
         });
 
         item.concept_id = createdConcept.concept_id;
       }
 
-      return parsedData;
+      console.log("222", content);
+
+      return content;
     }),
 
   deleteKeyConcept: publicProcedure
@@ -134,21 +146,24 @@ export const keyConceptRouter = createTRPCRouter({
         description: z.string(),
         user_id: z.number(),
         class_id: z.number(),
-        session_id: z.string(),
+        group_id: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { description, user_id, class_id, session_id } = input;
+      const { description, user_id, class_id, group_id } = input;
 
       const understanding_level = 1; // Default level of understanding
+
+      const subconcepts: string[] = [];
 
       const newConcept = await ctx.db.keyConcept.create({
         data: {
           description,
           user_id,
           class_id,
-          session_id,
+          group_id,
           understanding_level,
+          subconcepts,
         },
       });
 

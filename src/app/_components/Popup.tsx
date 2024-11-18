@@ -10,7 +10,7 @@ type SidebarProps = {
   userId: string;
   classId: number;
   isCollapsed: boolean;
-  uniqueSessionId: string;
+  groupID: string;
   onEndSession: () => void; // Function to handle the end session
 };
 
@@ -24,13 +24,14 @@ type KeyConcept = {
   concept_id: number | null;
   description: string;
   understanding_level: number;
+  subconcepts: (string | null)[]; // Allow null values
 };
 
 const Sidebar: React.FC<SidebarProps> = ({
   userId,
   classId,
   isCollapsed,
-  uniqueSessionId,
+  groupID,
   onEndSession,
 }) => {
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(
@@ -58,8 +59,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     error,
     isLoading,
     refetch: refetchDocuments,
-  } = api.documents.getDocumentsBySessionId.useQuery({
-    sessionId: uniqueSessionId,
+  } = api.documents.getDocumentsByGroupId.useQuery({
+    group_id: groupID,
   });
 
   const { mutateAsync: deleteDocument } =
@@ -70,7 +71,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     error: queryError,
     isLoading: keyConceptsLoading,
   } = api.keyconcepts.getKeyConcepts.useQuery({
-    session_id: uniqueSessionId,
+    group_id: groupID,
     class_id: classId,
     user_id: Number(userId),
   });
@@ -116,16 +117,34 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
 
     if (keyConceptData) {
-      setKeyConcepts(keyConceptData);
-      const initialSliderValues = keyConceptData.reduce(
+      // Ensure subconcepts exists only for the appropriate type
+      const keyConceptsWithSubconcepts = keyConceptData.map((concept) => {
+        // Check if subconcepts exists, or provide an empty array for those that have subconcepts
+        if ("subconcepts" in concept) {
+          return {
+            ...concept,
+            subconcepts: concept.subconcepts ?? [],
+          };
+        } else {
+          return {
+            ...concept,
+            subconcepts: [], // Add subconcepts as an empty array for the ones missing it
+          };
+        }
+      });
+
+      setKeyConcepts(keyConceptsWithSubconcepts);
+
+      const initialSliderValues = keyConceptsWithSubconcepts.reduce(
         (acc, concept) => {
           if (concept.concept_id !== null) {
-            acc[concept.concept_id] = concept.understanding_level || 1;
+            acc[concept.concept_id] = concept.understanding_level ?? 1;
           }
           return acc;
         },
         {} as Record<number, number>,
       );
+
       setSelectedButtons(initialSliderValues);
       setIsLoadingConcepts(false);
     }
@@ -137,7 +156,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     } else {
       fetchKeyConcepts();
     }
-  }, [uniqueSessionId, isLoading, keyConceptData, queryError]); // Fetch key concepts when the uniqueSessionId changes
+  }, [groupID, isLoading, keyConceptData, queryError]); // Fetch key concepts when the uniqueSessionId changes
 
   const handleAddKeyConcept = async (description: string) => {
     try {
@@ -145,18 +164,24 @@ const Sidebar: React.FC<SidebarProps> = ({
         description,
         user_id: Number(userId),
         class_id: classId,
-        session_id: uniqueSessionId,
+        group_id: groupID,
       });
-
+  
       setKeyConcepts((prevKeyConcepts) => [
         ...prevKeyConcepts,
         {
           concept_id: result.newConcept.concept_id,
           description: result.newConcept.description,
           understanding_level: result.newConcept.understanding_level,
+          subconcepts: Array.isArray(result.newConcept.subconcepts)
+            ? result.newConcept.subconcepts.filter(
+                (subconcept): subconcept is string | null =>
+                  typeof subconcept === "string" || subconcept === null
+              )
+            : [], // Default to an empty array if subconcepts are not valid
         },
       ]);
-
+  
       setSelectedButtons((prevSelectedButtons) => ({
         ...prevSelectedButtons,
         [result.newConcept.concept_id]: 1,
@@ -164,7 +189,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     } catch (error) {
       console.error("Failed to create key concept:", error);
     }
-  };
+  };  
 
   const editKeyConcept = (concept: KeyConcept) => {
     setEditConceptId(concept.concept_id);
@@ -364,7 +389,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           )}
 
           {activeTab === "keyConcepts" && (
-            <div className="space-y-4">
+            <div className="space-y-4 max-h-96 overflow-y-auto">
               {isLoadingConcepts && <div>Loading key concepts...</div>}
               {conceptsError && <div>Error: {conceptsError}</div>}
               {keyConcepts.length === 0 && !isLoadingConcepts && (
@@ -383,9 +408,16 @@ const Sidebar: React.FC<SidebarProps> = ({
                         onChange={handleDescriptionChange}
                       />
                     ) : (
-                      <p className="text-sm font-medium text-white">
-                        {concept.description}
-                      </p>
+                      <div>
+                        <p className="text-sm font-medium text-white">
+                          {concept.description}
+                        </p>
+                        <div>
+                          {concept.subconcepts?.map((subconcept, index) => (
+                            <p key={index}>{subconcept}</p>
+                          ))}
+                        </div>
+                      </div>
                     )}
                     <div className="ml-4 flex space-x-2">
                       {editConceptId === concept.concept_id ? (
@@ -415,23 +447,26 @@ const Sidebar: React.FC<SidebarProps> = ({
                   </div>
 
                   {/* Understanding buttons */}
-                  <div className="mt-2 flex space-x-4">
-                    {[1, 2, 3, 4].map((num) => (
-                      <button
-                        key={num}
-                        className={`flex-grow rounded bg-blue-500 font-bold text-white hover:bg-blue-700 ${
-                          selectedButtons[concept.concept_id!] === num
-                            ? "bg-blue-500"
-                            : "bg-blue-100"
-                        }`}
-                        onClick={() =>
-                          handleUnderstandingChange(concept.concept_id!, num)
-                        }
-                      >
-                        {num}
-                      </button>
-                    ))}
+                  {<div className="mt-2">
+                    <input
+                      type="range"
+                      min="1"
+                      max="4"
+                      step="1"
+                      value={selectedButtons[concept.concept_id!] ?? 1}
+                      onChange={(e) =>
+                        handleUnderstandingChange(concept.concept_id!, Number(e.target.value))
+                      }
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                    />
+                    <div className="flex justify-between mt-1 text-sm text-gray-600">
+                      <span>1</span>
+                      <span>2</span>
+                      <span>3</span>
+                      <span>4</span>
+                    </div>
                   </div>
+                  }
                 </div>
               ))}
             </div>
