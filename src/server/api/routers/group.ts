@@ -47,4 +47,28 @@ export const groupRouter = createTRPCRouter({
             });
             return { group_id: newGroup.group_id, class_id: newGroup.class_id, class_name: newGroup.class_name, createdAt: newGroup.createdAt };
         }),
-});
+        getSessionsByUserId: publicProcedure
+        .input(z.object({ user_id: z.number() }))
+        .query(async ({ input }) => {
+          const sessions = await db.session.findMany({
+            where: {
+              user_id: input.user_id,
+            },
+            include: {
+              user: true,
+            },
+          });
+    
+          const formatDate = (date: Date) => {
+            const options: Intl.DateTimeFormatOptions = { year: "numeric", month: "2-digit", day: "2-digit" };
+            return new Intl.DateTimeFormat("en-US", options).format(date);
+          };
+    
+          return sessions.map((session: { session_id: string; session_title: string; createdAt: Date; dueDate: Date }) => ({
+            id: session.session_id,
+            title: session.session_title,
+            date: formatDate(session.createdAt),
+            due: formatDate(session.dueDate),
+          }));
+        }),
+    });
