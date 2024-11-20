@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 
 interface SessionData {
   id: string; // Unique identifier for the session
@@ -47,11 +48,16 @@ const ProgressSessionCard: React.FC<ProgressSessionCardProps> = ({
       </div>
 
       {/* Action Button */}
-      <div className="self-stretch px-[30px] py-2.5 bg-[#669880] rounded-[30px] flex justify-center items-center">
-        <div className="text-white text-lg font-medium font-['DM Sans']">
-          Start Session
+      <Link
+        href={`/classes/CLASS_ID/groups/GROUP_ID/sessions/${id}`}
+        as={`/classes/classId/groups/groupId/sessions/${id}`} // Update parameters accordingly
+      >
+        <div className="self-stretch px-[30px] py-2.5 bg-[#669880] rounded-[30px] flex justify-center items-center cursor-pointer">
+          <div className="text-white text-lg font-medium font-['DM Sans']">
+            Start Session
+          </div>
         </div>
-      </div>
+      </Link>
     </div>
   );
 };
