@@ -1,3 +1,4 @@
+import { group } from "console";
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
@@ -64,12 +65,14 @@ export const groupRouter = createTRPCRouter({
             return new Intl.DateTimeFormat("en-US", options).format(date);
           };
     
-          return sessions.map((session: { session_id: string; session_title: string; createdAt: Date; dueDate: Date; class_name: string}) => ({
+          return sessions.map((session: { session_id: string; session_title: string; createdAt: Date; dueDate: Date; class_name: string; group_id: string; class_id: number}) => ({
             id: session.session_id,
             title: session.session_title,
             date: formatDate(session.createdAt),
             due: formatDate(session.dueDate),
-            class_name: session.class_name
+            class_name: session.class_name,
+            group_id: session.group_id,
+            class_id: session.class_id,
           }));
         }),
     });

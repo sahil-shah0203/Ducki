@@ -94,9 +94,7 @@ export default function SessionPage() {
       <button
           className="flex items-center px-4 py-2 text-white rounded-full hover:bg-gray-100"
           onClick={() =>
-        router.push(
-          `/classes/${selectedClassID}/groups/${groupID}?user=${user_id}&className=${selectedClassName}&classID=${selectedClassID}&groupID=${groupID}`
-        )
+        router.back()
           }
         >
           <svg

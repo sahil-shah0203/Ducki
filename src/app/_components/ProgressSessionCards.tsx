@@ -7,6 +7,9 @@ interface SessionData {
   class_name: string; // Class name associated with the session
   date: string; // Start date of the session
   due: string; // Due date for the session
+  group_id: string; // Group ID associated with the session
+  class_id: number; // Class ID associated with the session
+  user_id: number; // User ID associated with the session
 }
 
 interface ProgressSessionCardProps extends SessionData {}
@@ -21,6 +24,9 @@ const ProgressSessionCard: React.FC<ProgressSessionCardProps> = ({
   class_name,
   date,
   due,
+  group_id,
+  class_id,
+  user_id
 }) => {
   return (
     <div className="w-[230px] h-[280px] p-5 bg-white rounded-[20px] flex flex-col justify-between items-start gap-4 shadow-md">
@@ -49,8 +55,8 @@ const ProgressSessionCard: React.FC<ProgressSessionCardProps> = ({
 
       {/* Action Button */}
       <Link
-        href={`/classes/CLASS_ID/groups/GROUP_ID/sessions/${id}`}
-        as={`/classes/classId/groups/groupId/sessions/${id}`} // Update parameters accordingly
+        href={`/classes/${class_id}/groups/${group_id}/sessions/${id}?user=${user_id}&className=${class_name}&classID=${class_id}&groupID=${group_id}&sessionID=${id}`}
+        key={id}
       >
         <div className="self-stretch px-[30px] py-2.5 bg-[#669880] rounded-[30px] flex justify-center items-center cursor-pointer">
           <div className="text-white text-lg font-medium font-['DM Sans']">
@@ -75,6 +81,9 @@ const ProgressSessionCards: React.FC<ProgressSessionCardsProps> = ({
           class_name={session.class_name}
           date={session.date}
           due={session.due}
+          group_id={session.group_id}
+          class_id={session.class_id}
+          user_id={session.user_id}
         />
       ))}
     </div>

@@ -40,6 +40,10 @@ export default function DashboardPage() {
     const sessionDate = new Date(session.due).toISOString().split("T")[0];
     return sessionDate === today;
   }) || [];
+  const upcomingSessions = sortedSessions?.filter((session) => {
+    const sessionDate = new Date(session.due).toISOString().split("T")[0];
+    return sessionDate > today;
+  }) || [];
 
   return (
     <div className="flex flex-row w-full h-screen">
@@ -66,6 +70,9 @@ export default function DashboardPage() {
                     class_name: session.class_name,
                     date: session.due,
                     due: session.due,
+                    group_id: session.group_id,
+                    class_id: session.class_id,
+                    user_id: user_id,
                   }))}
                 />
               ) : (

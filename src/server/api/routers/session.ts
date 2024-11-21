@@ -60,12 +60,14 @@ export const sessionRouter = createTRPCRouter({
         return new Intl.DateTimeFormat("en-US", options).format(due);
       };
 
-      return sessions.map((session: { session_id: string; session_title: string; createdAt: Date; dueDate: Date; class_name: string }) => ({
+      return sessions.map((session: { session_id: string; session_title: string; createdAt: Date; dueDate: Date; class_name: string; group_id: string; class_id: number }) => ({
         id: session.session_id,
         title: session.session_title,
         date: formatDate(session.createdAt),
         due: formatDue(session.dueDate),
         class_name: session.class_name,
+        group_id: session.group_id,
+        class_id: session.class_id,
       }));
     }),
 
@@ -126,34 +128,36 @@ export const sessionRouter = createTRPCRouter({
   }),
 
   addSession: publicProcedure
-    .input(
-      z.object({
-        user_id: z.number(),
-        group_id: z.string(),
-        session_id: z.string(),
-        session_title: z.string(),
-        dueDate: z.date(),
-        class_name: z.string(),
-      })
-    )
-    .mutation(async ({ input }) => {
-      const newSession = await db.session.create({
-        data: {
-          session_id: input.session_id,
-          user_id: input.user_id,
-          group_id: input.group_id,
-          session_title: input.session_title,
-          createdAt: new Date(),
-          dueDate: new Date(input.dueDate),
-          class_name: input.class_name,
-        },
-      });
-      return {
-        session_id: newSession.session_id,
-        class_id: newSession.group_id,
-        createdAt: newSession.createdAt,
-      };
-    }),
+  .input(
+    z.object({
+      user_id: z.number(),
+      group_id: z.string(),
+      session_id: z.string(),
+      session_title: z.string(),
+      dueDate: z.date(),
+      class_name: z.string(),
+      class_id: z.number(), // Add this
+    })
+  )
+  .mutation(async ({ input }) => {
+    const newSession = await db.session.create({
+      data: {
+        session_id: input.session_id,
+        user_id: input.user_id,
+        group_id: input.group_id,
+        session_title: input.session_title,
+        createdAt: new Date(),
+        dueDate: new Date(input.dueDate),
+        class_name: input.class_name,
+        class_id: input.class_id, // Now this will be properly recognized
+      },
+    });
+    return {
+      session_id: newSession.session_id,
+      class_id: newSession.class_id,
+      createdAt: newSession.createdAt,
+    };
+  }),
 
   getChatHistoryBySessionId: publicProcedure
     .input(z.object({ session_id: z.string() }))

@@ -165,6 +165,8 @@ export default function FileUpload({
           class_name: selectedClassName ?? "",
         });
 
+        console.log("class ID:", class_id)
+        console.log(typeof class_id)
         for (let i = 0; i < sessionIds.length; i++) {
           await addSession({
             user_id,
@@ -173,10 +175,12 @@ export default function FileUpload({
             group_id: group_id,
             dueDate: currDate,
             class_name: selectedClassName ?? "",
+            class_id: class_id,
           });
           currDate.setDate(currDate.getDate() + 1);
           console.log("Session created:", sessionIds[i]);
           console.log("class_name:", selectedClassName ?? "");
+          console.log(class_id)
         }
 
         for (const file of files) {
