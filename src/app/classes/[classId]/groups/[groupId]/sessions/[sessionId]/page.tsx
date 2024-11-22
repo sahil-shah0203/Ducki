@@ -120,6 +120,7 @@ export default function SessionPage() {
           selectedClassID={selectedClassID_number}
           uniqueSessionId={sessionID ?? ""}
           firstName={user?.firstName ?? ""}
+          groupID={groupID}
         />
       </div>
 

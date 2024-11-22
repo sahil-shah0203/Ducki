@@ -4,6 +4,7 @@ import "katex/dist/katex.min.css";
 import { ChatMessageType } from "./ChatMessage";
 import ChatContainer from "./ChatContainer";
 import InputField from "./InputField";
+import { group } from "console";
 
 interface LLMInputProps {
   onFetchResults: (choices: any[]) => void;
@@ -13,6 +14,7 @@ interface LLMInputProps {
   selectedClassID: number | null;
   uniqueSessionId: string;
   firstName: string; // Add userName prop
+  groupID: string | null;
 }
 
 export default function LLMInput({
@@ -23,6 +25,7 @@ export default function LLMInput({
   selectedClassID,
   uniqueSessionId,
   firstName,
+  groupID,
 }: LLMInputProps) {
   const [inputText, setInputText] = useState<string>("");
   const [chatMessages, setChatMessages] = useState<ChatMessageType[]>([]);
@@ -162,7 +165,7 @@ export default function LLMInput({
         body: JSON.stringify({
           chatHistory: [],
           prompt: initialMessage,
-          session: uniqueSessionId,
+          session: groupID,
           class_id: selectedClassID,
         }),
       });
@@ -212,7 +215,7 @@ export default function LLMInput({
         body: JSON.stringify({
           chatHistory: chatHistory,
           prompt: inputText,
-          session: uniqueSessionId,
+          session: groupID,
           class_id: selectedClassID,
         }),
       });
