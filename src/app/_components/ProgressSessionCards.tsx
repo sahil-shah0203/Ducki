@@ -12,13 +12,13 @@ interface SessionData {
   user_id: number; // User ID associated with the session
 }
 
-interface ProgressSessionCardProps extends SessionData {}
+// Removed empty interface ProgressSessionCardProps
 
 interface ProgressSessionCardsProps {
   sessions: SessionData[]; // Array of session objects
 }
 
-const ProgressSessionCard: React.FC<ProgressSessionCardProps> = ({
+const ProgressSessionCard: React.FC<SessionData> = ({
   id,
   title,
   class_name,

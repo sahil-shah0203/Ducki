@@ -10,6 +10,8 @@ interface Session {
   due: string;
   class_name: string;
   title: string;
+  group_id?: string; // Optional in case these are undefined
+  class_id?: number; // Optional in case these are undefined
 }
 
 export default function DashboardPage() {
@@ -20,14 +22,15 @@ export default function DashboardPage() {
 
   if (!user) {
     router.push("/");
+    return null; // Avoid rendering while redirecting
   }
 
-  const { data: sessions, error, isLoading } = user_id
+  const { data: sessions } = user_id
     ? api.group.getSessionsByUserId.useQuery(
         { user_id: Number(user_id) },
         { enabled: !!user_id }
       )
-    : { data: undefined, error: undefined, isLoading: false };
+    : { data: undefined };
 
   const sortedSessions = sessions?.slice().sort((a, b) => {
     const dateA = new Date(a.due).getTime();
@@ -39,11 +42,7 @@ export default function DashboardPage() {
   const todaySessions = sortedSessions?.filter((session) => {
     const sessionDate = new Date(session.due).toISOString().split("T")[0];
     return sessionDate === today;
-  }) || [];
-  const upcomingSessions = sortedSessions?.filter((session) => {
-    const sessionDate = new Date(session.due).toISOString().split("T")[0];
-    return sessionDate > today;
-  }) || [];
+  }) ?? [];
 
   return (
     <div className="flex flex-row w-full h-screen">
@@ -70,9 +69,9 @@ export default function DashboardPage() {
                     class_name: session.class_name,
                     date: session.due,
                     due: session.due,
-                    group_id: session.group_id,
-                    class_id: session.class_id,
-                    user_id: user_id,
+                    group_id: session.group_id ?? "", // Fallback in case undefined
+                    class_id: session.class_id ?? 0, // Fallback in case undefined
+                    user_id: user_id ? Number(user_id) : 0,
                   }))}
                 />
               ) : (
@@ -93,14 +92,18 @@ export default function DashboardPage() {
                 A quick look ahead
               </div>
             </div>
-            {sortedSessions &&
+            {sortedSessions ? (
               Object.entries(
                 sortedSessions.reduce((acc: Record<string, Session[]>, session: Session) => {
                   const sessionDate = session.due;
-                  if (!acc[sessionDate]) acc[sessionDate] = [];
-                  acc[sessionDate].push(session);
+                  if (sessionDate) {
+                    if (!acc[sessionDate]) {
+                      acc[sessionDate] = []; // Initialize the array if it doesn't exist
+                    }
+                    acc[sessionDate]!.push(session); // Safe to push now with non-null assertion
+                  }
                   return acc;
-                }, {})
+                }, {})                
               ).map(([date, sessions]) => (
                 <div key={date} className="flex flex-col gap-4">
                   <div className="text-[#31493e] text-lg font-bold font-['DM Sans'] leading-tight">
@@ -125,7 +128,12 @@ export default function DashboardPage() {
                     </div>
                   ))}
                 </div>
-              ))}
+              ))
+            ) : (
+              <div className="text-black/50 text-lg font-medium font-['DM Sans']">
+                No upcoming sessions.
+              </div>
+            )}
           </div>
         </div>
       </div>
