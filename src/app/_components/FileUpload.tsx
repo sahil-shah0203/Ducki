@@ -29,6 +29,7 @@ export default function FileUpload({
   const [processing, setProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [sessionTitle, setSessionTitle] = useState<string>("");
+  const [isDragging, setIsDragging] = useState(false);
 
   const { mutateAsync: addGroup } = api.group.addGroup.useMutation();
   const { mutateAsync: addSession } = api.session.addSession.useMutation();
@@ -46,6 +47,32 @@ export default function FileUpload({
     if (event.target.files) {
       setFiles(Array.from(event.target.files));
     }
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const droppedFiles = Array.from(e.dataTransfer.files);
+    setFiles(droppedFiles);
   };
 
   const uploadFile = async (file: File, group_id: string) => {
@@ -226,8 +253,14 @@ export default function FileUpload({
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
         <div className="w-[534px] h-[526px] flex flex-col items-center gap-6 bg-white p-6 shadow-lg px-20">
           {/* Uploaded File Display */}
-          <div className="w-[500px] h-[297px] relative">
-            <div className="w-full h-full bg-[#f9faf9] opacity-50 rounded-[5px] border border-dashed border-[#84988e] absolute"></div>
+          <div 
+            className={`w-[500px] h-[297px] relative ${isDragging ? 'bg-gray-100' : ''}`}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+          >
+            <div className={`w-full h-full bg-[#f9faf9] opacity-50 rounded-[5px] border border-dashed ${isDragging ? 'border-[#669880]' : 'border-[#84988e]'} absolute`}></div>
             {files.length > 0 && (
               <div className="absolute top-[25px] left-[18px] w-[498px] h-14 bg-black/5 rounded flex items-center px-5 gap-8">
                 {files.map((file, index) => (
