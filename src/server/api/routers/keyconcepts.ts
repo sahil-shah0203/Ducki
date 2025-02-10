@@ -27,7 +27,7 @@ export const keyConceptRouter = createTRPCRouter({
       if (keyConcepts.length > 0) {
         return keyConcepts;
       }
-
+      console.log("111", group_id, class_id, user_id);
       const response = await fetch(`https://ducki.ai/api/getKeyConcepts`, {
         method: "POST",
         headers: {
@@ -44,6 +44,7 @@ export const keyConceptRouter = createTRPCRouter({
       }
 
       const data = await response.json();
+      //console.log(data);
 
       const parsedObject = JSON.parse(data.concepts);
 

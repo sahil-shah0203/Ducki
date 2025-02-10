@@ -113,6 +113,7 @@ export default function FileUpload({
       await lambdaClient.send(new InvokeCommand(params));
       setProcessing(false);
       setSuccessMessage("File processed successfully.");
+      console.log("File processed:", file_key);
     } catch (error) {
       setProcessing(false);
       onError("Error processing file: " + (error instanceof Error ? error.message : "An unknown error occurred"));
@@ -189,8 +190,9 @@ export default function FileUpload({
             onError("Invalid file type");
             return;
           }
-
+          console.log("File type:", file.type);
           const result = await uploadFile(file, group_id);
+          console.log("File uploaded:", result);
           if (result != null) {
             const { uuid_file_name, original_file_name, file_key } = result;
             await processFile(file_key, group_id);

@@ -57,6 +57,7 @@ export async function POST(request: Request) {
     };
 
     console.log("context:", customPrompt.content);
+    console.log(context);
 
     const messages = [customPrompt, ...chatHistory].reverse();
 
